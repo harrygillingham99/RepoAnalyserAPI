@@ -1,4 +1,4 @@
-﻿namespace NetCore31ApiTemplate.Client
+﻿namespace RepoAnalyser.CSharp.Client
 {
     public class BaseClient
     {

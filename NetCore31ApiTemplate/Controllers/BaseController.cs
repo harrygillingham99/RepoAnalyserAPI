@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
-namespace NetCore31ApiTemplate.Controllers
+namespace RepoAnalyser.API.Controllers
 {
     public class BaseController : ControllerBase
     {

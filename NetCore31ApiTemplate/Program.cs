@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Formatting.Json;
 
-namespace NetCore31ApiTemplate
+namespace RepoAnalyser.API
 {
     public class Program
     {

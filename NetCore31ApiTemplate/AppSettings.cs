@@ -1,4 +1,4 @@
-﻿namespace NetCore31ApiTemplate
+﻿namespace RepoAnalyser.API
 {
     public class AppSettings
     {

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
 
-namespace NetCore31ApiTemplate
+namespace RepoAnalyser.API
 {
     public static class ServiceRegistry
     {

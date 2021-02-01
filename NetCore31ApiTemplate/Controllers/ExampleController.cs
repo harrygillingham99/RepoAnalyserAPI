@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NSwag.Annotations;
 
-namespace NetCore31ApiTemplate.Controllers
+namespace RepoAnalyser.API.Controllers
 {
     [ApiController]
     [Route("Example")]

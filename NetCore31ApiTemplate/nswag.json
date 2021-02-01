@@ -1,9 +1,9 @@
 {
   "runtime": "NetCore31",
-  "defaultVariables": "CSharpOutputPath=..\\NetCore31ApiTemplate.Client",
+  "defaultVariables": "CSharpOutputPath=..\\RepoAnalyser.CSharp.Client",
   "documentGenerator": {
     "aspNetCoreToOpenApi": {
-      "project": "NetCore31ApiTemplate.csproj",
+      "project": "RepoAnalyser.API.csproj",
       "msBuildProjectExtensionsPath": null,
       "configuration": null,
       "runtime": "",
@@ -173,7 +173,7 @@
       "generateCloneMethod": false,
       "typeStyle": "Class",
       "classTypes": [],
-      "extensionCode": "../NetCore31ApiTemplate.TSClient/ApiClient.ts",
+      "extensionCode": "../RepoAnalyser.TypeScript.Client/ApiClient.ts",
       "extendedClasses": [],
       "generateDefaultValues": true,
       "excludedTypeNames": [],
@@ -193,7 +193,7 @@
       "enumNameGeneratorType": null,
       "serviceHost": null,
       "serviceSchemes": null,
-      "output": "../NetCore31ApiTemplate.TSClient/Client.ts"
+      "output": "../RepoAnalyser.TypeScript.Client/Client.ts"
     }
   }
 }
