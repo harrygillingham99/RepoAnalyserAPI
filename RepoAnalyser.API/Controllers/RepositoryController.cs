@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NSwag.Annotations;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.API.Responses;
+using RepoAnalyser.Objects.Responses;
 
 namespace RepoAnalyser.API.Controllers
 {
@@ -22,9 +24,9 @@ namespace RepoAnalyser.API.Controllers
 
         [HttpGet("{statusToReturn}")]
         [SwaggerResponse(HttpStatusCode.OK, typeof(TestResponse))]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ActionResult), Description = "Error")]
-        [SwaggerResponse(HttpStatusCode.BadRequest, typeof(ActionResult), Description = "Bad Request")]
-        [SwaggerResponse(HttpStatusCode.NotFound, typeof(ActionResult), Description = "Not Found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, typeof(ValidationResponse), Description = "Bad Request")]
+        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Not Found")]
         public async Task<IActionResult> Test([FromRoute]int statusToReturn = 200)
         {
             return await ExecuteAndMapToActionResultAsync(() =>

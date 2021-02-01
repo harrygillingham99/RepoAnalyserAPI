@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using RepoAnalyser.Objects.API.Responses;
+using RepoAnalyser.Objects.Responses;
 using Serilog;
 
 namespace RepoAnalyser.API.Controllers
@@ -16,7 +19,7 @@ namespace RepoAnalyser.API.Controllers
 
                 return response switch
                 {
-                    null => throw new NullReferenceException(),
+                    null => throw new NullReferenceException("Thing not found"),
 
                     Exception errorResponse => throw errorResponse,
 
@@ -26,17 +29,27 @@ namespace RepoAnalyser.API.Controllers
             catch (NullReferenceException ex)
             {
                 Log.Error(ex, ex.Message);
-                return NotFound($"{request.Method.Name} returned null");
+                return NotFound(new NotFoundResponse
+                {
+                    Message = ex.Message,
+                    Title = ex.GetType().Name,
+                    BadProperties = new Dictionary<string, string>()
+                });
             }
             catch (ValidationException ex)
             {
                 Log.Error(ex, $"Bad Request: {ex.Message}");
-                return BadRequest(ex.Message);
+                return BadRequest(new ValidationResponse
+                {
+                    Message = ex.Message,
+                    Title = ex.GetType().Name,
+                    ValidationErrors = new Dictionary<string, string>()
+                });
             }
             catch (Exception ex)
             {
                 Log.Error(ex, ex.Message);
-                return Problem(ex.Message);
+                return Problem(ex.Message, statusCode: 500, title: ex.GetType().Name);
             }
         }
 
@@ -84,17 +97,27 @@ namespace RepoAnalyser.API.Controllers
             catch (NullReferenceException ex)
             {
                 Log.Error(ex, ex.Message);
-                return NotFound($"{request.Method.Name} returned null");
+                return NotFound(new NotFoundResponse
+                {
+                    Message = ex.Message,
+                    Title = ex.GetType().Name,
+                    BadProperties = new Dictionary<string, string>()
+                });
             }
             catch (ValidationException ex)
             {
                 Log.Error(ex, $"Bad Request: {ex.Message}");
-                return BadRequest(ex.Message);
+                return BadRequest(new ValidationResponse
+                {
+                    Message = ex.Message,
+                    Title = ex.GetType().Name,
+                    ValidationErrors = new Dictionary<string, string>()
+                });
             }
             catch (Exception ex)
             {
                 Log.Error(ex, ex.Message);
-                return Problem(ex.Message);
+                return Problem(ex.Message, statusCode: 500, title: ex.GetType().Name);
             }
         }
     }

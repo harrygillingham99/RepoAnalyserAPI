@@ -91,21 +91,21 @@ export class RepositoryClient extends AuthorizedApiBase {
             return response.text().then((_responseText) => {
             let result500: any = null;
             let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result500 = resultData500 !== undefined ? resultData500 : <any>null;
+            result500 = ProblemDetails.fromJS(resultData500);
             return throwException("Error", status, _responseText, _headers, result500);
             });
         } else if (status === 400) {
             return response.text().then((_responseText) => {
             let result400: any = null;
             let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result400 = resultData400 !== undefined ? resultData400 : <any>null;
+            result400 = ValidationResponse.fromJS(resultData400);
             return throwException("Bad Request", status, _responseText, _headers, result400);
             });
         } else if (status === 404) {
             return response.text().then((_responseText) => {
             let result404: any = null;
             let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result404 = resultData404 !== undefined ? resultData404 : <any>null;
+            result404 = NotFoundResponse.fromJS(resultData404);
             return throwException("Not Found", status, _responseText, _headers, result404);
             });
         } else if (status !== 200 && status !== 204) {
@@ -153,11 +153,200 @@ export interface ITestResponse {
     testProp?: string | undefined;
 }
 
-export interface FileResponse {
-    data: Blob;
-    status: number;
-    fileName?: string;
-    headers?: { [name: string]: any };
+export class ProblemDetails implements IProblemDetails {
+    type?: string | undefined;
+    title?: string | undefined;
+    status?: number | undefined;
+    detail?: string | undefined;
+    instance?: string | undefined;
+    extensions?: { [key: string]: any; } | undefined;
+
+    constructor(data?: IProblemDetails) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.type = _data["type"];
+            this.title = _data["title"];
+            this.status = _data["status"];
+            this.detail = _data["detail"];
+            this.instance = _data["instance"];
+            if (_data["extensions"]) {
+                this.extensions = {} as any;
+                for (let key in _data["extensions"]) {
+                    if (_data["extensions"].hasOwnProperty(key))
+                        this.extensions![key] = _data["extensions"][key];
+                }
+            }
+        }
+    }
+
+    static fromJS(data: any): ProblemDetails {
+        data = typeof data === 'object' ? data : {};
+        let result = new ProblemDetails();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["type"] = this.type;
+        data["title"] = this.title;
+        data["status"] = this.status;
+        data["detail"] = this.detail;
+        data["instance"] = this.instance;
+        if (this.extensions) {
+            data["extensions"] = {};
+            for (let key in this.extensions) {
+                if (this.extensions.hasOwnProperty(key))
+                    data["extensions"][key] = this.extensions[key];
+            }
+        }
+        return data; 
+    }
+}
+
+export interface IProblemDetails {
+    type?: string | undefined;
+    title?: string | undefined;
+    status?: number | undefined;
+    detail?: string | undefined;
+    instance?: string | undefined;
+    extensions?: { [key: string]: any; } | undefined;
+}
+
+export abstract class Response implements IResponse {
+    message?: string | undefined;
+    title?: string | undefined;
+
+    constructor(data?: IResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.message = _data["message"];
+            this.title = _data["title"];
+        }
+    }
+
+    static fromJS(data: any): Response {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'Response' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["message"] = this.message;
+        data["title"] = this.title;
+        return data; 
+    }
+}
+
+export interface IResponse {
+    message?: string | undefined;
+    title?: string | undefined;
+}
+
+export class ValidationResponse extends Response implements IValidationResponse {
+    validationErrors?: { [key: string]: string; } | undefined;
+
+    constructor(data?: IValidationResponse) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            if (_data["validationErrors"]) {
+                this.validationErrors = {} as any;
+                for (let key in _data["validationErrors"]) {
+                    if (_data["validationErrors"].hasOwnProperty(key))
+                        this.validationErrors![key] = _data["validationErrors"][key];
+                }
+            }
+        }
+    }
+
+    static fromJS(data: any): ValidationResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new ValidationResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (this.validationErrors) {
+            data["validationErrors"] = {};
+            for (let key in this.validationErrors) {
+                if (this.validationErrors.hasOwnProperty(key))
+                    data["validationErrors"][key] = this.validationErrors[key];
+            }
+        }
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IValidationResponse extends IResponse {
+    validationErrors?: { [key: string]: string; } | undefined;
+}
+
+export class NotFoundResponse extends Response implements INotFoundResponse {
+    badProperties?: { [key: string]: string; } | undefined;
+
+    constructor(data?: INotFoundResponse) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            if (_data["badProperties"]) {
+                this.badProperties = {} as any;
+                for (let key in _data["badProperties"]) {
+                    if (_data["badProperties"].hasOwnProperty(key))
+                        this.badProperties![key] = _data["badProperties"][key];
+                }
+            }
+        }
+    }
+
+    static fromJS(data: any): NotFoundResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new NotFoundResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (this.badProperties) {
+            data["badProperties"] = {};
+            for (let key in this.badProperties) {
+                if (this.badProperties.hasOwnProperty(key))
+                    data["badProperties"][key] = this.badProperties[key];
+            }
+        }
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface INotFoundResponse extends IResponse {
+    badProperties?: { [key: string]: string; } | undefined;
 }
 
 export class ApiException extends Error {
