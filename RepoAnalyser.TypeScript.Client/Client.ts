@@ -7,7 +7,45 @@
 //----------------------
 // ReSharper disable InconsistentNaming
 
-export class ExampleClient extends AuthorizedApiBase {
+export class IConfig {
+    /* 
+      ApiClient.ts
+      This is the base classes for the NSwag generated ApiClient. Has overrides for transformOptions and getBaseUrl to allow me to instantiate a client and
+      inject firebase authorization tokens into the request header for the back end to then verify and get my own baseUrl stored in a config file.
+      A comment at the top of this file will actually break client generation and for whatever reason this will end up at the bottom of Client.ts not the top.
+    */
+    constructor(token: string) {
+        this.JwtToken = token;
+    }
+    /*
+      Returns a valid value for the Authorization header.
+      Used to dynamically inject the current auth header.
+     */
+    JwtToken: string;
+}
+
+export class AuthorizedApiBase {
+    private readonly config: IConfig;
+
+    protected constructor(config: IConfig) {
+        this.config = config;
+    }
+
+    protected transformOptions = (options: RequestInit): Promise<RequestInit> => {
+        options.headers = {
+            ...options.headers,
+            Authorization: this.config.JwtToken,
+        };
+        return Promise.resolve(options);
+    };
+
+    protected getBaseUrl = (defaultUrl: string, baseUrl?: string) => {
+        const ApiUrl = "";
+        return ApiUrl !== undefined ? ApiUrl : defaultUrl;
+    };
+}
+
+export class RepositoryClient extends AuthorizedApiBase {
     private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
@@ -19,7 +57,7 @@ export class ExampleClient extends AuthorizedApiBase {
     }
 
     test(statusToReturn: number): Promise<TestResponse> {
-        let url_ = this.baseUrl + "/Example/{statusToReturn}";
+        let url_ = this.baseUrl + "/Repo/{statusToReturn}";
         if (statusToReturn === undefined || statusToReturn === null)
             throw new Error("The parameter 'statusToReturn' must be defined.");
         url_ = url_.replace("{statusToReturn}", encodeURIComponent("" + statusToReturn));
@@ -152,5 +190,3 @@ function throwException(message: string, status: number, response: string, heade
     else
         throw new ApiException(message, status, response, headers, null);
 }
-
-C:\Users\harry\Documents\Dissertation Work\Artifact\back-end\RepoAnalyser.TypeScript.Client\ApiClient.ts

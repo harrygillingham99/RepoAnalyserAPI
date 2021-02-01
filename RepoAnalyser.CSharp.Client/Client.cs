@@ -16,7 +16,7 @@ namespace NetCore31ApiTemplate.Client
     using System = global::System;
     
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.10.1.0 (NJsonSchema v10.3.3.0 (Newtonsoft.Json v12.0.0.0))")]
-    public partial interface IExampleClient
+    public partial interface IRepositoryClient
     {
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<TestResponse> TestAsync(int statusToReturn);
@@ -28,13 +28,13 @@ namespace NetCore31ApiTemplate.Client
     }
     
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.10.1.0 (NJsonSchema v10.3.3.0 (Newtonsoft.Json v12.0.0.0))")]
-    internal partial class ExampleClient : IExampleClient
+    internal partial class RepositoryClient : IRepositoryClient
     {
         private string _baseUrl = "";
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<Newtonsoft.Json.JsonSerializerSettings> _settings;
     
-        public ExampleClient(string baseUrl, System.Net.Http.HttpClient httpClient)
+        public RepositoryClient(string baseUrl, System.Net.Http.HttpClient httpClient)
         {
             BaseUrl = baseUrl; 
             _httpClient = httpClient; 
@@ -76,7 +76,7 @@ namespace NetCore31ApiTemplate.Client
                 throw new System.ArgumentNullException("statusToReturn");
     
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/Example/{statusToReturn}");
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/Repo/{statusToReturn}");
             urlBuilder_.Replace("{statusToReturn}", System.Uri.EscapeDataString(ConvertToString(statusToReturn, System.Globalization.CultureInfo.InvariantCulture)));
     
             var client_ = _httpClient;

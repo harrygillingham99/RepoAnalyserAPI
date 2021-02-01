@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.API", "RepoAnalyser.API.csproj", "{D0EF51D7-487C-4273-8576-991AB3EF52F9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.CSharp.Client", "..\NetCore31ApiTemplate.Client\RepoAnalyser.CSharp.Client.csproj", "{4455F3F1-1197-4EAF-A70E-6233B622196E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.CSharp.Client", "..\RepoAnalyser.CSharp.Client\RepoAnalyser.CSharp.Client.csproj", "{4455F3F1-1197-4EAF-A70E-6233B622196E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.TypeScript.Client", "..\NetCore31ApiTemplate.TSClient\RepoAnalyser.TypeScript.Client.csproj", "{2FF6D9F2-3ECB-4557-94DB-6595E7CA7EC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.TypeScript.Client", "..\RepoAnalyser.TypeScript.Client\RepoAnalyser.TypeScript.Client.csproj", "{2FF6D9F2-3ECB-4557-94DB-6595E7CA7EC7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepoAnalyser.Services", "..\RepoAnalyser.OctoKit\RepoAnalyser.Services.csproj", "{A094D9CC-E91B-406D-B32C-393DF1B3750D}"
 EndProject
