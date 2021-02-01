@@ -1,4 +1,4 @@
-﻿namespace RepoAnalyser.API
+﻿namespace RepoAnalyser.Objects
 {
     public class AppSettings
     {

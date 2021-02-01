@@ -1,6 +1,9 @@
 ﻿using System.CodeDom.Compiler;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RepoAnalyser.Objects;
+using RepoAnalyser.Services;
+using RepoAnalyser.SqlServer.DAL;
 using Scrutor;
 
 namespace RepoAnalyser.API
@@ -10,7 +13,7 @@ namespace RepoAnalyser.API
         public static void ScanForAllRemainingRegistrations(IServiceCollection services)
         {
             services.Scan(scan => scan
-                .FromAssembliesOf(typeof(Startup))
+                .FromAssembliesOf(typeof(Startup), typeof(OctoKitAuthServiceAgent), typeof(RepoAnalyserRepository))
                 .AddClasses(x => x.WithoutAttribute(typeof(GeneratedCodeAttribute)))
                 .UsingRegistrationStrategy(RegistrationStrategy.Skip)
                 .AsImplementedInterfaces()
@@ -20,6 +23,7 @@ namespace RepoAnalyser.API
         public static void AddConfigs(IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<AppSettings>(option => { configuration.GetSection(nameof(AppSettings)).Bind(option); });
+            services.Configure<GitHubSettings>(option => { configuration.GetSection(nameof(GitHubSettings)).Bind(option); });
         }
     }
 }

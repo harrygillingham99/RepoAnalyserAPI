@@ -5,16 +5,17 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NSwag.Annotations;
+using RepoAnalyser.Objects;
 
 namespace RepoAnalyser.API.Controllers
 {
     [ApiController]
-    [Route("Example")]
-    public class ExampleController : BaseController
+    [Route("Repo")]
+    public class RepositoryController : BaseController
     {
         private readonly string _responseStringFromConfig;
 
-        public ExampleController(IOptions<AppSettings> options)
+        public RepositoryController(IOptions<AppSettings> options)
         {
             _responseStringFromConfig = options.Value.ResponseString;
         }
@@ -37,13 +38,6 @@ namespace RepoAnalyser.API.Controllers
                     _ => null
                 };
             });
-        }
-
-
-
-        public class TestResponse
-        {
-            public string TestProp { get; set; }
         }
 
     }
