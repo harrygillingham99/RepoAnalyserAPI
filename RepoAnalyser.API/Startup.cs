@@ -1,8 +1,11 @@
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 using RepoAnalyser.API.NSwag;
 
 namespace RepoAnalyser.API
@@ -35,20 +38,20 @@ namespace RepoAnalyser.API
 
             services.AddOpenApiDocument(configure =>
             {
-                configure.Title = "API";
+                configure.Title = "RepoAnalyser API";
                 configure.DocumentName = "API";
                 configure.Description = "An API interface.";
                 configure.OperationProcessors.Add(new HeaderParameterOperationProcessor());
                 configure.DocumentProcessors.Add(new SchemaExtenderDocumentProcessor());
-                //configure.AddSecurity("JWT", Enumerable.Empty<string>(), new OpenApiSecurityScheme
-                //{
-                //    Type = OpenApiSecuritySchemeType.ApiKey,
-                //    Name = "Authorization",
-                //    In = OpenApiSecurityApiKeyLocation.Header,
-                //    Description = "Type into the textbox: {Firebase JWT Token}"
-                //});
+                configure.AddSecurity("GitHub Token", Enumerable.Empty<string>(), new OpenApiSecurityScheme
+                {
+                    Type = OpenApiSecuritySchemeType.ApiKey,
+                    Name = "Authorization",
+                    In = OpenApiSecurityApiKeyLocation.Header,
+                    Description = "GitHub Bearer Token"
+                });
 
-                //configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("JWT"));
+                configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("GitHub Token"));
             });
 
             ServiceRegistry.AddConfigs(services, Configuration);

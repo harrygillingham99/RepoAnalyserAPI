@@ -19,10 +19,4 @@ namespace RepoAnalyser.Logic
 
         public Task<string> GetLoginRedirectUrl() => _octoKitAuthServiceAgent.GetLoginRedirectUrl();
     }
-
-    public interface IAuthFacade
-    {
-        Task<string> GetOAuthToken(string code, string state);
-        Task<string> GetLoginRedirectUrl();
-    }
 }

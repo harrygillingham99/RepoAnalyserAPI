@@ -36,7 +36,6 @@ namespace RepoAnalyser.Services
             if (string.IsNullOrEmpty(code))
                 return null;
 
-
             var request = new OauthTokenRequest(_clientId, _clientSecret, code);
 
             return (await _client.Oauth.CreateAccessToken(request)).AccessToken;
