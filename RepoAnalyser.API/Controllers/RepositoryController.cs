@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NSwag.Annotations;
+using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Responses;
-using RepoAnalyser.Objects.Responses;
 
 namespace RepoAnalyser.API.Controllers
 {
@@ -29,6 +29,8 @@ namespace RepoAnalyser.API.Controllers
         [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Not Found")]
         public async Task<IActionResult> Test([FromRoute]int statusToReturn = 200)
         {
+            var test = HttpContext.Request.GetMetadataFromRequestHeaders();
+
             return await ExecuteAndMapToActionResultAsync(() =>
             {
                 return statusToReturn switch

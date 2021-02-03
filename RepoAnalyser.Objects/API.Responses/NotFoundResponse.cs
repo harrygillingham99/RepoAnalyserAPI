@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Newtonsoft.Json;
+﻿using System.Collections.Generic;
 
-namespace RepoAnalyser.Objects.Responses
+namespace RepoAnalyser.Objects.API.Responses
 {
-    public class NotFoundResponse : Response
+    public class NotFoundResponse : BaseResponse
     {
         public Dictionary<string,string> BadProperties { get; set; }
     }

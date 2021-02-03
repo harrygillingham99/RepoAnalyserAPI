@@ -1,6 +1,6 @@
-﻿namespace RepoAnalyser.Objects.Responses
+﻿namespace RepoAnalyser.Objects.API.Responses
 {
-    public abstract class Response
+    public abstract class BaseResponse
     {
         public string Message { get; set; }
 

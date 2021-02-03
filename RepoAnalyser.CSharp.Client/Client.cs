@@ -332,7 +332,7 @@ namespace NetCore31ApiTemplate.Client
     }
     
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.3.3.0 (Newtonsoft.Json v12.0.0.0)")]
-    public partial class ValidationResponse : Response
+    public partial class ValidationResponse : BaseResponse
     {
         [Newtonsoft.Json.JsonProperty("validationErrors", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.Dictionary<string, string> ValidationErrors { get; set; }
@@ -350,7 +350,7 @@ namespace NetCore31ApiTemplate.Client
     }
     
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.3.3.0 (Newtonsoft.Json v12.0.0.0)")]
-    public abstract partial class Response 
+    public abstract partial class BaseResponse 
     {
         [Newtonsoft.Json.JsonProperty("message", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Message { get; set; }
@@ -363,15 +363,15 @@ namespace NetCore31ApiTemplate.Client
             return Newtonsoft.Json.JsonConvert.SerializeObject(this);
         }
     
-        public static Response FromJson(string data)
+        public static BaseResponse FromJson(string data)
         {
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<Response>(data);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<BaseResponse>(data);
         }
     
     }
     
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.3.3.0 (Newtonsoft.Json v12.0.0.0)")]
-    public partial class NotFoundResponse : Response
+    public partial class NotFoundResponse : BaseResponse
     {
         [Newtonsoft.Json.JsonProperty("badProperties", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.Generic.Dictionary<string, string> BadProperties { get; set; }

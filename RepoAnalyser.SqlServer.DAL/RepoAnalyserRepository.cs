@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RepoAnalyser.SqlServer.DAL
+﻿namespace RepoAnalyser.SqlServer.DAL
 {
     public class RepoAnalyserRepository : IRepoAnalyserRepository
     {

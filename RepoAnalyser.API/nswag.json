@@ -168,7 +168,7 @@
       "useTransformOptionsMethod": true,
       "useTransformResultMethod": false,
       "generateDtoTypes": true,
-      "operationGenerationMode": "MultipleClientsFromOperationId",
+      "operationGenerationMode": "SingleClientFromOperationId",
       "markOptionalProperties": true,
       "generateCloneMethod": false,
       "typeStyle": "Class",

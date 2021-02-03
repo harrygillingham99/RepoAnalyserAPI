@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RepoAnalyser.API.NSwag;
 
 namespace RepoAnalyser.API
 {
@@ -37,6 +38,8 @@ namespace RepoAnalyser.API
                 configure.Title = "API";
                 configure.DocumentName = "API";
                 configure.Description = "An API interface.";
+                configure.OperationProcessors.Add(new HeaderParameterOperationProcessor());
+                configure.DocumentProcessors.Add(new SchemaExtenderDocumentProcessor());
                 //configure.AddSecurity("JWT", Enumerable.Empty<string>(), new OpenApiSecurityScheme
                 //{
                 //    Type = OpenApiSecuritySchemeType.ApiKey,

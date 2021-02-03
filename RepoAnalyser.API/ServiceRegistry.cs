@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.Attributes;
 using RepoAnalyser.Services;
 using RepoAnalyser.SqlServer.DAL;
 using Scrutor;
@@ -14,7 +15,7 @@ namespace RepoAnalyser.API
         {
             services.Scan(scan => scan
                 .FromAssembliesOf(typeof(Startup), typeof(OctoKitAuthServiceAgent), typeof(RepoAnalyserRepository))
-                .AddClasses(x => x.WithoutAttribute(typeof(GeneratedCodeAttribute)))
+                .AddClasses(x => x.WithoutAttribute(typeof(GeneratedCodeAttribute)).WithoutAttribute(typeof(ScrutorIgnoreAttribute)))
                 .UsingRegistrationStrategy(RegistrationStrategy.Skip)
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());

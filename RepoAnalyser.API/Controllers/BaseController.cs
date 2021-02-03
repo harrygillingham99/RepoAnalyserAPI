@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using RepoAnalyser.Objects.API.Responses;
-using RepoAnalyser.Objects.Responses;
 using Serilog;
 
 namespace RepoAnalyser.API.Controllers

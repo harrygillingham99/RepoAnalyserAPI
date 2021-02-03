@@ -45,7 +45,7 @@ export class AuthorizedApiBase {
     };
 }
 
-export class RepositoryClient extends AuthorizedApiBase {
+export class Client extends AuthorizedApiBase {
     private http: { fetch(url: RequestInfo, init?: RequestInit): Promise<Response> };
     private baseUrl: string;
     protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
@@ -56,7 +56,7 @@ export class RepositoryClient extends AuthorizedApiBase {
         this.baseUrl = this.getBaseUrl("", baseUrl);
     }
 
-    test(statusToReturn: number): Promise<TestResponse> {
+    repository_Test(statusToReturn: number): Promise<TestResponse> {
         let url_ = this.baseUrl + "/Repo/{statusToReturn}";
         if (statusToReturn === undefined || statusToReturn === null)
             throw new Error("The parameter 'statusToReturn' must be defined.");
@@ -73,11 +73,11 @@ export class RepositoryClient extends AuthorizedApiBase {
         return this.transformOptions(options_).then(transformedOptions_ => {
             return this.http.fetch(url_, transformedOptions_);
         }).then((_response: Response) => {
-            return this.processTest(_response);
+            return this.processRepository_Test(_response);
         });
     }
 
-    protected processTest(response: Response): Promise<TestResponse> {
+    protected processRepository_Test(response: Response): Promise<TestResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -221,11 +221,11 @@ export interface IProblemDetails {
     extensions?: { [key: string]: any; } | undefined;
 }
 
-export abstract class Response implements IResponse {
+export abstract class BaseResponse implements IBaseResponse {
     message?: string | undefined;
     title?: string | undefined;
 
-    constructor(data?: IResponse) {
+    constructor(data?: IBaseResponse) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -241,9 +241,9 @@ export abstract class Response implements IResponse {
         }
     }
 
-    static fromJS(data: any): Response {
+    static fromJS(data: any): BaseResponse {
         data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'Response' cannot be instantiated.");
+        throw new Error("The abstract class 'BaseResponse' cannot be instantiated.");
     }
 
     toJSON(data?: any) {
@@ -254,12 +254,12 @@ export abstract class Response implements IResponse {
     }
 }
 
-export interface IResponse {
+export interface IBaseResponse {
     message?: string | undefined;
     title?: string | undefined;
 }
 
-export class ValidationResponse extends Response implements IValidationResponse {
+export class ValidationResponse extends BaseResponse implements IValidationResponse {
     validationErrors?: { [key: string]: string; } | undefined;
 
     constructor(data?: IValidationResponse) {
@@ -300,11 +300,11 @@ export class ValidationResponse extends Response implements IValidationResponse 
     }
 }
 
-export interface IValidationResponse extends IResponse {
+export interface IValidationResponse extends IBaseResponse {
     validationErrors?: { [key: string]: string; } | undefined;
 }
 
-export class NotFoundResponse extends Response implements INotFoundResponse {
+export class NotFoundResponse extends BaseResponse implements INotFoundResponse {
     badProperties?: { [key: string]: string; } | undefined;
 
     constructor(data?: INotFoundResponse) {
@@ -345,7 +345,7 @@ export class NotFoundResponse extends Response implements INotFoundResponse {
     }
 }
 
-export interface INotFoundResponse extends IResponse {
+export interface INotFoundResponse extends IBaseResponse {
     badProperties?: { [key: string]: string; } | undefined;
 }
 
