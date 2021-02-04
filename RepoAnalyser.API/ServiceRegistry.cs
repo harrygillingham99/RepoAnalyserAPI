@@ -1,6 +1,7 @@
 ﻿using System.CodeDom.Compiler;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RepoAnalyser.Logic;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.Attributes;
 using RepoAnalyser.Services;
@@ -14,7 +15,7 @@ namespace RepoAnalyser.API
         public static void ScanForAllRemainingRegistrations(IServiceCollection services)
         {
             services.Scan(scan => scan
-                .FromAssembliesOf(typeof(Startup), typeof(OctoKitAuthServiceAgent), typeof(RepoAnalyserRepository))
+                .FromAssembliesOf(typeof(Startup), typeof(OctoKitAuthServiceAgent), typeof(RepoAnalyserRepository), typeof(AuthFacade))
                 .AddClasses(x => x.WithoutAttribute(typeof(GeneratedCodeAttribute)).WithoutAttribute(typeof(ScrutorIgnoreAttribute)))
                 .UsingRegistrationStrategy(RegistrationStrategy.Skip)
                 .AsImplementedInterfaces()

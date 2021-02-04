@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using RepoAnalyser.Objects.API.Responses;
+using RepoAnalyser.Objects.Exceptions;
 using Serilog;
 
 namespace RepoAnalyser.API.Controllers
@@ -35,7 +36,16 @@ namespace RepoAnalyser.API.Controllers
                     BadProperties = new Dictionary<string, string>()
                 });
             }
-            catch (ValidationException ex)
+            catch (UnauthorizedRequestException ex)
+            {
+                Log.Error(ex, ex.Message);
+                return Unauthorized(new UnauthorizedResponse
+                {
+                    Message = ex.Message,
+                    Title = ex.GetType().Name
+                });
+            }
+            catch (BadRequestException ex)
             {
                 Log.Error(ex, $"Bad Request: {ex.Message}");
                 return BadRequest(new ValidationResponse
@@ -101,6 +111,15 @@ namespace RepoAnalyser.API.Controllers
                     Message = ex.Message,
                     Title = ex.GetType().Name,
                     BadProperties = new Dictionary<string, string>()
+                });
+            }
+            catch (UnauthorizedRequestException ex)
+            {
+                Log.Error(ex, ex.Message);
+                return Unauthorized(new UnauthorizedResponse
+                {
+                    Message = ex.Message,
+                    Title = ex.GetType().Name
                 });
             }
             catch (ValidationException ex)

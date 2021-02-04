@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Octokit;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Services.Interfaces;
 using OauthLoginRequest = Octokit.OauthLoginRequest;
 
 namespace RepoAnalyser.Services
@@ -22,25 +23,23 @@ namespace RepoAnalyser.Services
             _client = new GitHubClient(new ProductHeaderValue(options.Value.AppName));
         }
         //Everything else is actually async, just want to follow the task pattern
-        public Task<string> GetLoginRedirectUrl()
+        public Task<Uri> GetLoginRedirectUrl()
         {
             var request = new OauthLoginRequest(_clientId)
             {
-                RedirectUri = new Uri(_frontEndRedirectUrl),
+
+                RedirectUri = new Uri(_frontEndRedirectUrl)
             };
-            return Task.FromResult(_client.Oauth.GetGitHubLoginUrl(request).AbsoluteUri);
+            return Task.FromResult(_client.Oauth.GetGitHubLoginUrl(request));
         }
 
-        public async Task<string> GetOAuthToken(string code, string state)
+        public async Task<OauthToken> GetOAuthToken(string code, string state)
         {
-            if (string.IsNullOrEmpty(code))
-                return null;
+            if (string.IsNullOrEmpty(code)) return null;
 
             var request = new OauthTokenRequest(_clientId, _clientSecret, code);
 
-            return (await _client.Oauth.CreateAccessToken(request)).AccessToken;
-
+            return (await _client.Oauth.CreateAccessToken(request));
         }
-
     }
 }

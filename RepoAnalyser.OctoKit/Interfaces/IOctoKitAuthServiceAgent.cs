@@ -1,11 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Octokit;
 
-namespace RepoAnalyser.Services
+namespace RepoAnalyser.Services.Interfaces
 {
     public interface IOctoKitAuthServiceAgent
     {
-        Task<string> GetLoginRedirectUrl();
-        Task<string> GetOAuthToken(string code, string state);
+        Task<Uri> GetLoginRedirectUrl();
+        Task<OauthToken> GetOAuthToken(string code, string state);
 
     }
 }
