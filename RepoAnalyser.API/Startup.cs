@@ -30,9 +30,10 @@ namespace RepoAnalyser.API
                 options.AddPolicy(CorsKey,
                     builder =>
                     {
-                        builder.AllowAnyOrigin()
+                        builder.WithOrigins("https://192.168.0.69:4433", "https://localhost:44306")
                             .AllowAnyHeader()
-                            .AllowAnyMethod();
+                            .AllowAnyMethod()
+                            .AllowCredentials();
                     });
             });
 
