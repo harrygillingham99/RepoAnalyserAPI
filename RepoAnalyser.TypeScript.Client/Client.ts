@@ -60,15 +60,13 @@ export class Client extends AuthorizedApiBase {
      * @return Success getting auth token
      */
     authentication_GetOAuthTokenWithUserInfo(code: string | null, state: string | null): Promise<TokenUserResponse> {
-        let url_ = this.baseUrl + "/auth/token?";
-        if (code === undefined)
+        let url_ = this.baseUrl + "/auth/token/{code}/{state}";
+        if (code === undefined || code === null)
             throw new Error("The parameter 'code' must be defined.");
-        else if(code !== null)
-            url_ += "code=" + encodeURIComponent("" + code) + "&";
-        if (state === undefined)
+        url_ = url_.replace("{code}", encodeURIComponent("" + code));
+        if (state === undefined || state === null)
             throw new Error("The parameter 'state' must be defined.");
-        else if(state !== null)
-            url_ += "state=" + encodeURIComponent("" + state) + "&";
+        url_ = url_.replace("{state}", encodeURIComponent("" + state));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -101,6 +99,13 @@ export class Client extends AuthorizedApiBase {
             let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result400 = ValidationResponse.fromJS(resultData400);
             return throwException("Bad request getting auth token", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = UnauthorizedResponse.fromJS(resultData401);
+            return throwException("No token provided when getting user info", status, _responseText, _headers, result401);
             });
         } else if (status === 404) {
             return response.text().then((_responseText) => {
@@ -591,6 +596,33 @@ export class ValidationResponse extends BaseResponse implements IValidationRespo
 
 export interface IValidationResponse extends IBaseResponse {
     validationErrors?: { [key: string]: string; } | undefined;
+}
+
+export class UnauthorizedResponse extends BaseResponse implements IUnauthorizedResponse {
+
+    constructor(data?: IUnauthorizedResponse) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+    }
+
+    static fromJS(data: any): UnauthorizedResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new UnauthorizedResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IUnauthorizedResponse extends IBaseResponse {
 }
 
 export class NotFoundResponse extends BaseResponse implements INotFoundResponse {

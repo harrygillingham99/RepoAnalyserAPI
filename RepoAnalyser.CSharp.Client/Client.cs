@@ -86,10 +86,9 @@ namespace NetCore31ApiTemplate.Client
         public async System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/auth/token?");
-            urlBuilder_.Append(System.Uri.EscapeDataString("code") + "=").Append(System.Uri.EscapeDataString(code != null ? ConvertToString(code, System.Globalization.CultureInfo.InvariantCulture) : "")).Append("&");
-            urlBuilder_.Append(System.Uri.EscapeDataString("state") + "=").Append(System.Uri.EscapeDataString(state != null ? ConvertToString(state, System.Globalization.CultureInfo.InvariantCulture) : "")).Append("&");
-            urlBuilder_.Length--;
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/auth/token/{code}/{state}");
+            urlBuilder_.Replace("{code}", System.Uri.EscapeDataString(ConvertToString(code, System.Globalization.CultureInfo.InvariantCulture)));
+            urlBuilder_.Replace("{state}", System.Uri.EscapeDataString(ConvertToString(state, System.Globalization.CultureInfo.InvariantCulture)));
     
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -139,6 +138,16 @@ namespace NetCore31ApiTemplate.Client
                                 throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
                             }
                             throw new SwaggerException<ValidationResponse>("Bad request getting auth token", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<UnauthorizedResponse>(response_, headers_).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<UnauthorizedResponse>("No token provided when getting user info", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
                         }
                         else
                         if (status_ == 404)
@@ -631,6 +640,21 @@ namespace NetCore31ApiTemplate.Client
         public static BaseResponse FromJson(string data)
         {
             return Newtonsoft.Json.JsonConvert.DeserializeObject<BaseResponse>(data);
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.3.3.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class UnauthorizedResponse : BaseResponse
+    {
+        public string ToJson() 
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this);
+        }
+    
+        public static UnauthorizedResponse FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<UnauthorizedResponse>(data);
         }
     
     }
