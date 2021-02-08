@@ -183,7 +183,7 @@ namespace RepoAnalyser.API.Controllers
                 QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds, HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
             }
         }
-        //Doing some performance/debug request logging when deployed on home server
+        //Doing some performance/debug request logging when deployed on home server, handy to know when react is spamming the backend
         private void QueueInsertingRequestAudit(long elapsedMilliseconds, ClientMetadata metadata,
             string requestedEndpoint)
         {
