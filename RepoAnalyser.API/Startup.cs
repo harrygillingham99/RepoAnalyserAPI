@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using RepoAnalyser.API.NSwag;
+using Serilog;
 
 namespace RepoAnalyser.API
 {
@@ -72,6 +73,7 @@ namespace RepoAnalyser.API
 
             if (env.IsStaging())
             {
+                app.UseDeveloperExceptionPage();
                 //home server specific config here
             }
 

@@ -20,7 +20,7 @@ namespace RepoAnalyser.API.NSwag
                     {
                         if (!context.SchemaResolver.HasSchema(type, type.IsEnum))
                         {
-                            context.SchemaGenerator.Generate(type , context.SchemaResolver);
+                            context.SchemaGenerator.Generate(type, context.SchemaResolver);
                         }
                     }
                 }
