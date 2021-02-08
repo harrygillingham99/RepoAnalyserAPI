@@ -25,8 +25,8 @@ namespace RepoAnalyser.API.Controllers
         [HttpGet("token")]
         [SwaggerResponse(200, typeof(TokenUserResponse), Description = "Success getting auth token")]
         [SwaggerResponse(400, typeof(ValidationResponse), Description = "Bad request getting auth token")]
-        [SwaggerResponse(404, typeof(NotFoundResponse),
-            Description = "Error getting auth token, code provided not found")]
+        [SwaggerResponse(401, typeof(UnauthorizedResponse), Description = "No token provided when getting user info")]
+        [SwaggerResponse(404, typeof(NotFoundResponse), Description = "Error getting auth token, code provided not found")]
         [SwaggerResponse(500, typeof(ProblemDetails), Description = "Error getting auth token")]
         public async Task<IActionResult> GetOAuthTokenWithUserInfo(string code, string state)
         {
