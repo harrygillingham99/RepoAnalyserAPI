@@ -57,6 +57,8 @@ namespace RepoAnalyser.API
 
             ServiceRegistry.AddConfigs(services, Configuration);
 
+            ServiceRegistry.AddBackgroundTaskQueue(services);
+
             ServiceRegistry.ScanForAllRemainingRegistrations(services);
         }
 

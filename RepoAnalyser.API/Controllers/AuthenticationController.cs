@@ -1,9 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using NSwag.Annotations;
+using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Responses;
-using RepoAnalyser.Services.Interfaces;
+using RepoAnalyser.SqlServer.DAL;
 
 namespace RepoAnalyser.API.Controllers
 {
@@ -13,7 +14,8 @@ namespace RepoAnalyser.API.Controllers
     {
         private readonly IAuthFacade _authFacade;
 
-        public AuthenticationController(IAuthFacade authFacade)
+        public AuthenticationController(IAuthFacade authFacade, IRepoAnalyserRepository repository,
+            IBackgroundTaskQueue worker) : base(repository, worker)
         {
             _authFacade = authFacade;
         }
@@ -21,7 +23,8 @@ namespace RepoAnalyser.API.Controllers
         [HttpGet("token")]
         [SwaggerResponse(200, typeof(TokenUserResponse), Description = "Success getting auth token")]
         [SwaggerResponse(400, typeof(ValidationResponse), Description = "Bad request getting auth token")]
-        [SwaggerResponse(404, typeof(NotFoundResponse), Description = "Error getting auth token, code provided not found")]
+        [SwaggerResponse(404, typeof(NotFoundResponse),
+            Description = "Error getting auth token, code provided not found")]
         [SwaggerResponse(500, typeof(ProblemDetails), Description = "Error getting auth token")]
         public async Task<IActionResult> GetOAuthTokenWithUserInfo(string code, string state)
         {

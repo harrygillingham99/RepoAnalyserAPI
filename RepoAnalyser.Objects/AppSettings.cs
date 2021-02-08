@@ -2,6 +2,6 @@
 {
     public class AppSettings
     {
-        public string ResponseString { get; set; }
+        public string DatabaseConnectionString { get; set; }
     }
 }

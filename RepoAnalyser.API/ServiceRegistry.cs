@@ -1,6 +1,7 @@
 ﻿using System.CodeDom.Compiler;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.Logic;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.Attributes;
@@ -20,6 +21,12 @@ namespace RepoAnalyser.API
                 .UsingRegistrationStrategy(RegistrationStrategy.Skip)
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
+        }
+
+        public static void AddBackgroundTaskQueue(IServiceCollection services)
+        {
+            services.AddHostedService<BackgroundHostedWorker>();
+            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue.BackgroundTaskQueue>();
         }
 
         public static void AddConfigs(IServiceCollection services, IConfiguration configuration)

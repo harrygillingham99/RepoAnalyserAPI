@@ -28,7 +28,6 @@ namespace RepoAnalyser.Services
         {
             var request = new OauthLoginRequest(_clientId)
             {
-
                 RedirectUri = new Uri(_frontEndRedirectUrl)
             };
             return Task.FromResult(_client.Oauth.GetGitHubLoginUrl(request));
