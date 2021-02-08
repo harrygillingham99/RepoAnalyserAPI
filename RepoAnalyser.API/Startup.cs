@@ -30,7 +30,7 @@ namespace RepoAnalyser.API
                 options.AddPolicy(CorsKey,
                     builder =>
                     {
-                        builder.WithOrigins("https://192.168.0.69:4433", "https://localhost:44306")
+                        builder.WithOrigins("https://192.168.0.69:4433", "http://localhost:3000")
                             .AllowAnyHeader()
                             .AllowAnyMethod()
                             .AllowCredentials();

@@ -9,5 +9,7 @@ namespace RepoAnalyser.Services.Interfaces
         Task<Uri> GetLoginRedirectUrl();
         Task<OauthToken> GetOAuthToken(string code, string state);
 
+        Task<User> GetUserInformation(string token);
+
     }
 }

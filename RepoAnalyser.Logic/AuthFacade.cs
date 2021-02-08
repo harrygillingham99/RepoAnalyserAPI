@@ -1,8 +1,7 @@
 ﻿using System;
-using RepoAnalyser.Services;
 using System.Threading.Tasks;
-using Octokit;
 using RepoAnalyser.Logic.Interfaces;
+using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Exceptions;
 using RepoAnalyser.Services.Interfaces;
 
@@ -19,15 +18,19 @@ namespace RepoAnalyser.Logic
         }
 
 
-        public async Task<string> GetOAuthToken(string code, string state)
+        public async Task<TokenUserResponse> GetOAuthTokenWithUserInfo(string code, string state)
         {
             if (string.IsNullOrWhiteSpace(code)) throw new BadRequestException("No code provided");
 
             var token = await _octoKitAuthServiceAgent.GetOAuthToken(code, state);
 
             if(token == null) throw new NullReferenceException("Token generated was null");
-            
-            return token.AccessToken;
+
+            return new TokenUserResponse
+            {
+                AccessToken = token.AccessToken,
+                User = await _octoKitAuthServiceAgent.GetUserInformation(token.AccessToken)
+            };
         }
 
         public async Task<string> GetLoginRedirectUrl()

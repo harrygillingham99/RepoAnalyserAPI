@@ -9,7 +9,7 @@ namespace RepoAnalyser.API.Helpers
     public static class HeaderMetadataHelper
     {
         public static ClientMetadata GetMetadataFromRequestHeaders(this HttpRequest request) =>
-            JsonConvert.DeserializeObject<ClientMetadata>(request.Headers["Metadata"]);
+            JsonConvert.DeserializeObject<ClientMetadata>(request.Headers["metadata"]);
 
         public static string GetAuthorizationToken(this HttpRequest request) =>
             request.Headers.ContainsKey("Authorization") ? 

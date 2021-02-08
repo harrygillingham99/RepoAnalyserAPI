@@ -1,10 +1,11 @@
 ﻿using System.Threading.Tasks;
+using RepoAnalyser.Objects.API.Responses;
 
 namespace RepoAnalyser.Logic.Interfaces
 {
     public interface IAuthFacade
     {
-        Task<string> GetOAuthToken(string code, string state);
+        Task<TokenUserResponse> GetOAuthTokenWithUserInfo(string code, string state);
         Task<string> GetLoginRedirectUrl();
 
     }

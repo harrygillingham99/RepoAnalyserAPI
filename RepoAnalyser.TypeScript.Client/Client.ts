@@ -59,7 +59,7 @@ export class Client extends AuthorizedApiBase {
     /**
      * @return Success getting auth token
      */
-    authentication_GetOAuthToken(code: string | null, state: string | null): Promise<string> {
+    authentication_GetOAuthTokenWithUserInfo(code: string | null, state: string | null): Promise<TokenUserResponse> {
         let url_ = this.baseUrl + "/auth/token?";
         if (code === undefined)
             throw new Error("The parameter 'code' must be defined.");
@@ -81,18 +81,18 @@ export class Client extends AuthorizedApiBase {
         return this.transformOptions(options_).then(transformedOptions_ => {
             return this.http.fetch(url_, transformedOptions_);
         }).then((_response: Response) => {
-            return this.processAuthentication_GetOAuthToken(_response);
+            return this.processAuthentication_GetOAuthTokenWithUserInfo(_response);
         });
     }
 
-    protected processAuthentication_GetOAuthToken(response: Response): Promise<string> {
+    protected processAuthentication_GetOAuthTokenWithUserInfo(response: Response): Promise<TokenUserResponse> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            result200 = TokenUserResponse.fromJS(resultData200);
             return result200;
             });
         } else if (status === 400) {
@@ -121,7 +121,7 @@ export class Client extends AuthorizedApiBase {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<string>(<any>null);
+        return Promise.resolve<TokenUserResponse>(<any>null);
     }
 
     /**
@@ -183,6 +183,331 @@ export class Client extends AuthorizedApiBase {
         }
         return Promise.resolve<string>(<any>null);
     }
+}
+
+export class TokenUserResponse implements ITokenUserResponse {
+    accessToken?: string | undefined;
+    user?: User | undefined;
+
+    constructor(data?: ITokenUserResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.accessToken = _data["accessToken"];
+            this.user = _data["user"] ? User.fromJS(_data["user"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): TokenUserResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new TokenUserResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["accessToken"] = this.accessToken;
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface ITokenUserResponse {
+    accessToken?: string | undefined;
+    user?: User | undefined;
+}
+
+export abstract class Account implements IAccount {
+    avatarUrl?: string | undefined;
+    bio?: string | undefined;
+    blog?: string | undefined;
+    collaborators?: number | undefined;
+    company?: string | undefined;
+    createdAt?: Date;
+    diskUsage?: number | undefined;
+    email?: string | undefined;
+    followers?: number;
+    following?: number;
+    hireable?: boolean | undefined;
+    htmlUrl?: string | undefined;
+    id?: number;
+    nodeId?: string | undefined;
+    location?: string | undefined;
+    login?: string | undefined;
+    name?: string | undefined;
+    type?: AccountType | undefined;
+    ownedPrivateRepos?: number;
+    plan?: Plan | undefined;
+    privateGists?: number | undefined;
+    publicGists?: number;
+    publicRepos?: number;
+    totalPrivateRepos?: number;
+    url?: string | undefined;
+
+    constructor(data?: IAccount) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.avatarUrl = _data["avatarUrl"];
+            this.bio = _data["bio"];
+            this.blog = _data["blog"];
+            this.collaborators = _data["collaborators"];
+            this.company = _data["company"];
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
+            this.diskUsage = _data["diskUsage"];
+            this.email = _data["email"];
+            this.followers = _data["followers"];
+            this.following = _data["following"];
+            this.hireable = _data["hireable"];
+            this.htmlUrl = _data["htmlUrl"];
+            this.id = _data["id"];
+            this.nodeId = _data["nodeId"];
+            this.location = _data["location"];
+            this.login = _data["login"];
+            this.name = _data["name"];
+            this.type = _data["type"];
+            this.ownedPrivateRepos = _data["ownedPrivateRepos"];
+            this.plan = _data["plan"] ? Plan.fromJS(_data["plan"]) : <any>undefined;
+            this.privateGists = _data["privateGists"];
+            this.publicGists = _data["publicGists"];
+            this.publicRepos = _data["publicRepos"];
+            this.totalPrivateRepos = _data["totalPrivateRepos"];
+            this.url = _data["url"];
+        }
+    }
+
+    static fromJS(data: any): Account {
+        data = typeof data === 'object' ? data : {};
+        throw new Error("The abstract class 'Account' cannot be instantiated.");
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["avatarUrl"] = this.avatarUrl;
+        data["bio"] = this.bio;
+        data["blog"] = this.blog;
+        data["collaborators"] = this.collaborators;
+        data["company"] = this.company;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["diskUsage"] = this.diskUsage;
+        data["email"] = this.email;
+        data["followers"] = this.followers;
+        data["following"] = this.following;
+        data["hireable"] = this.hireable;
+        data["htmlUrl"] = this.htmlUrl;
+        data["id"] = this.id;
+        data["nodeId"] = this.nodeId;
+        data["location"] = this.location;
+        data["login"] = this.login;
+        data["name"] = this.name;
+        data["type"] = this.type;
+        data["ownedPrivateRepos"] = this.ownedPrivateRepos;
+        data["plan"] = this.plan ? this.plan.toJSON() : <any>undefined;
+        data["privateGists"] = this.privateGists;
+        data["publicGists"] = this.publicGists;
+        data["publicRepos"] = this.publicRepos;
+        data["totalPrivateRepos"] = this.totalPrivateRepos;
+        data["url"] = this.url;
+        return data; 
+    }
+}
+
+export interface IAccount {
+    avatarUrl?: string | undefined;
+    bio?: string | undefined;
+    blog?: string | undefined;
+    collaborators?: number | undefined;
+    company?: string | undefined;
+    createdAt?: Date;
+    diskUsage?: number | undefined;
+    email?: string | undefined;
+    followers?: number;
+    following?: number;
+    hireable?: boolean | undefined;
+    htmlUrl?: string | undefined;
+    id?: number;
+    nodeId?: string | undefined;
+    location?: string | undefined;
+    login?: string | undefined;
+    name?: string | undefined;
+    type?: AccountType | undefined;
+    ownedPrivateRepos?: number;
+    plan?: Plan | undefined;
+    privateGists?: number | undefined;
+    publicGists?: number;
+    publicRepos?: number;
+    totalPrivateRepos?: number;
+    url?: string | undefined;
+}
+
+export class User extends Account implements IUser {
+    permissions?: RepositoryPermissions | undefined;
+    siteAdmin?: boolean;
+    suspendedAt?: Date | undefined;
+    suspended?: boolean;
+    ldapDistinguishedName?: string | undefined;
+    updatedAt?: Date;
+
+    constructor(data?: IUser) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.permissions = _data["permissions"] ? RepositoryPermissions.fromJS(_data["permissions"]) : <any>undefined;
+            this.siteAdmin = _data["siteAdmin"];
+            this.suspendedAt = _data["suspendedAt"] ? new Date(_data["suspendedAt"].toString()) : <any>undefined;
+            this.suspended = _data["suspended"];
+            this.ldapDistinguishedName = _data["ldapDistinguishedName"];
+            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): User {
+        data = typeof data === 'object' ? data : {};
+        let result = new User();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["permissions"] = this.permissions ? this.permissions.toJSON() : <any>undefined;
+        data["siteAdmin"] = this.siteAdmin;
+        data["suspendedAt"] = this.suspendedAt ? this.suspendedAt.toISOString() : <any>undefined;
+        data["suspended"] = this.suspended;
+        data["ldapDistinguishedName"] = this.ldapDistinguishedName;
+        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IUser extends IAccount {
+    permissions?: RepositoryPermissions | undefined;
+    siteAdmin?: boolean;
+    suspendedAt?: Date | undefined;
+    suspended?: boolean;
+    ldapDistinguishedName?: string | undefined;
+    updatedAt?: Date;
+}
+
+export class RepositoryPermissions implements IRepositoryPermissions {
+    admin?: boolean;
+    push?: boolean;
+    pull?: boolean;
+
+    constructor(data?: IRepositoryPermissions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.admin = _data["admin"];
+            this.push = _data["push"];
+            this.pull = _data["pull"];
+        }
+    }
+
+    static fromJS(data: any): RepositoryPermissions {
+        data = typeof data === 'object' ? data : {};
+        let result = new RepositoryPermissions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["admin"] = this.admin;
+        data["push"] = this.push;
+        data["pull"] = this.pull;
+        return data; 
+    }
+}
+
+export interface IRepositoryPermissions {
+    admin?: boolean;
+    push?: boolean;
+    pull?: boolean;
+}
+
+export enum AccountType {
+    User = 0,
+    Organization = 1,
+    Bot = 2,
+}
+
+export class Plan implements IPlan {
+    collaborators?: number;
+    name?: string | undefined;
+    privateRepos?: number;
+    space?: number;
+    billingEmail?: string | undefined;
+
+    constructor(data?: IPlan) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.collaborators = _data["collaborators"];
+            this.name = _data["name"];
+            this.privateRepos = _data["privateRepos"];
+            this.space = _data["space"];
+            this.billingEmail = _data["billingEmail"];
+        }
+    }
+
+    static fromJS(data: any): Plan {
+        data = typeof data === 'object' ? data : {};
+        let result = new Plan();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["collaborators"] = this.collaborators;
+        data["name"] = this.name;
+        data["privateRepos"] = this.privateRepos;
+        data["space"] = this.space;
+        data["billingEmail"] = this.billingEmail;
+        return data; 
+    }
+}
+
+export interface IPlan {
+    collaborators?: number;
+    name?: string | undefined;
+    privateRepos?: number;
+    space?: number;
+    billingEmail?: string | undefined;
 }
 
 export abstract class BaseResponse implements IBaseResponse {
