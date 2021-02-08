@@ -187,11 +187,16 @@ namespace RepoAnalyser.API.Controllers
         private void QueueInsertingRequestAudit(long elapsedMilliseconds, ClientMetadata metadata,
             string requestedEndpoint)
         {
-            if(!_requestLogging) return;
-            
-            _backgroundTaskQueue.QueueBackgroundWorkItem(token =>
-                _repoAnalyserRepository.InsertRequestAudit(metadata,
-                    elapsedMilliseconds, requestedEndpoint));
+            if (_requestLogging)
+            {
+                _backgroundTaskQueue.QueueBackgroundWorkItem(token =>
+                    _repoAnalyserRepository.InsertRequestAudit(metadata,
+                        elapsedMilliseconds, requestedEndpoint));
+            }
+            else
+            {
+                Debug.WriteLine($"****Requested {requestedEndpoint}, It took {elapsedMilliseconds}ms to respond.****");
+            }
         }
     }
 }
