@@ -30,7 +30,7 @@ namespace RepoAnalyser.API.Controllers
         [SwaggerResponse(500, typeof(ProblemDetails), Description = "Error getting auth token")]
         public async Task<IActionResult> GetOAuthTokenWithUserInfo(string code, string state)
         {
-            return await ExecuteAndMapToActionResultAsync(() =>
+            return await ExecuteAndMapToActionResult(() =>
                 _authFacade.GetOAuthTokenWithUserInfo(code, state)
             );
         }
@@ -42,7 +42,7 @@ namespace RepoAnalyser.API.Controllers
         [SwaggerResponse(500, typeof(ProblemDetails), Description = "Error getting redirect url")]
         public async Task<IActionResult> GetLoginRedirectUrl()
         {
-            return await ExecuteAndMapToActionResultAsync(() =>
+            return await ExecuteAndMapToActionResult(() =>
                 _authFacade.GetLoginRedirectUrl());
         }
     }

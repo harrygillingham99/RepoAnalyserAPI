@@ -31,7 +31,7 @@ namespace RepoAnalyser.API.Controllers
             _requestLogging = options.Value.RequestLogging;
         }
 
-        protected async Task<IActionResult> ExecuteAndMapToActionResultAsync<T>(Func<Task<T>> request)
+        protected async Task<IActionResult> ExecuteAndMapToActionResult<T>(Func<Task<T>> request)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace RepoAnalyser.API.Controllers
             }
         }
 
-        protected async Task<T> ExecuteAsync<T>(Func<Task<T>> request)
+        protected async Task<T> ExecuteAndReturn<T>(Func<Task<T>> request)
         {
             try
             {
@@ -107,82 +107,6 @@ namespace RepoAnalyser.API.Controllers
             }
         }
 
-        protected T Execute<T>(Func<T> request)
-        {
-            try
-            {
-                _stopwatch.Start();
-                return request.Invoke();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex.Message, ex);
-                throw;
-            }
-            finally
-            {
-                _stopwatch.Stop();
-                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds, HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
-            }
-        }
-
-        protected IActionResult ExecuteAndMapToActionResult<T>(Func<T> request)
-        {
-            try
-            {
-                _stopwatch.Start();
-
-                var response = request.Invoke();
-
-                return response switch
-                {
-                    null => throw new NullReferenceException(),
-
-                    Exception errorResponse => throw errorResponse,
-
-                    _ => Ok(response)
-                };
-            }
-            catch (NullReferenceException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return NotFound(new NotFoundResponse
-                {
-                    Message = ex.Message,
-                    Title = ex.GetType().Name,
-                    BadProperties = new Dictionary<string, string>()
-                });
-            }
-            catch (UnauthorizedRequestException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return Unauthorized(new UnauthorizedResponse
-                {
-                    Message = ex.Message,
-                    Title = ex.GetType().Name
-                });
-            }
-            catch (ValidationException ex)
-            {
-                Log.Error(ex, $"Bad Request: {ex.Message}");
-                return BadRequest(new ValidationResponse
-                {
-                    Message = ex.Message,
-                    Title = ex.GetType().Name,
-                    ValidationErrors = new Dictionary<string, string>()
-                });
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, ex.Message);
-                return Problem(ex.Message, statusCode: 500, title: ex.GetType().Name);
-            }
-            finally
-            {
-                _stopwatch.Stop();
-                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds, HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
-            }
-        }
         //Doing some performance/debug request logging when deployed on home server, handy to know when react is spamming the backend
         private void QueueInsertingRequestAudit(long elapsedMilliseconds, ClientMetadata metadata,
             string requestedEndpoint)
