@@ -4,8 +4,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.API.Helpers;
+using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Exceptions;
 using RepoAnalyser.SqlServer.DAL;
@@ -18,12 +21,14 @@ namespace RepoAnalyser.API.Controllers
         private readonly IBackgroundTaskQueue _backgroundTaskQueue;
         private readonly IRepoAnalyserRepository _repoAnalyserRepository;
         private readonly Stopwatch _stopwatch;
+        private readonly bool _requestLogging;
 
-        public BaseController(IRepoAnalyserRepository repoAnalyserRepository, IBackgroundTaskQueue backgroundTaskQueue)
+        public BaseController(IRepoAnalyserRepository repoAnalyserRepository, IBackgroundTaskQueue backgroundTaskQueue, IOptions<AppSettings> options)
         {
             _repoAnalyserRepository = repoAnalyserRepository;
             _backgroundTaskQueue = backgroundTaskQueue;
             _stopwatch = new Stopwatch();
+            _requestLogging = options.Value.RequestLogging;
         }
 
         protected async Task<IActionResult> ExecuteAndMapToActionResultAsync<T>(Func<Task<T>> request)
@@ -78,8 +83,8 @@ namespace RepoAnalyser.API.Controllers
             finally
             {
                 _stopwatch.Stop();
-                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds);
-               
+                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds, HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
+
             }
         }
 
@@ -98,7 +103,7 @@ namespace RepoAnalyser.API.Controllers
             finally
             {
                 _stopwatch.Stop();
-                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds);
+                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds, HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
             }
         }
 
@@ -117,7 +122,7 @@ namespace RepoAnalyser.API.Controllers
             finally
             {
                 _stopwatch.Stop();
-                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds);
+                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds, HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
             }
         }
 
@@ -175,13 +180,18 @@ namespace RepoAnalyser.API.Controllers
             finally
             {
                 _stopwatch.Stop();
-                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds);
+                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds, HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
             }
         }
-
-        private void QueueInsertingRequestAudit(long elapsedMilliseconds) => 
+        //Doing some performance/debug request logging when deployed on home server
+        private void QueueInsertingRequestAudit(long elapsedMilliseconds, ClientMetadata metadata,
+            string requestedEndpoint)
+        {
+            if(!_requestLogging) return;
+            
             _backgroundTaskQueue.QueueBackgroundWorkItem(token =>
-            _repoAnalyserRepository.InsertRequestAudit(HttpContext.Request.GetMetadataFromRequestHeaders(),
-                elapsedMilliseconds, HttpContext.Request.Path.Value));
+                _repoAnalyserRepository.InsertRequestAudit(metadata,
+                    elapsedMilliseconds, requestedEndpoint));
+        }
     }
 }

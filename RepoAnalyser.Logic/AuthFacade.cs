@@ -7,7 +7,6 @@ using RepoAnalyser.Services.Interfaces;
 
 namespace RepoAnalyser.Logic
 {
-    //TODO: hook up to DAL and store these tokens
     public class AuthFacade : IAuthFacade
     {
         private readonly IOctoKitAuthServiceAgent _octoKitAuthServiceAgent;
@@ -16,7 +15,6 @@ namespace RepoAnalyser.Logic
         {
             _octoKitAuthServiceAgent = octoKitAuthServiceAgent;
         }
-
 
         public async Task<TokenUserResponse> GetOAuthTokenWithUserInfo(string code, string state)
         {

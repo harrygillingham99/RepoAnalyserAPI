@@ -10,18 +10,16 @@ namespace RepoAnalyser.API.BackgroundTaskQueue
     [ScrutorIgnore]
     public class BackgroundHostedWorker : BackgroundService
     {
+        private readonly IBackgroundTaskQueue _taskQueue;
 
         public BackgroundHostedWorker(IBackgroundTaskQueue taskQueue)
         {
-            TaskQueue = taskQueue;
+            _taskQueue = taskQueue;
         }
-
-        public IBackgroundTaskQueue TaskQueue { get; }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            Log.Information(
-                "Background Hosted Service is running.");
+            Log.Information("Background Hosted Service is running.");
 
             await BackgroundProcessing(stoppingToken);
         }
@@ -31,7 +29,7 @@ namespace RepoAnalyser.API.BackgroundTaskQueue
             while (!stoppingToken.IsCancellationRequested)
             {
                 var workItem =
-                    await TaskQueue.DequeueAsync(stoppingToken);
+                    await _taskQueue.DequeueAsync(stoppingToken);
 
                 try
                 {

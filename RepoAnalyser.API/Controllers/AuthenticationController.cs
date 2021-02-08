@@ -1,8 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using NSwag.Annotations;
 using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
+using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.SqlServer.DAL;
 
@@ -15,7 +17,7 @@ namespace RepoAnalyser.API.Controllers
         private readonly IAuthFacade _authFacade;
 
         public AuthenticationController(IAuthFacade authFacade, IRepoAnalyserRepository repository,
-            IBackgroundTaskQueue worker) : base(repository, worker)
+            IBackgroundTaskQueue worker, IOptions<AppSettings> options) : base(repository, worker, options)
         {
             _authFacade = authFacade;
         }
