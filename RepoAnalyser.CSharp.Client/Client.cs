@@ -86,9 +86,10 @@ namespace NetCore31ApiTemplate.Client
         public async System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/auth/token/{code}/{state}");
-            urlBuilder_.Replace("{code}", System.Uri.EscapeDataString(ConvertToString(code, System.Globalization.CultureInfo.InvariantCulture)));
-            urlBuilder_.Replace("{state}", System.Uri.EscapeDataString(ConvertToString(state, System.Globalization.CultureInfo.InvariantCulture)));
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/auth/token?");
+            urlBuilder_.Append(System.Uri.EscapeDataString("code") + "=").Append(System.Uri.EscapeDataString(code != null ? ConvertToString(code, System.Globalization.CultureInfo.InvariantCulture) : "")).Append("&");
+            urlBuilder_.Append(System.Uri.EscapeDataString("state") + "=").Append(System.Uri.EscapeDataString(state != null ? ConvertToString(state, System.Globalization.CultureInfo.InvariantCulture) : "")).Append("&");
+            urlBuilder_.Length--;
     
             var client_ = _httpClient;
             var disposeClient_ = false;

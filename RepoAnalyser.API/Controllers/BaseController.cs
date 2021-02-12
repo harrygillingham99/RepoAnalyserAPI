@@ -19,10 +19,11 @@ namespace RepoAnalyser.API.Controllers
     {
         private readonly IBackgroundTaskQueue _backgroundTaskQueue;
         private readonly IRepoAnalyserRepository _repoAnalyserRepository;
-        private readonly Stopwatch _stopwatch;
         private readonly bool _requestLogging;
+        private readonly Stopwatch _stopwatch;
 
-        public BaseController(IRepoAnalyserRepository repoAnalyserRepository, IBackgroundTaskQueue backgroundTaskQueue, IOptions<AppSettings> options)
+        public BaseController(IRepoAnalyserRepository repoAnalyserRepository, IBackgroundTaskQueue backgroundTaskQueue,
+            IOptions<AppSettings> options)
         {
             _repoAnalyserRepository = repoAnalyserRepository;
             _backgroundTaskQueue = backgroundTaskQueue;
@@ -82,8 +83,8 @@ namespace RepoAnalyser.API.Controllers
             finally
             {
                 _stopwatch.Stop();
-                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds, HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
-
+                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds,
+                    HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
             }
         }
 
@@ -102,7 +103,8 @@ namespace RepoAnalyser.API.Controllers
             finally
             {
                 _stopwatch.Stop();
-                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds, HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
+                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds,
+                    HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
             }
         }
 
@@ -110,16 +112,15 @@ namespace RepoAnalyser.API.Controllers
         private void QueueInsertingRequestAudit(long elapsedMilliseconds, ClientMetadata metadata,
             string requestedEndpoint)
         {
-            if (_requestLogging)
+            if (metadata != null && _requestLogging)
             {
                 _backgroundTaskQueue.QueueBackgroundWorkItem(token =>
                     _repoAnalyserRepository.InsertRequestAudit(metadata,
                         elapsedMilliseconds, requestedEndpoint));
             }
             else
-            {
-                Debug.WriteLine($"****Requested {requestedEndpoint}, It took {elapsedMilliseconds}ms to respond.****");
-            }
+                Debug.WriteLine(
+                    $"****Requested {requestedEndpoint}, It took {elapsedMilliseconds}ms to respond.****");
         }
     }
 }
