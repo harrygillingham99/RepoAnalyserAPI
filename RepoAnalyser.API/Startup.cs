@@ -7,20 +7,19 @@ using Microsoft.Extensions.Hosting;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using RepoAnalyser.API.NSwag;
-using Serilog;
 
 namespace RepoAnalyser.API
 {
     public class Startup
     {
-        private const string CorsKey = "Policy";
+        private const string CorsKey = "_policy";
         private static readonly string[] AllowedOrigins =  { "https://192.168.0.69:4433", "http://localhost:3000", "https://server.local:4433"};
+        private readonly IConfiguration _configuration;
+
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
         }
-
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -32,7 +31,8 @@ namespace RepoAnalyser.API
                 options.AddPolicy(CorsKey,
                     builder =>
                     {
-                        builder.WithOrigins(AllowedOrigins)
+                        builder
+                            .WithOrigins(AllowedOrigins)
                             .AllowAnyHeader()
                             .AllowAnyMethod()
                             .AllowCredentials();
@@ -57,7 +57,7 @@ namespace RepoAnalyser.API
                 configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("GitHub Token"));
             });
 
-            ServiceRegistry.AddConfigs(services, Configuration);
+            ServiceRegistry.AddConfigs(services, _configuration);
 
             ServiceRegistry.AddBackgroundTaskQueue(services);
 

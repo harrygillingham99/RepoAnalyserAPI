@@ -6,7 +6,6 @@ using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Responses;
-using RepoAnalyser.SqlServer.DAL;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 
 namespace RepoAnalyser.API.Controllers

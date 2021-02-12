@@ -10,7 +10,6 @@ using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Exceptions;
-using RepoAnalyser.SqlServer.DAL;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 using Serilog;
 
