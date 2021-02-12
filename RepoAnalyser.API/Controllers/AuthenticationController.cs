@@ -7,6 +7,7 @@ using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.SqlServer.DAL;
+using RepoAnalyser.SqlServer.DAL.Interfaces;
 
 namespace RepoAnalyser.API.Controllers
 {
@@ -16,7 +17,7 @@ namespace RepoAnalyser.API.Controllers
     {
         private readonly IAuthFacade _authFacade;
 
-        public AuthenticationController(IAuthFacade authFacade, IRepoAnalyserRepository repository,
+        public AuthenticationController(IAuthFacade authFacade, IRepoAnalyserAuditRepository repository,
             IBackgroundTaskQueue worker, IOptions<AppSettings> options) : base(repository, worker, options)
         {
             _authFacade = authFacade;
@@ -28,9 +29,9 @@ namespace RepoAnalyser.API.Controllers
         [SwaggerResponse(401, typeof(UnauthorizedResponse), Description = "No token provided when getting user info")]
         [SwaggerResponse(404, typeof(NotFoundResponse), Description = "Error getting auth token, code provided not found")]
         [SwaggerResponse(500, typeof(ProblemDetails), Description = "Error getting auth token")]
-        public async Task<IActionResult> GetOAuthTokenWithUserInfo(string code, string state)
+        public Task<IActionResult> GetOAuthTokenWithUserInfo(string code, string state)
         {
-            return await ExecuteAndMapToActionResult(() =>
+            return ExecuteAndMapToActionResult(() =>
                 _authFacade.GetOAuthTokenWithUserInfo(code, state)
             );
         }
@@ -40,9 +41,9 @@ namespace RepoAnalyser.API.Controllers
         [SwaggerResponse(400, typeof(ValidationResponse), Description = "Bad request getting redirect url")]
         [SwaggerResponse(404, typeof(NotFoundResponse), Description = "Error getting redirect url")]
         [SwaggerResponse(500, typeof(ProblemDetails), Description = "Error getting redirect url")]
-        public async Task<IActionResult> GetLoginRedirectUrl()
+        public Task<IActionResult> GetLoginRedirectUrl()
         {
-            return await ExecuteAndMapToActionResult(() =>
+            return ExecuteAndMapToActionResult(() =>
                 _authFacade.GetLoginRedirectUrl());
         }
     }

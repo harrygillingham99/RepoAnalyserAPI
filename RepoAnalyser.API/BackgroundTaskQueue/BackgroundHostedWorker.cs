@@ -17,11 +17,11 @@ namespace RepoAnalyser.API.BackgroundTaskQueue
             _taskQueue = taskQueue;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             Log.Information("Background Hosted Service is running.");
 
-            await BackgroundProcessing(stoppingToken);
+            return BackgroundProcessing(stoppingToken);
         }
 
         private async Task BackgroundProcessing(CancellationToken stoppingToken)
@@ -43,11 +43,11 @@ namespace RepoAnalyser.API.BackgroundTaskQueue
             }
         }
 
-        public override async Task StopAsync(CancellationToken stoppingToken)
+        public override Task StopAsync(CancellationToken stoppingToken)
         {
             Log.Information("Background Hosted Service is stopping.");
 
-            await base.StopAsync(stoppingToken);
+            return base.StopAsync(stoppingToken);
         }
     }
 }

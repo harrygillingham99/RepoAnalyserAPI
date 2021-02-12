@@ -16,7 +16,7 @@ namespace RepoAnalyser.API
         public static void ScanForAllRemainingRegistrations(IServiceCollection services)
         {
             services.Scan(scan => scan
-                .FromAssembliesOf(typeof(Startup), typeof(OctoKitAuthServiceAgent), typeof(RepoAnalyserRepository), typeof(AuthFacade))
+                .FromAssembliesOf(typeof(Startup), typeof(OctoKitAuthServiceAgent), typeof(RepoAnalyserAuditRepository), typeof(AuthFacade))
                 .AddClasses(x => x.WithoutAttribute(typeof(GeneratedCodeAttribute)).WithoutAttribute(typeof(ScrutorIgnoreAttribute)))
                 .UsingRegistrationStrategy(RegistrationStrategy.Skip)
                 .AsImplementedInterfaces()

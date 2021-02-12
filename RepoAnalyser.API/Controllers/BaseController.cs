@@ -11,6 +11,7 @@ using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Exceptions;
 using RepoAnalyser.SqlServer.DAL;
+using RepoAnalyser.SqlServer.DAL.Interfaces;
 using Serilog;
 
 namespace RepoAnalyser.API.Controllers
@@ -18,14 +19,14 @@ namespace RepoAnalyser.API.Controllers
     public class BaseController : ControllerBase
     {
         private readonly IBackgroundTaskQueue _backgroundTaskQueue;
-        private readonly IRepoAnalyserRepository _repoAnalyserRepository;
+        private readonly IRepoAnalyserAuditRepository _auditRepository;
         private readonly bool _requestLogging;
         private readonly Stopwatch _stopwatch;
 
-        public BaseController(IRepoAnalyserRepository repoAnalyserRepository, IBackgroundTaskQueue backgroundTaskQueue,
+        public BaseController(IRepoAnalyserAuditRepository repoAnalyserRepository, IBackgroundTaskQueue backgroundTaskQueue,
             IOptions<AppSettings> options)
         {
-            _repoAnalyserRepository = repoAnalyserRepository;
+            _auditRepository = repoAnalyserRepository;
             _backgroundTaskQueue = backgroundTaskQueue;
             _stopwatch = new Stopwatch();
             _requestLogging = options.Value.RequestLogging;
@@ -39,7 +40,7 @@ namespace RepoAnalyser.API.Controllers
                 var response = await request.Invoke();
                 return response switch
                 {
-                    null => throw new NullReferenceException("Thing not found"),
+                    null => throw new NullReferenceException($"null response from {request.Method.Name}"),
 
                     Exception errorResponse => throw errorResponse,
 
@@ -115,7 +116,7 @@ namespace RepoAnalyser.API.Controllers
             if (metadata != null && _requestLogging)
             {
                 _backgroundTaskQueue.QueueBackgroundWorkItem(token =>
-                    _repoAnalyserRepository.InsertRequestAudit(metadata,
+                    _auditRepository.InsertRequestAudit(metadata,
                         elapsedMilliseconds, requestedEndpoint));
             }
             else

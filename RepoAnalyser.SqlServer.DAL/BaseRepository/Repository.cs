@@ -1,10 +1,10 @@
-﻿using Serilog;
-using System;
+﻿using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
+using Serilog;
 
-namespace RepoAnalyser.SqlServer.DAL
+namespace RepoAnalyser.SqlServer.DAL.BaseRepository
 {
     public abstract class Repository
     {
@@ -25,7 +25,7 @@ namespace RepoAnalyser.SqlServer.DAL
             }
             catch (Exception ex)
             {
-                var exceptionMsg = $"{GetType().FullName}.ExecuteFunc experienced a {ex.GetType()}";
+                var exceptionMsg = $"{GetType().FullName}.Invoke experienced a {ex.GetType()}";
                 Log.Error(ex, exceptionMsg);
                 throw new Exception(exceptionMsg, ex);
             }

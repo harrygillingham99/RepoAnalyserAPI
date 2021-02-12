@@ -33,22 +33,22 @@ namespace RepoAnalyser.Services
             return Task.FromResult(_client.Oauth.GetGitHubLoginUrl(request));
         }
 
-        public async Task<OauthToken> GetOAuthToken(string code, string state)
+        public Task<OauthToken> GetOAuthToken(string code, string state)
         {
             if (string.IsNullOrEmpty(code)) throw new NullReferenceException("code parameter was null");
 
             var request = new OauthTokenRequest(_clientId, _clientSecret, code);
 
-            return (await _client.Oauth.CreateAccessToken(request));
+            return _client.Oauth.CreateAccessToken(request);
         }
 
-        public async Task<User> GetUserInformation(string token)
+        public Task<User> GetUserInformation(string token)
         {
             if (string.IsNullOrEmpty(token)) throw new UnauthorizedRequestException("no token provided");
 
             _client.Connection.Credentials = new Credentials(token);
 
-            return await _client.User.Current();
+            return _client.User.Current();
         }
     }
 }

@@ -22,7 +22,7 @@ namespace RepoAnalyser.Logic
 
             var token = await _octoKitAuthServiceAgent.GetOAuthToken(code, state);
 
-            if(token == null) throw new NullReferenceException("Token generated was null");
+            if(token == null || string.IsNullOrWhiteSpace(token.AccessToken)) throw new NullReferenceException("Token generated was null");
 
             return new TokenUserResponse
             {
