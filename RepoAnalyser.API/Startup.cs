@@ -13,7 +13,8 @@ namespace RepoAnalyser.API
 {
     public class Startup
     {
-        public const string CorsKey = "Policy";
+        private const string CorsKey = "Policy";
+        private static readonly string[] AllowedOrigins =  { "https://192.168.0.69:4433", "http://localhost:3000", "https://server.local:4433"};
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -31,7 +32,7 @@ namespace RepoAnalyser.API
                 options.AddPolicy(CorsKey,
                     builder =>
                     {
-                        builder.WithOrigins("https://192.168.0.69:4433", "http://localhost:3000")
+                        builder.WithOrigins(AllowedOrigins)
                             .AllowAnyHeader()
                             .AllowAnyMethod()
                             .AllowCredentials();
