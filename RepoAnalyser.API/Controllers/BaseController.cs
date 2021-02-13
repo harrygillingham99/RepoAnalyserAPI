@@ -22,10 +22,10 @@ namespace RepoAnalyser.API.Controllers
         private readonly bool _requestLogging;
         private readonly Stopwatch _stopwatch;
 
-        public BaseController(IRepoAnalyserAuditRepository repoAnalyserRepository, IBackgroundTaskQueue backgroundTaskQueue,
+        public BaseController(IRepoAnalyserAuditRepository auditRepository, IBackgroundTaskQueue backgroundTaskQueue,
             IOptions<AppSettings> options)
         {
-            _auditRepository = repoAnalyserRepository;
+            _auditRepository = auditRepository;
             _backgroundTaskQueue = backgroundTaskQueue;
             _stopwatch = new Stopwatch();
             _requestLogging = options.Value.RequestLogging;

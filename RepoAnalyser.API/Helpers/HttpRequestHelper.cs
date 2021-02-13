@@ -14,17 +14,17 @@ namespace RepoAnalyser.API.Helpers
 
         public static ClientMetadata GetMetadataFromRequestHeaders(this HttpRequest request)
         {
-            var header = TryGetHeaderValue<ClientMetadata>(MetadataKey, true, request);
+            var header = TryGetHeaderValue<ClientMetadata>(MetadataKey, request, true);
             return header;
         }
 
         public static string GetAuthorizationToken(this HttpRequest request)
         {
-            var header = TryGetHeaderValue<string>(AuthorizationKey, false, request);
+            var header = TryGetHeaderValue<string>(AuthorizationKey, request);
             return header ?? throw new UnauthorizedRequestException("No Authorization token provided.");
         }
 
-        private static T TryGetHeaderValue<T>(string key, bool isJson, HttpRequest request)
+        private static T TryGetHeaderValue<T>(string key, HttpRequest request, bool isJson = false)
         {
             var hasHeader = request.Headers.TryGetValue(key, out var headerValues);
 

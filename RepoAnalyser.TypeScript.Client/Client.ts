@@ -60,15 +60,13 @@ export class Client extends AuthorizedApiBase {
      * @return Success getting auth token
      */
     authentication_GetOAuthTokenWithUserInfo(code: string | null, state: string | null): Promise<TokenUserResponse> {
-        let url_ = this.baseUrl + "/auth/token?";
-        if (code === undefined)
+        let url_ = this.baseUrl + "/auth/token/{code}/{state}";
+        if (code === undefined || code === null)
             throw new Error("The parameter 'code' must be defined.");
-        else if(code !== null)
-            url_ += "code=" + encodeURIComponent("" + code) + "&";
-        if (state === undefined)
+        url_ = url_.replace("{code}", encodeURIComponent("" + code));
+        if (state === undefined || state === null)
             throw new Error("The parameter 'state' must be defined.");
-        else if(state !== null)
-            url_ += "state=" + encodeURIComponent("" + state) + "&";
+        url_ = url_.replace("{state}", encodeURIComponent("" + state));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
