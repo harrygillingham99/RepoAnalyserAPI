@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Octokit;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.Constants;
 using RepoAnalyser.Objects.Exceptions;
 using RepoAnalyser.Services.Interfaces;
 using OauthLoginRequest = Octokit.OauthLoginRequest;
@@ -28,8 +30,10 @@ namespace RepoAnalyser.Services
         {
             var request = new OauthLoginRequest(_clientId)
             {
-                RedirectUri = new Uri(_frontEndRedirectUrl)
+                RedirectUri = new Uri(_frontEndRedirectUrl),
+                Scopes = { "read:user", "repo", "security_events", "gist", "notifications" }
             };
+
             return Task.FromResult(_client.Oauth.GetGitHubLoginUrl(request));
         }
 
