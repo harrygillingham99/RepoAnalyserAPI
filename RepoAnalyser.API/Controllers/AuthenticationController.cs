@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NSwag.Annotations;
+using Octokit;
 using RepoAnalyser.API.BackgroundTaskQueue;
+using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Responses;
@@ -44,6 +46,20 @@ namespace RepoAnalyser.API.Controllers
         {
             return ExecuteAndMapToActionResult(() =>
                 _authFacade.GetLoginRedirectUrl());
+        }
+
+        [HttpGet("user-info")]
+        [SwaggerResponse(200, typeof(User), Description = "Success getting user info")]
+        [SwaggerResponse(401, typeof(UnauthorizedResponse), Description = "No token provided")]
+        [SwaggerResponse(404, typeof(NotFoundResponse), Description = "User not found")]
+        [SwaggerResponse(500, typeof(ProblemDetails), Description = "Error getting user")]
+        public Task<IActionResult> GetUserInformationForToken()
+        {
+            return ExecuteAndMapToActionResult(() =>
+            {
+                var token = HttpContext.Request.GetAuthorizationToken();
+                return _authFacade.GetUserInformation(token);
+            });
         }
     }
 }

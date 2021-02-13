@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Octokit;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Exceptions;
@@ -38,6 +39,15 @@ namespace RepoAnalyser.Logic
             if (urlResult == null) throw new NullReferenceException("Returned URL is null");
 
             return urlResult.AbsoluteUri;
+        }
+
+        public async Task<User> GetUserInformation(string token)
+        {
+            var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
+
+            if(user == null) throw new NullReferenceException("User was null");
+
+            return user;
         }
     }
 }
