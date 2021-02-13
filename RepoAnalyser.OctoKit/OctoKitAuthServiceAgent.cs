@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Octokit;
 using RepoAnalyser.Objects;
-using RepoAnalyser.Objects.Constants;
 using RepoAnalyser.Objects.Exceptions;
 using RepoAnalyser.Services.Interfaces;
 using OauthLoginRequest = Octokit.OauthLoginRequest;
