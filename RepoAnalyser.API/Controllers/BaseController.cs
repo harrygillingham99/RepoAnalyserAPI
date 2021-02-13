@@ -83,7 +83,7 @@ namespace RepoAnalyser.API.Controllers
             finally
             {
                 _stopwatch.Stop();
-                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds,
+                RequestAudit(_stopwatch.ElapsedMilliseconds,
                     HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
             }
         }
@@ -103,13 +103,13 @@ namespace RepoAnalyser.API.Controllers
             finally
             {
                 _stopwatch.Stop();
-                QueueInsertingRequestAudit(_stopwatch.ElapsedMilliseconds,
+                RequestAudit(_stopwatch.ElapsedMilliseconds,
                     HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
             }
         }
 
         //Doing some performance/debug request logging when deployed on home server, handy to know when react is spamming the backend
-        private void QueueInsertingRequestAudit(long elapsedMilliseconds, ClientMetadata metadata,
+        private void RequestAudit(long elapsedMilliseconds, ClientMetadata metadata,
             string requestedEndpoint)
         {
             if (metadata != null && _requestLogging)
