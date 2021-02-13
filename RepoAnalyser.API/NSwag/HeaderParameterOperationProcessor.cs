@@ -20,7 +20,7 @@ namespace RepoAnalyser.API.NSwag
                     Type = JsonObjectType.Object,
                     IsRequired = false,
                     Description = "ClientMetadata",
-                    Default = new ClientMetadata()
+                    Default = null
                 });
 
             return true;
