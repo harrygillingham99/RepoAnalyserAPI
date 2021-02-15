@@ -2,7 +2,6 @@
 using Dapper;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Objects;
-using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.SqlServer.DAL.BaseRepository;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 using RepoAnalyser.SqlServer.DAL.SQL;
@@ -16,19 +15,19 @@ namespace RepoAnalyser.SqlServer.DAL
 
         }
 
-        public Task InsertRequestAudit(ClientMetadata requester, long executionTime, string requestedEndpoint)
+        public Task InsertRequestAudit(RequestAudit audit)
         {
             return Invoke(connection => connection.ExecuteAsync(Sql.InsertAuditItemSql,
                  new
                  {
-                     requester.BrowserEngine,
-                     requester.BrowserLanguage,
-                     requester.BrowserName,
-                     requester.CookiesEnabled,
-                     requester.Page,
-                     requester.Referrer,
-                     RequestTime = executionTime,
-                     EndpointRequested = requestedEndpoint
+                     audit.Metadata!.BrowserEngine,
+                     audit.Metadata!.BrowserLanguage,
+                     audit.Metadata!.BrowserName,
+                     audit.Metadata!.CookiesEnabled,
+                     audit.Metadata!.Page,
+                     audit.Metadata!.Referrer,
+                     RequestTime = audit.ExecutionTime,
+                     EndpointRequested = audit.RequestedEndpoint
                  }));
         }
     }

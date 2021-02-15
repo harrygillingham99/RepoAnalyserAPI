@@ -2,7 +2,6 @@
 using NSwag;
 using NSwag.Generation.Processors;
 using NSwag.Generation.Processors.Contexts;
-using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.Attributes;
 
 namespace RepoAnalyser.API.NSwag

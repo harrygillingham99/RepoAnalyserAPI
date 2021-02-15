@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
-using RepoAnalyser.Objects.API.Requests;
+using RepoAnalyser.Objects;
 
 namespace RepoAnalyser.SqlServer.DAL.Interfaces
 {
     public interface IRepoAnalyserAuditRepository
     {
-        Task InsertRequestAudit(ClientMetadata requester, long executionTime, string requestedEndpoint);
+        Task InsertRequestAudit(RequestAudit audit);
     }
 }

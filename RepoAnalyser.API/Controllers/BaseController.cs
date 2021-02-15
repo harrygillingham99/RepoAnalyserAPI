@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Objects;
-using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Exceptions;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
@@ -17,8 +16,8 @@ namespace RepoAnalyser.API.Controllers
 {
     public class BaseController : ControllerBase
     {
-        private readonly IBackgroundTaskQueue _backgroundTaskQueue;
         private readonly IRepoAnalyserAuditRepository _auditRepository;
+        private readonly IBackgroundTaskQueue _backgroundTaskQueue;
         private readonly bool _requestLogging;
         private readonly Stopwatch _stopwatch;
 
@@ -83,8 +82,8 @@ namespace RepoAnalyser.API.Controllers
             finally
             {
                 _stopwatch.Stop();
-                RequestAudit(_stopwatch.ElapsedMilliseconds,
-                    HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
+                RequestAudit(new RequestAudit(HttpContext.Request.GetMetadataFromRequestHeaders(),
+                    _stopwatch.ElapsedMilliseconds, HttpContext.Request.Path.Value));
             }
         }
 
@@ -103,24 +102,20 @@ namespace RepoAnalyser.API.Controllers
             finally
             {
                 _stopwatch.Stop();
-                RequestAudit(_stopwatch.ElapsedMilliseconds,
-                    HttpContext.Request.GetMetadataFromRequestHeaders(), HttpContext.Request.Path.Value);
+                RequestAudit(new RequestAudit(HttpContext.Request.GetMetadataFromRequestHeaders(),
+                    _stopwatch.ElapsedMilliseconds, HttpContext.Request.Path.Value));
             }
         }
 
         //Doing some performance/debug request logging when deployed on home server, handy to know when react is spamming the backend
-        private void RequestAudit(long elapsedMilliseconds, ClientMetadata metadata,
-            string requestedEndpoint)
+        private void RequestAudit(RequestAudit audit)
         {
-            if (metadata != null && _requestLogging)
-            {
+            if (audit.Metadata != null && _requestLogging)
                 _backgroundTaskQueue.QueueBackgroundWorkItem(token =>
-                    _auditRepository.InsertRequestAudit(metadata,
-                        elapsedMilliseconds, requestedEndpoint));
-            }
+                    _auditRepository.InsertRequestAudit(audit));
             else
                 Debug.WriteLine(
-                    $"****Requested {requestedEndpoint}, It took {elapsedMilliseconds}ms to respond.****");
+                    $"****Requested {audit.RequestedEndpoint}, It took {audit.ExecutionTime}ms to respond.****");
         }
     }
 }
