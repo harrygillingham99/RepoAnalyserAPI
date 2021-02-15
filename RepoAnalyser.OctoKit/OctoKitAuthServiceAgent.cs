@@ -29,6 +29,7 @@ namespace RepoAnalyser.Services
             var request = new OauthLoginRequest(_clientId)
             {
                 RedirectUri = new Uri(_frontEndRedirectUrl),
+                //why use a read only collection here? Means this prop can't be initialized from config
                 Scopes = { "read:user", "repo", "security_events", "gist", "notifications" }
             };
 
