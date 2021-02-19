@@ -192,7 +192,7 @@ export class Client extends AuthorizedApiBase {
     /**
      * @return Success getting user info
      */
-    authentication_GetUserInformationForToken(): Promise<User> {
+    authentication_GetUserInformationForToken(): Promise<UserInfoResult> {
         let url_ = this.baseUrl + "/auth/user-info";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -210,14 +210,14 @@ export class Client extends AuthorizedApiBase {
         });
     }
 
-    protected processAuthentication_GetUserInformationForToken(response: Response): Promise<User> {
+    protected processAuthentication_GetUserInformationForToken(response: Response): Promise<UserInfoResult> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = User.fromJS(resultData200);
+            result200 = UserInfoResult.fromJS(resultData200);
             return result200;
             });
         } else if (status === 401) {
@@ -246,7 +246,7 @@ export class Client extends AuthorizedApiBase {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<User>(<any>null);
+        return Promise.resolve<UserInfoResult>(<any>null);
     }
 }
 
@@ -796,6 +796,46 @@ export interface IProblemDetails {
     detail?: string | undefined;
     instance?: string | undefined;
     extensions?: { [key: string]: any; } | undefined;
+}
+
+export class UserInfoResult implements IUserInfoResult {
+    user?: User | undefined;
+    loginRedirectUrl?: string | undefined;
+
+    constructor(data?: IUserInfoResult) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.user = _data["user"] ? User.fromJS(_data["user"]) : <any>undefined;
+            this.loginRedirectUrl = _data["loginRedirectUrl"];
+        }
+    }
+
+    static fromJS(data: any): UserInfoResult {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserInfoResult();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        data["loginRedirectUrl"] = this.loginRedirectUrl;
+        return data; 
+    }
+}
+
+export interface IUserInfoResult {
+    user?: User | undefined;
+    loginRedirectUrl?: string | undefined;
 }
 
 export class ApiException extends Error {

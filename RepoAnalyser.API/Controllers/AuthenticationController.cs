@@ -49,7 +49,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("user-info")]
-        [SwaggerResponse(200, typeof(User), Description = "Success getting user info")]
+        [SwaggerResponse(200, typeof(UserInfoResult), Description = "Success getting user info")]
         [SwaggerResponse(401, typeof(UnauthorizedResponse), Description = "No token provided")]
         [SwaggerResponse(404, typeof(NotFoundResponse), Description = "User not found")]
         [SwaggerResponse(500, typeof(ProblemDetails), Description = "Error getting user")]

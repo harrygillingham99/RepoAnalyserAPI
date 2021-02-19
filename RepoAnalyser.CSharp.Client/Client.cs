@@ -38,12 +38,12 @@ namespace NetCore31ApiTemplate.Client
     
         /// <returns>Success getting user info</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<User> GetUserInformationForTokenAsync();
+        System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync();
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success getting user info</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<User> GetUserInformationForTokenAsync(System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync(System.Threading.CancellationToken cancellationToken);
     
     }
     
@@ -304,7 +304,7 @@ namespace NetCore31ApiTemplate.Client
     
         /// <returns>Success getting user info</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<User> GetUserInformationForTokenAsync()
+        public System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync()
         {
             return GetUserInformationForTokenAsync(System.Threading.CancellationToken.None);
         }
@@ -312,7 +312,7 @@ namespace NetCore31ApiTemplate.Client
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>Success getting user info</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<User> GetUserInformationForTokenAsync(System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync(System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/auth/user-info");
@@ -349,7 +349,7 @@ namespace NetCore31ApiTemplate.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<User>(response_, headers_).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<UserInfoResult>(response_, headers_).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -828,6 +828,27 @@ namespace NetCore31ApiTemplate.Client
         public static ProblemDetails FromJson(string data)
         {
             return Newtonsoft.Json.JsonConvert.DeserializeObject<ProblemDetails>(data);
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.3.3.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class UserInfoResult 
+    {
+        [Newtonsoft.Json.JsonProperty("user", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public User User { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("loginRedirectUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string LoginRedirectUrl { get; set; }
+    
+        public string ToJson() 
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this);
+        }
+    
+        public static UserInfoResult FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<UserInfoResult>(data);
         }
     
     }

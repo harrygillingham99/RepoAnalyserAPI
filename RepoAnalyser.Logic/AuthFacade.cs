@@ -41,13 +41,21 @@ namespace RepoAnalyser.Logic
             return urlResult.AbsoluteUri;
         }
 
-        public async Task<User> GetUserInformation(string token)
+        public async Task<UserInfoResult> GetUserInformation(string token)
         {
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
 
+            var urlResult = await _octoKitAuthServiceAgent.GetLoginRedirectUrl();
+
             if(user == null) throw new NullReferenceException("User was null");
 
-            return user;
+            if(urlResult == null) throw new NullReferenceException("Url was null");
+
+            return new UserInfoResult
+            {
+                User = user,
+                LoginRedirectUrl = urlResult.AbsoluteUri
+            };
         }
     }
 }
