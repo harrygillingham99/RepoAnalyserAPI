@@ -14,7 +14,7 @@ namespace RepoAnalyser.API.NSwag
         {
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                foreach (var type in assembly.GetTypes())
+                foreach (var type in assembly.DefinedTypes)
                 {
                     if (type.GetCustomAttributes(typeof(NSwagIncludeAttribute)).Any())
                     {
