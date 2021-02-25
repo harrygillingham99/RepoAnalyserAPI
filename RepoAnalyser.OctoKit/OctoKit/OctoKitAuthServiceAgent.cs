@@ -4,10 +4,10 @@ using Microsoft.Extensions.Options;
 using Octokit;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.Exceptions;
-using RepoAnalyser.Services.Interfaces;
+using RepoAnalyser.Services.OctoKit.Interfaces;
 using OauthLoginRequest = Octokit.OauthLoginRequest;
 
-namespace RepoAnalyser.Services
+namespace RepoAnalyser.Services.OctoKit
 {
     public class OctoKitAuthServiceAgent : IOctoKitAuthServiceAgent
     {

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Octokit;
 
-namespace RepoAnalyser.Services.Interfaces
+namespace RepoAnalyser.Services.OctoKit.Interfaces
 {
     public interface IOctoKitAuthServiceAgent
     {

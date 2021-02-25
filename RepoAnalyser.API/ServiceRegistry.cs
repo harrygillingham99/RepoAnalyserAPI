@@ -5,7 +5,7 @@ using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.Logic;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.Attributes;
-using RepoAnalyser.Services;
+using RepoAnalyser.Services.OctoKit;
 using RepoAnalyser.SqlServer.DAL;
 using Scrutor;
 

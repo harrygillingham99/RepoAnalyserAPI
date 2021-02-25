@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Octokit;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Exceptions;
-using RepoAnalyser.Services.Interfaces;
+using RepoAnalyser.Services.OctoKit.Interfaces;
 
 namespace RepoAnalyser.Logic
 {
