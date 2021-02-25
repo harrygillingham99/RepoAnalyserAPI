@@ -14,7 +14,7 @@ namespace RepoAnalyser.API.NSwag
         {
             var assembliesToInclude = Assembly
                 .GetEntryAssembly()
-                ?.GetReferencedAssemblies()
+                ?.GetReferencedAssemblies().Where(x => x.Name != null && !x.Name.Contains("serilog"))
                 .Select(Assembly.Load)
                 .SelectMany(x => x.DefinedTypes)
                 .Where(type => type.GetCustomAttributes().Any(attr => attr.GetType() == typeof(NSwagIncludeAttribute)));
