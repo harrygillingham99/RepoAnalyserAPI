@@ -17,8 +17,8 @@ namespace RepoAnalyser.API.Controllers
     [Route("repo")]
     public class RepositoryController : BaseController
     {
-        private readonly IOctoKitGraphQLServiceAgent _graphQlServiceAgent;
-        public RepositoryController(IRepoAnalyserAuditRepository auditRepository, IBackgroundTaskQueue backgroundTaskQueue, IOptions<AppSettings> options, IOctoKitGraphQLServiceAgent graphQlServiceAgent) : base(auditRepository, backgroundTaskQueue, options)
+        private readonly IOctoKitGraphQlServiceAgent _graphQlServiceAgent;
+        public RepositoryController(IRepoAnalyserAuditRepository auditRepository, IBackgroundTaskQueue backgroundTaskQueue, IOptions<AppSettings> options, IOctoKitGraphQlServiceAgent graphQlServiceAgent) : base(auditRepository, backgroundTaskQueue, options)
         {
             _graphQlServiceAgent = graphQlServiceAgent;
         }

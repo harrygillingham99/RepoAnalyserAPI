@@ -2,19 +2,17 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Octokit.GraphQL;
-using Octokit.GraphQL.Core;
-using Octokit.GraphQL.Model;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
 using static RepoAnalyser.Objects.Constants.GitHubConstants;
 
 namespace RepoAnalyser.Services.OctoKit.GraphQL
 {
-    public class OctoKitGraphQLServiceAgent : IOctoKitGraphQLServiceAgent
+    public class OctoKitGraphQlServiceAgent : IOctoKitGraphQlServiceAgent
     {
         private readonly ProductHeaderValue _productHeaderValue;
 
-        public OctoKitGraphQLServiceAgent(IOptions<GitHubSettings> options)
+        public OctoKitGraphQlServiceAgent(IOptions<GitHubSettings> options)
         {
             _productHeaderValue = new ProductHeaderValue(options.Value.AppName);
         }
