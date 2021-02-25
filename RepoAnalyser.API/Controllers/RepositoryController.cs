@@ -17,10 +17,13 @@ namespace RepoAnalyser.API.Controllers
     [Route("repo")]
     public class RepositoryController : BaseController
     {
-        private readonly IOctoKitGraphQlServiceAgent _graphQlServiceAgent;
-        public RepositoryController(IRepoAnalyserAuditRepository auditRepository, IBackgroundTaskQueue backgroundTaskQueue, IOptions<AppSettings> options, IOctoKitGraphQlServiceAgent graphQlServiceAgent) : base(auditRepository, backgroundTaskQueue, options)
+        private readonly IOctoKitGraphQlServiceAgent _octoKitServiceAgent;
+
+        public RepositoryController(IRepoAnalyserAuditRepository auditRepository,
+            IBackgroundTaskQueue backgroundTaskQueue, IOptions<AppSettings> options,
+            IOctoKitGraphQlServiceAgent octoKitServiceAgent) : base(auditRepository, backgroundTaskQueue, options)
         {
-            _graphQlServiceAgent = graphQlServiceAgent;
+            _octoKitServiceAgent = octoKitServiceAgent;
         }
 
         [HttpGet("")]
@@ -33,7 +36,7 @@ namespace RepoAnalyser.API.Controllers
             return ExecuteAndMapToActionResult(() =>
             {
                 var token = HttpContext.Request.GetAuthorizationToken();
-                return _graphQlServiceAgent.GetRepositories(token);
+                return _octoKitServiceAgent.GetRepositories(token);
             });
         }
     }

@@ -6,6 +6,7 @@ using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.Exceptions;
 using RepoAnalyser.Services.OctoKit.Interfaces;
 using OauthLoginRequest = Octokit.OauthLoginRequest;
+using static RepoAnalyser.Objects.Helpers.OctoKitHelper;
 
 namespace RepoAnalyser.Services.OctoKit
 {
@@ -21,7 +22,7 @@ namespace RepoAnalyser.Services.OctoKit
             _clientId = options.Value.ClientId;
             _clientSecret = options.Value.ClientSecret;
             _frontEndRedirectUrl = options.Value.FrontEndRedirectUrl;
-            _client = new GitHubClient(new ProductHeaderValue(options.Value.AppName));
+            _client = BuildRestClient(options.Value.AppName);
         }
         //Everything else is actually async, just want to follow the task pattern
         public Task<Uri> GetLoginRedirectUrl()
@@ -49,7 +50,7 @@ namespace RepoAnalyser.Services.OctoKit
         {
             if (string.IsNullOrEmpty(token)) throw new UnauthorizedRequestException("no token provided");
 
-            _client.Connection.Credentials = new Credentials(token);
+            _client.Connection.Credentials = GetCredentials(token);
 
             return _client.User.Current();
         }

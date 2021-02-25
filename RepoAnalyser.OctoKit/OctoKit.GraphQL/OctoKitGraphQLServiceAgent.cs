@@ -5,6 +5,7 @@ using Octokit.GraphQL;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
 using static RepoAnalyser.Objects.Constants.GitHubConstants;
+using static RepoAnalyser.Objects.Helpers.OctoKitHelper;
 
 namespace RepoAnalyser.Services.OctoKit.GraphQL
 {
@@ -31,7 +32,7 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
         private Task<T> BuildConnectionExecuteQuery<T>(string token, ICompiledQuery<T> query,
             Dictionary<string, object> variables = null)
         {
-            var connection = new Connection(_productHeaderValue, token);
+            var connection = BuildConnection(_productHeaderValue, token);
             return connection.Run(query, variables);
         }
     }
