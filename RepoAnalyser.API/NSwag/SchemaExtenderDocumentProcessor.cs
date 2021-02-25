@@ -1,36 +1,34 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using NSwag.Generation.Processors;
 using NSwag.Generation.Processors.Contexts;
+using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.Attributes;
 
 namespace RepoAnalyser.API.NSwag
-{ 
+{
     [ScrutorIgnore]
     public class SchemaExtenderDocumentProcessor : IDocumentProcessor
     {
+        private readonly Type[] _typesToLoadAssembliesOf = new Type[] { typeof(AppSettings) };
+        private const string _namespaceIdentifier = "RepoAnalyser.";
+
         public void Process(DocumentProcessorContext context)
         {
-            var assembliesToInclude = Assembly
-                .GetEntryAssembly()
-                ?.GetReferencedAssemblies()
-                .Where(x => x.Name == "RepoAnalyser.Objects")
-                .Select(Assembly.Load)
-                .SelectMany(x => x.DefinedTypes)
-                .Where(type => type.GetCustomAttributes().Any(attr => attr.GetType() == typeof(NSwagIncludeAttribute)));
+            //only load specific assemblies
+            var assemblies = _typesToLoadAssembliesOf.Select(x => x.GetTypeInfo().Assembly);
+            var types = assemblies.SelectMany(x => x.ExportedTypes).Where(type => type.FullName.StartsWith(_namespaceIdentifier) &&
+                type.GetTypeInfo().CustomAttributes.Any(x => x.AttributeType == typeof(NSwagIncludeAttribute)));
 
-            if (assembliesToInclude != null)
+            foreach (var type in types)
             {
-                foreach (var type in assembliesToInclude)
+                if (!context.SchemaResolver.HasSchema(type, false))
                 {
-                    if (!context.SchemaResolver.HasSchema(type, type.IsEnum))
-                    {
-                        context.SchemaGenerator.Generate(type, context.SchemaResolver);
-                    }
-
+                    context.SchemaGenerator.Generate(type, context.SchemaResolver);
                 }
             }
         }
     }
 }
+
