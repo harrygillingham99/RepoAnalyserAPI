@@ -12,17 +12,22 @@ namespace RepoAnalyser.API.NSwag
     {
         public void Process(DocumentProcessorContext context)
         {
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            var assembliesToInclude = Assembly
+                .GetEntryAssembly()
+                ?.GetReferencedAssemblies()
+                .Select(Assembly.Load)
+                .SelectMany(x => x.DefinedTypes)
+                .Where(type => type.GetCustomAttributes().Any(attr => attr.GetType() == typeof(NSwagIncludeAttribute)));
+
+            if (assembliesToInclude != null)
             {
-                foreach (var type in assembly.DefinedTypes)
+                foreach (var type in assembliesToInclude)
                 {
-                    if (type.GetCustomAttributes(typeof(NSwagIncludeAttribute)).Any())
+                    if (!context.SchemaResolver.HasSchema(type, type.IsEnum))
                     {
-                        if (!context.SchemaResolver.HasSchema(type, type.IsEnum))
-                        {
-                            context.SchemaGenerator.Generate(type, context.SchemaResolver);
-                        }
+                        context.SchemaGenerator.Generate(type, context.SchemaResolver);
                     }
+
                 }
             }
         }
