@@ -15,7 +15,7 @@ namespace RepoAnalyser.API.NSwag
             var assembliesToInclude = Assembly
                 .GetEntryAssembly()
                 ?.GetReferencedAssemblies()
-                .Where(x => x.FullName == "RepoAnalyser.Objects, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null")
+                .Where(x => x.Name == "RepoAnalyser.Objects")
                 .Select(Assembly.Load)
                 .SelectMany(x => x.DefinedTypes)
                 .Where(type => type.GetCustomAttributes().Any(attr => attr.GetType() == typeof(NSwagIncludeAttribute)));
