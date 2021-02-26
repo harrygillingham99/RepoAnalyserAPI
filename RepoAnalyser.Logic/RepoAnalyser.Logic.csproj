@@ -6,9 +6,93 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Build" Version="16.8.0" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.8.0" />
+    <PackageReference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform" Version="1.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\RepoAnalyser.Objects\RepoAnalyser.Objects.csproj" />
     <ProjectReference Include="..\RepoAnalyser.OctoKit\RepoAnalyser.Services.csproj" />
     <ProjectReference Include="..\RepoAnalyser.SqlServer.DAL\RepoAnalyser.SqlServer.DAL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Gendarme.Framework">
+      <HintPath>lib\Gendarme.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.BadPractice">
+      <HintPath>lib\Gendarme.Rules.BadPractice.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Concurrency">
+      <HintPath>lib\Gendarme.Rules.Concurrency.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Correctness">
+      <HintPath>lib\Gendarme.Rules.Correctness.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Design">
+      <HintPath>lib\Gendarme.Rules.Design.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Design.Generic">
+      <HintPath>lib\Gendarme.Rules.Design.Generic.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Design.Linq">
+      <HintPath>lib\Gendarme.Rules.Design.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Exceptions">
+      <HintPath>lib\Gendarme.Rules.Exceptions.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Gendarme">
+      <HintPath>lib\Gendarme.Rules.Gendarme.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Globalization">
+      <HintPath>lib\Gendarme.Rules.Globalization.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Interoperability">
+      <HintPath>lib\Gendarme.Rules.Interoperability.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Interoperability.Com">
+      <HintPath>lib\Gendarme.Rules.Interoperability.Com.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Maintainability">
+      <HintPath>lib\Gendarme.Rules.Maintainability.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Naming">
+      <HintPath>lib\Gendarme.Rules.Naming.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.NUnit">
+      <HintPath>lib\Gendarme.Rules.NUnit.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Performance">
+      <HintPath>lib\Gendarme.Rules.Performance.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Portability">
+      <HintPath>lib\Gendarme.Rules.Portability.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Security">
+      <HintPath>lib\Gendarme.Rules.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Security.Cas">
+      <HintPath>lib\Gendarme.Rules.Security.Cas.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Serialization">
+      <HintPath>lib\Gendarme.Rules.Serialization.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Smells">
+      <HintPath>lib\Gendarme.Rules.Smells.dll</HintPath>
+    </Reference>
+    <Reference Include="Gendarme.Rules.Ui">
+      <HintPath>lib\Gendarme.Rules.Ui.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>lib\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb">
+      <HintPath>lib\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb">
+      <HintPath>lib\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

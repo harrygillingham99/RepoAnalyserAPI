@@ -11,4 +11,10 @@
     <PackageReference Include="Octokit.GraphQL" Version="0.1.7-beta" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\RepoAnalyser.Logic\lib\Mono.Cecil.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
