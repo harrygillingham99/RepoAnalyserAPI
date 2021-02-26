@@ -1,2 +1,2 @@
 # RepoAnalyserAPI
-A .NET Core 3.1 API back end for my Dissertation Artifact
+A .NET 5.0 API back end for my Dissertation Artifact
