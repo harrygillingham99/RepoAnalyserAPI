@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -27,10 +28,10 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("")]
-        [SwaggerResponse(200, typeof(IEnumerable<Repo>), Description = "Success getting repos")]
-        [SwaggerResponse(401, typeof(UnauthorizedResponse), Description = "No token provided")]
-        [SwaggerResponse(404, typeof(NotFoundResponse), Description = "not found")]
-        [SwaggerResponse(500, typeof(ProblemDetails), Description = "Error getting repos")]
+        [SwaggerResponse(HttpStatusCode.OK, typeof(IEnumerable<Repo>), Description = "Success getting repos")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
+        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "not found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting repos")]
         public Task<IActionResult> Repositories()
         {
             return ExecuteAndMapToActionResult(() =>

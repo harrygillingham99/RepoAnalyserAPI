@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NSwag.Annotations;
@@ -24,11 +25,11 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("token/{code}/{state}")]
-        [SwaggerResponse(200, typeof(TokenUserResponse), Description = "Success getting auth token")]
-        [SwaggerResponse(400, typeof(ValidationResponse), Description = "Bad request getting auth token")]
-        [SwaggerResponse(401, typeof(UnauthorizedResponse), Description = "No token provided when getting user info")]
-        [SwaggerResponse(404, typeof(NotFoundResponse), Description = "Error getting auth token, code provided not found")]
-        [SwaggerResponse(500, typeof(ProblemDetails), Description = "Error getting auth token")]
+        [SwaggerResponse(HttpStatusCode.OK, typeof(TokenUserResponse), Description = "Success getting auth token")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, typeof(ValidationResponse), Description = "Bad request getting auth token")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided when getting user info")]
+        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Error getting auth token, code provided not found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting auth token")]
         public Task<IActionResult> GetOAuthTokenWithUserInfo([FromRoute]string code, [FromRoute]string state)
         {
             return ExecuteAndMapToActionResult(() =>
@@ -37,10 +38,10 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("login-redirect")]
-        [SwaggerResponse(200, typeof(string), Description = "Success getting github redirect url")]
-        [SwaggerResponse(400, typeof(ValidationResponse), Description = "Bad request getting redirect url")]
-        [SwaggerResponse(404, typeof(NotFoundResponse), Description = "Error getting redirect url")]
-        [SwaggerResponse(500, typeof(ProblemDetails), Description = "Error getting redirect url")]
+        [SwaggerResponse(HttpStatusCode.OK, typeof(string), Description = "Success getting github redirect url")]
+        [SwaggerResponse(HttpStatusCode.BadRequest, typeof(ValidationResponse), Description = "Bad request getting redirect url")]
+        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Error getting redirect url")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting redirect url")]
         public Task<IActionResult> GetLoginRedirectUrl()
         {
             return ExecuteAndMapToActionResult(() =>
@@ -48,10 +49,10 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("user-info")]
-        [SwaggerResponse(200, typeof(UserInfoResult), Description = "Success getting user info")]
-        [SwaggerResponse(401, typeof(UnauthorizedResponse), Description = "No token provided")]
-        [SwaggerResponse(404, typeof(NotFoundResponse), Description = "User not found")]
-        [SwaggerResponse(500, typeof(ProblemDetails), Description = "Error getting user")]
+        [SwaggerResponse(HttpStatusCode.OK, typeof(UserInfoResult), Description = "Success getting user info")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
+        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "User not found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting user")]
         public Task<IActionResult> GetUserInformationForToken()
         {
             return ExecuteAndMapToActionResult(() =>
