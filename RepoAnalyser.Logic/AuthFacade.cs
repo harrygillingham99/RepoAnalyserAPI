@@ -22,7 +22,7 @@ namespace RepoAnalyser.Logic
 
             var token = await _octoKitAuthServiceAgent.GetOAuthToken(code, state);
 
-            if(token == null || string.IsNullOrWhiteSpace(token.AccessToken)) throw new NullReferenceException("Token generated was null");
+            if(token is null || string.IsNullOrWhiteSpace(token.AccessToken)) throw new NullReferenceException("Token generated was null");
 
             return new TokenUserResponse
             {
@@ -35,7 +35,7 @@ namespace RepoAnalyser.Logic
         {
             var urlResult = await _octoKitAuthServiceAgent.GetLoginRedirectUrl();
 
-            if (urlResult == null) throw new NullReferenceException("Returned URL is null");
+            if (urlResult is null) throw new NullReferenceException("Returned URL is null");
 
             return urlResult.AbsoluteUri;
         }
@@ -46,9 +46,9 @@ namespace RepoAnalyser.Logic
 
             var urlResult = await _octoKitAuthServiceAgent.GetLoginRedirectUrl();
 
-            if(user == null) throw new NullReferenceException("User was null");
+            if(user is null) throw new NullReferenceException("User was null");
 
-            if(urlResult == null) throw new NullReferenceException("Url was null");
+            if(urlResult is null) throw new NullReferenceException("Url was null");
 
             return new UserInfoResult
             {

@@ -31,8 +31,8 @@ namespace RepoAnalyser.API
 
         public static void AddConfigs(IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<AppSettings>(option => { configuration.GetSection(nameof(AppSettings)).Bind(option); });
-            services.Configure<GitHubSettings>(option => { configuration.GetSection(nameof(GitHubSettings)).Bind(option); });
+            services.Configure<AppSettings>(option => configuration.GetSection(nameof(AppSettings)).Bind(option));
+            services.Configure<GitHubSettings>(option => configuration.GetSection(nameof(GitHubSettings)).Bind(option));
         }
     }
 }

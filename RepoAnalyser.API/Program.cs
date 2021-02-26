@@ -7,7 +7,7 @@ using Serilog.Formatting.Json;
 
 namespace RepoAnalyser.API
 {
-    public class Program
+    public static class Program
     {
         public static void Main(string[] args)
         {

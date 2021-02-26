@@ -30,5 +30,24 @@ namespace RepoAnalyser.SqlServer.DAL.BaseRepository
                 throw new Exception(exceptionMsg, ex);
             }
         }
+
+        protected async Task InvokeWithTransaction<T>(Func<IDbConnection, Task<T>> dbOperation)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+            using var tran = connection.BeginTransaction();
+            try
+            {
+                await dbOperation(connection);
+                tran.Commit();
+            }
+            catch (Exception ex)
+            {
+                tran.Rollback();
+                var exceptionMsg = $"{GetType().FullName}.Invoke experienced a {ex.GetType()}";
+                Log.Error(ex, exceptionMsg);
+                throw new Exception(exceptionMsg, ex);
+            }
+        }
     }
 }

@@ -18,32 +18,38 @@ namespace NetCore31ApiTemplate.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.10.6.0 (NJsonSchema v10.3.8.0 (Newtonsoft.Json v12.0.0.0))")]
     public partial interface IAuthenticationClient
     {
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting auth token</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state);
+        System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state, object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting auth token</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state, object metadata, System.Threading.CancellationToken cancellationToken);
     
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting github redirect url</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<string> GetLoginRedirectUrlAsync();
+        System.Threading.Tasks.Task<string> GetLoginRedirectUrlAsync(object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting github redirect url</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<string> GetLoginRedirectUrlAsync(System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<string> GetLoginRedirectUrlAsync(object metadata, System.Threading.CancellationToken cancellationToken);
     
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting user info</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync();
+        System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync(object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting user info</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync(System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync(object metadata, System.Threading.CancellationToken cancellationToken);
     
     }
     
@@ -82,17 +88,19 @@ namespace NetCore31ApiTemplate.Client
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, string url);
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting auth token</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state)
+        public System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state, object metadata)
         {
-            return GetOAuthTokenWithUserInfoAsync(code, state, System.Threading.CancellationToken.None);
+            return GetOAuthTokenWithUserInfoAsync(code, state, metadata, System.Threading.CancellationToken.None);
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting auth token</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state, System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state, object metadata, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/auth/token/{code}/{state}");
@@ -105,6 +113,8 @@ namespace NetCore31ApiTemplate.Client
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
+                    if (metadata != null)
+                        request_.Headers.TryAddWithoutValidation("Metadata", ConvertToString(metadata, System.Globalization.CultureInfo.InvariantCulture));
                     request_.Method = new System.Net.Http.HttpMethod("GET");
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
     
@@ -198,17 +208,19 @@ namespace NetCore31ApiTemplate.Client
             }
         }
     
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting github redirect url</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<string> GetLoginRedirectUrlAsync()
+        public System.Threading.Tasks.Task<string> GetLoginRedirectUrlAsync(object metadata)
         {
-            return GetLoginRedirectUrlAsync(System.Threading.CancellationToken.None);
+            return GetLoginRedirectUrlAsync(metadata, System.Threading.CancellationToken.None);
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting github redirect url</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<string> GetLoginRedirectUrlAsync(System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<string> GetLoginRedirectUrlAsync(object metadata, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/auth/login-redirect");
@@ -219,6 +231,8 @@ namespace NetCore31ApiTemplate.Client
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
+                    if (metadata != null)
+                        request_.Headers.TryAddWithoutValidation("Metadata", ConvertToString(metadata, System.Globalization.CultureInfo.InvariantCulture));
                     request_.Method = new System.Net.Http.HttpMethod("GET");
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
     
@@ -302,17 +316,19 @@ namespace NetCore31ApiTemplate.Client
             }
         }
     
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting user info</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync()
+        public System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync(object metadata)
         {
-            return GetUserInformationForTokenAsync(System.Threading.CancellationToken.None);
+            return GetUserInformationForTokenAsync(metadata, System.Threading.CancellationToken.None);
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting user info</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync(System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync(object metadata, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/auth/user-info");
@@ -323,6 +339,8 @@ namespace NetCore31ApiTemplate.Client
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
+                    if (metadata != null)
+                        request_.Headers.TryAddWithoutValidation("Metadata", ConvertToString(metadata, System.Globalization.CultureInfo.InvariantCulture));
                     request_.Method = new System.Net.Http.HttpMethod("GET");
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
     
@@ -512,14 +530,16 @@ namespace NetCore31ApiTemplate.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.10.6.0 (NJsonSchema v10.3.8.0 (Newtonsoft.Json v12.0.0.0))")]
     public partial interface IRepositoryClient
     {
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting repos</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Repo>> RepositoriesAsync();
+        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Repo>> RepositoriesAsync(object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting repos</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Repo>> RepositoriesAsync(System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Repo>> RepositoriesAsync(object metadata, System.Threading.CancellationToken cancellationToken);
     
     }
     
@@ -558,17 +578,19 @@ namespace NetCore31ApiTemplate.Client
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, string url);
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting repos</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Repo>> RepositoriesAsync()
+        public System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Repo>> RepositoriesAsync(object metadata)
         {
-            return RepositoriesAsync(System.Threading.CancellationToken.None);
+            return RepositoriesAsync(metadata, System.Threading.CancellationToken.None);
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting repos</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Repo>> RepositoriesAsync(System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Repo>> RepositoriesAsync(object metadata, System.Threading.CancellationToken cancellationToken)
         {
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/repo");
@@ -579,6 +601,8 @@ namespace NetCore31ApiTemplate.Client
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
+                    if (metadata != null)
+                        request_.Headers.TryAddWithoutValidation("Metadata", ConvertToString(metadata, System.Globalization.CultureInfo.InvariantCulture));
                     request_.Method = new System.Net.Http.HttpMethod("GET");
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
     
@@ -1113,7 +1137,7 @@ namespace NetCore31ApiTemplate.Client
     public partial class Repo 
     {
         [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Name { get; set; }
+        public System.Collections.ObjectModel.ObservableCollection<string> Name { get; set; }
     
         [Newtonsoft.Json.JsonProperty("description", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Description { get; set; }
@@ -1126,6 +1150,39 @@ namespace NetCore31ApiTemplate.Client
         public static Repo FromJson(string data)
         {
             return Newtonsoft.Json.JsonConvert.DeserializeObject<Repo>(data);
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.3.8.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class ClientMetadata 
+    {
+        [Newtonsoft.Json.JsonProperty("page", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Page { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("referrer", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Referrer { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("browserName", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string BrowserName { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("browserEngine", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string BrowserEngine { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("browserLanguage", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string BrowserLanguage { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("cookiesEnabled", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool CookiesEnabled { get; set; }
+    
+        public string ToJson() 
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this);
+        }
+    
+        public static ClientMetadata FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<ClientMetadata>(data);
         }
     
     }

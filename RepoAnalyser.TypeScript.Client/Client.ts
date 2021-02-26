@@ -57,9 +57,10 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
+     * @param metadata (optional) ClientMetadata
      * @return Success getting auth token
      */
-    authentication_GetOAuthTokenWithUserInfo(code: string | null, state: string | null): Promise<TokenUserResponse> {
+    authentication_GetOAuthTokenWithUserInfo(code: string | null, state: string | null, metadata: any | undefined): Promise<TokenUserResponse> {
         let url_ = this.baseUrl + "/auth/token/{code}/{state}";
         if (code === undefined || code === null)
             throw new Error("The parameter 'code' must be defined.");
@@ -72,6 +73,7 @@ export class Client extends AuthorizedApiBase {
         let options_ = <RequestInit>{
             method: "GET",
             headers: {
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
                 "Accept": "application/json"
             }
         };
@@ -130,15 +132,17 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
+     * @param metadata (optional) ClientMetadata
      * @return Success getting github redirect url
      */
-    authentication_GetLoginRedirectUrl(): Promise<string> {
+    authentication_GetLoginRedirectUrl(metadata: any | undefined): Promise<string> {
         let url_ = this.baseUrl + "/auth/login-redirect";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
             method: "GET",
             headers: {
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
                 "Accept": "application/json"
             }
         };
@@ -190,15 +194,17 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
+     * @param metadata (optional) ClientMetadata
      * @return Success getting user info
      */
-    authentication_GetUserInformationForToken(): Promise<UserInfoResult> {
+    authentication_GetUserInformationForToken(metadata: any | undefined): Promise<UserInfoResult> {
         let url_ = this.baseUrl + "/auth/user-info";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
             method: "GET",
             headers: {
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
                 "Accept": "application/json"
             }
         };
@@ -250,15 +256,17 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
+     * @param metadata (optional) ClientMetadata
      * @return Success getting repos
      */
-    repository_Repositories(): Promise<Repo[]> {
+    repository_Repositories(metadata: any | undefined): Promise<Repo[]> {
         let url_ = this.baseUrl + "/repo";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
             method: "GET",
             headers: {
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
                 "Accept": "application/json"
             }
         };
@@ -903,7 +911,7 @@ export interface IUserInfoResult {
 }
 
 export class Repo implements IRepo {
-    name?: string | undefined;
+    name?: string[] | undefined;
     description?: string | undefined;
 
     constructor(data?: IRepo) {
@@ -917,7 +925,11 @@ export class Repo implements IRepo {
 
     init(_data?: any) {
         if (_data) {
-            this.name = _data["name"];
+            if (Array.isArray(_data["name"])) {
+                this.name = [] as any;
+                for (let item of _data["name"])
+                    this.name!.push(item);
+            }
             this.description = _data["description"];
         }
     }
@@ -931,15 +943,75 @@ export class Repo implements IRepo {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["name"] = this.name;
+        if (Array.isArray(this.name)) {
+            data["name"] = [];
+            for (let item of this.name)
+                data["name"].push(item);
+        }
         data["description"] = this.description;
         return data; 
     }
 }
 
 export interface IRepo {
-    name?: string | undefined;
+    name?: string[] | undefined;
     description?: string | undefined;
+}
+
+export class ClientMetadata implements IClientMetadata {
+    page?: string | undefined;
+    referrer?: string | undefined;
+    browserName?: string | undefined;
+    browserEngine?: string | undefined;
+    browserLanguage?: string | undefined;
+    cookiesEnabled?: boolean;
+
+    constructor(data?: IClientMetadata) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.page = _data["page"];
+            this.referrer = _data["referrer"];
+            this.browserName = _data["browserName"];
+            this.browserEngine = _data["browserEngine"];
+            this.browserLanguage = _data["browserLanguage"];
+            this.cookiesEnabled = _data["cookiesEnabled"];
+        }
+    }
+
+    static fromJS(data: any): ClientMetadata {
+        data = typeof data === 'object' ? data : {};
+        let result = new ClientMetadata();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["page"] = this.page;
+        data["referrer"] = this.referrer;
+        data["browserName"] = this.browserName;
+        data["browserEngine"] = this.browserEngine;
+        data["browserLanguage"] = this.browserLanguage;
+        data["cookiesEnabled"] = this.cookiesEnabled;
+        return data; 
+    }
+}
+
+export interface IClientMetadata {
+    page?: string | undefined;
+    referrer?: string | undefined;
+    browserName?: string | undefined;
+    browserEngine?: string | undefined;
+    browserLanguage?: string | undefined;
+    cookiesEnabled?: boolean;
 }
 
 export class ApiException extends Error {

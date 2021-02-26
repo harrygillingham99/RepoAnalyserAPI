@@ -83,7 +83,7 @@ namespace RepoAnalyser.API.Controllers
             {
                 _stopwatch.Stop();
                 RequestAudit(new RequestAudit(HttpContext.Request.GetMetadataFromRequestHeaders(),
-                    _stopwatch.ElapsedMilliseconds, HttpContext.Request.Path.Value));
+                    _stopwatch.ElapsedMilliseconds, HttpContext.Request.Path.Value ?? "unknown"));
             }
         }
 
@@ -103,7 +103,7 @@ namespace RepoAnalyser.API.Controllers
             {
                 _stopwatch.Stop();
                 RequestAudit(new RequestAudit(HttpContext.Request.GetMetadataFromRequestHeaders(),
-                    _stopwatch.ElapsedMilliseconds, HttpContext.Request.Path.Value));
+                    _stopwatch.ElapsedMilliseconds, HttpContext.Request.Path.Value ?? "unknown"));
             }
         }
 

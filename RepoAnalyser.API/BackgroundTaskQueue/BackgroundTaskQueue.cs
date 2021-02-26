@@ -16,7 +16,7 @@ namespace RepoAnalyser.API.BackgroundTaskQueue
         public void QueueBackgroundWorkItem(
             Func<CancellationToken, Task> workItem)
         {
-            if (workItem == null)
+            if (workItem is null)
             {
                 throw new ArgumentNullException(nameof(workItem));
             }

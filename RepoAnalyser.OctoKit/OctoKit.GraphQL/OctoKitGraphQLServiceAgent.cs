@@ -24,7 +24,9 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
                 .Repositories(100, affiliations: RepositoryScopes).Nodes
                 .Select(x => new Repo
                 {
-                    Description = x.Description, Name = x.Name
+                    Description = x.Description,
+                    Name = x.Collaborators(null, null, null, null, null, null).Nodes.Select(user => $"{user.Name}")
+                        .ToList()
                 }).Compile();
             return BuildConnectionExecuteQuery(token, query);
         }
@@ -39,7 +41,7 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
 
     public class Repo
     {
-        public string Name { get; set; }
+        public List<string> Name { get; set; }
         public string Description { get; set; }
     }
 }
