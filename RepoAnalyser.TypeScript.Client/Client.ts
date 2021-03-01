@@ -326,7 +326,7 @@ export class Client extends AuthorizedApiBase {
      * @return Success getting repos
      */
     repository_GetComplexityForMethodsInAssembly(metadata: any | undefined, pathToAssembly: string): Promise<{ [key: string]: number; }> {
-        let url_ = this.baseUrl + "/repo/test";
+        let url_ = this.baseUrl + "/repo/TestCyclomaticComplexity";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(pathToAssembly);

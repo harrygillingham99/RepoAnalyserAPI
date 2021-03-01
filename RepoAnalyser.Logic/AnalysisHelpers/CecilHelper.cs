@@ -19,11 +19,11 @@ namespace RepoAnalyser.Logic.AnalysisHelpers
                 }).ToList();
         }
 
-        public static List<MethodDefinition> ScanForMethods(this List<AssemblyDefinition> targetAssemblies,
+        public static List<MethodDefinition> ScanForMethods(this List<TargetAssemblyDefinition> targetAssemblies,
             List<string> methodSearchTerms)
         {
             var methods = new List<MethodDefinition>();
-            foreach (var assembly in targetAssemblies)
+            foreach (var assembly in targetAssemblies.Select(x => x.Assembly))
             {
                 foreach (var methodToSearch in methodSearchTerms)
                 {
@@ -34,5 +34,8 @@ namespace RepoAnalyser.Logic.AnalysisHelpers
             }
             return methods;
         }
+
+        public static List<MethodDefinition> ScanForMethods(this TargetAssemblyDefinition targetAssembly, List<string> methodSearchTerms) =>
+            ScanForMethods(new List<TargetAssemblyDefinition> {targetAssembly}, methodSearchTerms);
     }
 }

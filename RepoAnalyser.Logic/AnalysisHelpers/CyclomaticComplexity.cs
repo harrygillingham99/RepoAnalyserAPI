@@ -22,116 +22,127 @@ namespace RepoAnalyser.Logic.AnalysisHelpers
             if (method == null || !method.HasBody)
                 return 1;
 
-            if (OpCodeEngine.GetBitmask(method).Get(Code.Switch))
-                return GetSwitchCyclomaticComplexity(method);
-            return GetFastCyclomaticComplexity(method);
-        }
-
-        // the use of 'switch' requires a bit more code so we avoid it unless there are swicth instructions
-        private static int GetFastCyclomaticComplexity(MethodDefinition method)
-        {
-            var cc = 1;
-            foreach (var ins in method.Body.Instructions)
-                switch (ins.OpCode.FlowControl)
-                {
-                    case FlowControl.Branch:
-                        // detect ternary pattern
-                        var previous = ins.Previous;
-                        if (previous != null && Ld.Get(previous.OpCode.Code))
+            int GetFastCyclomaticComplexity(MethodDefinition methodDefinition)
+            {
+                var cc = 1;
+                foreach (var ins in methodDefinition.Body.Instructions)
+                    switch (ins.OpCode.FlowControl)
+                    {
+                        case FlowControl.Branch:
+                            // detect ternary pattern
+                            var previous = ins.Previous;
+                            if (previous != null && Ld.Get(previous.OpCode.Code))
+                                cc++;
+                            break;
+                        case FlowControl.Cond_Branch:
                             cc++;
-                        break;
-                    case FlowControl.Cond_Branch:
-                        cc++;
-                        break;
+                            break;
+                    }
+
+                return cc;
+            }
+
+            int GetSwitchCyclomaticComplexity(MethodDefinition methodDefinition)
+            {
+                Instruction previous = null;
+                var cc = 1;
+
+                foreach (var ins in methodDefinition.Body.Instructions)
+                {
+                    Instruction branch;
+                    switch (ins.OpCode.FlowControl)
+                    {
+                        case FlowControl.Branch:
+                            if (previous == null)
+                                continue;
+                            // detect ternary pattern
+                            previous = ins.Previous;
+                            if (Ld.Get(previous.OpCode.Code))
+                                cc++;
+                            // or 'default' (xmcs)
+                            if (previous.OpCode.FlowControl == FlowControl.Cond_Branch)
+                            {
+                                branch = previous.Operand as Instruction;
+                                // branch can be null (e.g. switch -> Instruction[])
+                                if (branch != null && Targets.Contains(branch))
+                                    Targets.AddIfNew(ins);
+                            }
+
+                            break;
+                        case FlowControl.Cond_Branch:
+                            // note: a single switch (C#) with sparse values can be broken into several swicth (IL)
+                            // that will use the same 'targets' and must be counted only once
+                            if (ins.OpCode.Code == Code.Switch)
+                            {
+                                AccumulateSwitchTargets(ins);
+                            }
+                            else
+                            {
+                                // some conditional branch can be related to the sparse switch
+                                branch = ins.Operand as Instruction;
+                                if (branch != null)
+                                {
+                                    previous = branch.Previous;
+                                    if (previous != null && !previous.Previous.Is(Code.Switch))
+                                        if (!Targets.Contains(branch))
+                                            cc++;
+                                }
+                            }
+
+                            break;
+                    }
                 }
 
-            return cc;
-        }
+                // count all unique targets (and default if more than one C# switch is used)
+                cc += Targets.Count;
+                Targets.Clear();
 
-        private static int GetSwitchCyclomaticComplexity(MethodDefinition method)
-        {
-            Instruction previous = null;
-            var cc = 1;
+                return cc;
+            }
 
-            foreach (var ins in method.Body.Instructions)
+            void AccumulateSwitchTargets(Instruction ins)
             {
-                Instruction branch;
-                switch (ins.OpCode.FlowControl)
+                var cases = (Instruction[])ins.Operand;
+                foreach (var target in cases)
+                    // ignore targets that are the next instructions (xmcs)
+                    if (target != ins.Next)
+                        Targets.AddIfNew(target);
+
+                // add 'default' branch (if one exists)
+                var next = ins.Next;
+                if (next.OpCode.FlowControl == FlowControl.Branch)
                 {
-                    case FlowControl.Branch:
-                        if (previous == null)
-                            continue;
-                        // detect ternary pattern
-                        previous = ins.Previous;
-                        if (Ld.Get(previous.OpCode.Code))
-                            cc++;
-                        // or 'default' (xmcs)
-                        if (previous.OpCode.FlowControl == FlowControl.Cond_Branch)
-                        {
-                            branch = previous.Operand as Instruction;
-                            // branch can be null (e.g. switch -> Instruction[])
-                            if (branch != null && Targets.Contains(branch))
-                                Targets.AddIfNew(ins);
-                        }
-
-                        break;
-                    case FlowControl.Cond_Branch:
-                        // note: a single switch (C#) with sparse values can be broken into several swicth (IL)
-                        // that will use the same 'targets' and must be counted only once
-                        if (ins.OpCode.Code == Code.Switch)
-                        {
-                            AccumulateSwitchTargets(ins);
-                        }
-                        else
-                        {
-                            // some conditional branch can be related to the sparse switch
-                            branch = ins.Operand as Instruction;
-                            previous = branch.Previous;
-                            if (previous != null && !previous.Previous.Is(Code.Switch))
-                                if (!Targets.Contains(branch))
-                                    cc++;
-                        }
-
-                        break;
+                    var unc = FindFirstUnconditionalBranchTarget(cases[0]);
+                    if (unc != next.Operand)
+                        Targets.AddIfNew(next.Operand as Instruction);
                 }
             }
 
-            // count all unique targets (and default if more than one C# switch is used)
-            cc += Targets.Count;
-            Targets.Clear();
-
-            return cc;
-        }
-
-        private static void AccumulateSwitchTargets(Instruction ins)
-        {
-            var cases = (Instruction[]) ins.Operand;
-            foreach (var target in cases)
-                // ignore targets that are the next instructions (xmcs)
-                if (target != ins.Next)
-                    Targets.AddIfNew(target);
-
-            // add 'default' branch (if one exists)
-            var next = ins.Next;
-            if (next.OpCode.FlowControl == FlowControl.Branch)
+            Instruction FindFirstUnconditionalBranchTarget(Instruction ins)
             {
-                var unc = FindFirstUnconditionalBranchTarget(cases[0]);
-                if (unc != next.Operand)
-                    Targets.AddIfNew(next.Operand as Instruction);
-            }
-        }
+                while (ins != null)
+                {
+                    if (FlowControl.Branch == ins.OpCode.FlowControl)
+                        return (Instruction)ins.Operand;
 
-        private static Instruction FindFirstUnconditionalBranchTarget(Instruction ins)
-        {
-            while (ins != null)
-            {
-                if (FlowControl.Branch == ins.OpCode.FlowControl)
-                    return (Instruction) ins.Operand;
+                    ins = ins.Next;
+                }
 
-                ins = ins.Next;
+                return null;
             }
 
-            return null;
+            return OpCodeEngine.GetBitmask(method).Get(Code.Switch) ? GetSwitchCyclomaticComplexity(method) : GetFastCyclomaticComplexity(method);
+        }
+
+        public static Dictionary<string, int> GetCyclomaticComplexities(this IEnumerable<MethodDefinition> methods)
+        {
+            var results = new Dictionary<string, int>();
+            foreach (var method in methods)
+            {
+                results.Add(results.ContainsKey(method.Name) ? method.FullName : method.Name,
+                    method.GetCyclomaticComplexity());
+            }
+            return results;
         }
     }
 }

@@ -715,7 +715,7 @@ namespace NetCore31ApiTemplate.Client
                 throw new System.ArgumentNullException("pathToAssembly");
     
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/repo/test");
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/repo/TestCyclomaticComplexity");
     
             var client_ = _httpClient;
             var disposeClient_ = false;

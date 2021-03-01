@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Mono.Cecil;
 using RepoAnalyser.Logic.AnalysisHelpers;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Responses;
@@ -46,27 +44,24 @@ namespace RepoAnalyser.Logic
 
         public async Task<UserInfoResult> GetUserInformation(string token)
         {
-            var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
+            var user = _octoKitAuthServiceAgent.GetUserInformation(token);
 
-            var urlResult = await _octoKitAuthServiceAgent.GetLoginRedirectUrl();
-
-            if(user is null) throw new NullReferenceException("User was null");
-
-            if(urlResult is null) throw new NullReferenceException("Url was null");
+            var urlResult =  _octoKitAuthServiceAgent.GetLoginRedirectUrl();
 
             return new UserInfoResult
             {
-                User = user,
-                LoginRedirectUrl = urlResult.AbsoluteUri
+                User = await user ?? throw new NullReferenceException("User is null"),
+                LoginRedirectUrl = (await urlResult)?.AbsoluteUri ?? throw new NullReferenceException("Url was null")
             };
         }
 
         public Task<Dictionary<string, int>> GetComplexityForAssemblies(string pathToAssembly)
         {
-            var x = CecilHelper.ReadAssemblies(new List<string> {pathToAssembly});
-            var y = x.Select(definition => new List<AssemblyDefinition> { definition.Assembly }.ScanForMethods(new List<string> { "Get" })).ToList().FirstOrDefault();
-            var z = y.ToDictionary(key => key.Name, val => val.GetCyclomaticComplexity());
-            return Task.FromResult(z);
+            var dictResult = CecilHelper.ReadAssemblies(new List<string> {pathToAssembly})
+                                             .ScanForMethods(new List<string>{"Get"})
+                                             .GetCyclomaticComplexities();
+
+            return Task.FromResult(dictResult);
         }
     }
 }
