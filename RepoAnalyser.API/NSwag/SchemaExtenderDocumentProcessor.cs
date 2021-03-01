@@ -17,7 +17,6 @@ namespace RepoAnalyser.API.NSwag
 
         public void Process(DocumentProcessorContext context)
         {
-            AssemblyHelper.LoadAssembliesWithDependencies();
             //Only load specific assemblies
             var assemblies = _typesToLoadAssembliesOf.Select(x => x.GetTypeInfo().Assembly);
 

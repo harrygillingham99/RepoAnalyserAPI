@@ -5,7 +5,7 @@
     "aspNetCoreToOpenApi": {
       "project": "RepoAnalyser.API.csproj",
       "msBuildProjectExtensionsPath": null,
-      "configuration": null,
+      "configuration": "$(Configuration)",
       "runtime": "",
       "targetFramework": "",
       "noBuild": true,
