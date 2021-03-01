@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using NSwag.Generation.Processors;
 using NSwag.Generation.Processors.Contexts;
+using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.Attributes;
 
@@ -16,6 +17,7 @@ namespace RepoAnalyser.API.NSwag
 
         public void Process(DocumentProcessorContext context)
         {
+            AssemblyHelper.LoadAssembliesWithDependencies(false, new []{"RepoAnalyser.", "NSwag."});
             //Only load specific assemblies
             var assemblies = _typesToLoadAssembliesOf.Select(x => x.GetTypeInfo().Assembly);
 
