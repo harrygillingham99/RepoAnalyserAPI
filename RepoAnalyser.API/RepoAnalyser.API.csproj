@@ -29,15 +29,10 @@
     <ProjectReference Include="..\RepoAnalyser.SqlServer.DAL\RepoAnalyser.SqlServer.DAL.csproj" />
   </ItemGroup>
 
-  <Target Name="NSwag" BeforeTargets="AfterBuild" Condition=" '$(Configuration)' == 'Debug' ">
+  <Target Name="NSwag" AfterTargets="Build">
     <Copy SourceFiles="@(Reference)" DestinationFolder="$(OutDir)References" />
-    <Exec ConsoleToMSBuild="true" ContinueOnError="true" Command="$(NSwagExe_Net50) run nswag.json">
-      <Output TaskParameter="ExitCode" PropertyName="NSwagExitCode" />
-      <Output TaskParameter="ConsoleOutput" PropertyName="NSwagOutput" />
-    </Exec>
-
-    <Message Text="$(NSwagOutput)" Condition="'$(NSwagExitCode)' == '0'" Importance="low" />
-    <Error Text="$(NSwagOutput)" Condition="'$(NSwagExitCode)' != '0'" />
+    <Exec Command="$(NSwagExe_Net50) run nswag.json /variables:Configuration=$(Configuration)" />
+    <RemoveDir Directories="$(OutDir)References" />
   </Target>
 
 </Project>
