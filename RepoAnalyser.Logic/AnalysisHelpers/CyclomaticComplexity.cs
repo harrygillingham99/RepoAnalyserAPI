@@ -8,7 +8,7 @@ using Mono.Cecil.Cil;
 namespace RepoAnalyser.Logic.AnalysisHelpers
 {
     /*
-     * Helper class derived from logic in Gendarme AvoidComplexMethodsRule.cs
+     * Helper class derived and adapted from logic in Gendarme AvoidComplexMethodsRule.cs
      */
     public static class CyclomaticComplexityHelper
     {
