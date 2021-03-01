@@ -57,7 +57,7 @@ namespace RepoAnalyser.Logic
 
         public Task<Dictionary<string, int>> GetComplexityForAssemblies(string pathToAssembly)
         {
-            var dictResult = CecilHelper.ReadAssemblies(new List<string> {pathToAssembly})
+            var dictResult = CecilHelper.ReadAssembly(pathToAssembly)
                                              .ScanForMethods(new List<string>{"Get"})
                                              .GetCyclomaticComplexities();
 

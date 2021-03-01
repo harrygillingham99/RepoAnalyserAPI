@@ -7,6 +7,9 @@ namespace RepoAnalyser.Logic.AnalysisHelpers
 {
     public static class CecilHelper
     {
+        public static TargetAssemblyDefinition ReadAssembly(string pathToAssembly) =>
+            ReadAssemblies(new List<string> {pathToAssembly}).FirstOrDefault();
+
         public static List<TargetAssemblyDefinition> ReadAssemblies(List<string> pathToAssemblies)
         {
             if (!pathToAssemblies.Any()) return new List<TargetAssemblyDefinition>();
