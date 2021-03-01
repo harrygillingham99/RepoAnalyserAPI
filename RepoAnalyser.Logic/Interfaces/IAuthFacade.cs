@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using RepoAnalyser.Objects.API.Responses;
 
 namespace RepoAnalyser.Logic.Interfaces
@@ -9,5 +10,6 @@ namespace RepoAnalyser.Logic.Interfaces
         Task<string> GetLoginRedirectUrl();
 
         Task<UserInfoResult> GetUserInformation(string token);
+        Task<Dictionary<string, int>> GetComplexityForAssemblies(string pathToAssembly);
     }
 }

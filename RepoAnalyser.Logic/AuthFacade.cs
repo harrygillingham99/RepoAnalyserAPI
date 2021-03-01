@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Mono.Cecil;
+using RepoAnalyser.Logic.AnalysisHelpers;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Exceptions;
@@ -55,6 +59,14 @@ namespace RepoAnalyser.Logic
                 User = user,
                 LoginRedirectUrl = urlResult.AbsoluteUri
             };
+        }
+
+        public Task<Dictionary<string, int>> GetComplexityForAssemblies(string pathToAssembly)
+        {
+            var x = CecilHelper.ReadAssemblies(new List<string> {pathToAssembly});
+            var y = x.Select(definition => new List<AssemblyDefinition> { definition.Assembly }.ScanForMethods(new List<string> { "Get" })).ToList().FirstOrDefault();
+            var z = y.ToDictionary(key => key.Name, val => val.GetCyclomaticComplexity());
+            return Task.FromResult(z);
         }
     }
 }

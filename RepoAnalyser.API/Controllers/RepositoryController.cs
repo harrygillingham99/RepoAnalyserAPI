@@ -1,11 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NSwag.Annotations;
 using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.API.Helpers;
+using RepoAnalyser.Logic.AnalysisHelpers;
+using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Services.OctoKit.GraphQL;
@@ -19,12 +23,13 @@ namespace RepoAnalyser.API.Controllers
     public class RepositoryController : BaseController
     {
         private readonly IOctoKitGraphQlServiceAgent _octoKitServiceAgent;
-
+        private readonly IAuthFacade _authFacade;
         public RepositoryController(IRepoAnalyserAuditRepository auditRepository,
             IBackgroundTaskQueue backgroundTaskQueue, IOptions<AppSettings> options,
-            IOctoKitGraphQlServiceAgent octoKitServiceAgent) : base(auditRepository, backgroundTaskQueue, options)
+            IOctoKitGraphQlServiceAgent octoKitServiceAgent, IAuthFacade authFacade) : base(auditRepository, backgroundTaskQueue, options)
         {
             _octoKitServiceAgent = octoKitServiceAgent;
+            _authFacade = authFacade;
         }
 
         [HttpGet("")]
@@ -40,5 +45,19 @@ namespace RepoAnalyser.API.Controllers
                 return _octoKitServiceAgent.GetRepositories(token);
             });
         }
+
+        [HttpPost("TestCyclomaticComplexity")]
+        [SwaggerResponse(HttpStatusCode.OK, typeof(Dictionary<string, int>), Description = "Success getting repos")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
+        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "not found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails),
+            Description = "Error getting repos")]
+        public Task<IActionResult> GetComplexityForMethodsInAssembly([FromBody] string pathToAssembly)
+        {
+            return ExecuteAndMapToActionResult(() =>
+                _authFacade.GetComplexityForAssemblies(pathToAssembly)
+            );
+        }
+
     }
 }

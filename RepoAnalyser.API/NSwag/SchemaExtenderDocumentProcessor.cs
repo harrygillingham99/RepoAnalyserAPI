@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using NSwag.Generation.Processors;
 using NSwag.Generation.Processors.Contexts;
-using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.Attributes;
 

@@ -20,16 +20,16 @@ namespace RepoAnalyser.Logic.AnalysisHelpers
         }
 
         public static List<MethodDefinition> ScanForMethods(this List<AssemblyDefinition> targetAssemblies,
-            List<string> methodsToFind)
+            List<string> methodSearchTerms)
         {
             var methods = new List<MethodDefinition>();
             foreach (var assembly in targetAssemblies)
             {
-                foreach (var methodToSearch in methodsToFind)
+                foreach (var methodToSearch in methodSearchTerms)
                 {
                     methods.AddRange(assembly.MainModule.Types.Where(o => o.IsClass)
                         .SelectMany(type => type.Methods)
-                        .Where(o => o.FullName.Contains(methodToSearch)).ToList());
+                        .Where(o => o.FullName.ToLower().Contains(methodToSearch.ToLower())).ToList());
                 }
             }
             return methods;

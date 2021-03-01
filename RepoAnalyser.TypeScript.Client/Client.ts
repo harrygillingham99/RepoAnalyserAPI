@@ -320,6 +320,78 @@ export class Client extends AuthorizedApiBase {
         }
         return Promise.resolve<Repo[]>(<any>null);
     }
+
+    /**
+     * @param metadata (optional) ClientMetadata
+     * @return Success getting repos
+     */
+    repository_GetComplexityForMethodsInAssembly(metadata: any | undefined, pathToAssembly: string): Promise<{ [key: string]: number; }> {
+        let url_ = this.baseUrl + "/repo/test";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(pathToAssembly);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            headers: {
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.processRepository_GetComplexityForMethodsInAssembly(_response);
+        });
+    }
+
+    protected processRepository_GetComplexityForMethodsInAssembly(response: Response): Promise<{ [key: string]: number; }> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200) {
+                result200 = {} as any;
+                for (let key in resultData200) {
+                    if (resultData200.hasOwnProperty(key))
+                        result200![key] = resultData200[key];
+                }
+            }
+            return result200;
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = UnauthorizedResponse.fromJS(resultData401);
+            return throwException("No token provided", status, _responseText, _headers, result401);
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = NotFoundResponse.fromJS(resultData404);
+            return throwException("not found", status, _responseText, _headers, result404);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Error getting repos", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<{ [key: string]: number; }>(<any>null);
+    }
 }
 
 export class TokenUserResponse implements ITokenUserResponse {
