@@ -13,8 +13,9 @@
 
   <ItemGroup>
     <Reference Include="Mono.Cecil">
-      <HintPath>..\RepoAnalyser.Logic\lib\Mono.Cecil.dll</HintPath>
+      <HintPath>Libraries\Mono.Cecil.dll</HintPath>
     </Reference>
   </ItemGroup>
+
 
 </Project>
