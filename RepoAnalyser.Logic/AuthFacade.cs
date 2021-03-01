@@ -12,7 +12,6 @@ namespace RepoAnalyser.Logic
     public class AuthFacade : IAuthFacade
     {
         private readonly IOctoKitAuthServiceAgent _octoKitAuthServiceAgent;
-
         public AuthFacade(IOctoKitAuthServiceAgent octoKitAuthServiceAgent)
         {
             _octoKitAuthServiceAgent = octoKitAuthServiceAgent;
