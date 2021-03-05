@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Octokit.GraphQL;
-using Octokit.GraphQL.Model;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
@@ -27,6 +26,7 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
                 {
                     Description = x.Description,
                     Name = x.Name,
+
                 }).Compile();
             return BuildConnectionExecuteQuery(token, query);
         }
@@ -43,6 +43,5 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
     {
         public string Name { get; set; }
         public string Description { get; set; }
-        public List<Commit> MasterCommits { get; set; }
     }
 }

@@ -12,6 +12,7 @@ using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Services.OctoKit.GraphQL;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
+using RepoAnalyser.Services.OctoKit.Interfaces;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 
 namespace RepoAnalyser.API.Controllers
@@ -48,8 +49,7 @@ namespace RepoAnalyser.API.Controllers
         [SwaggerResponse(HttpStatusCode.OK, typeof(Dictionary<string, int>), Description = "Success getting repos")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
         [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "not found")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails),
-            Description = "Error getting repos")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting repos")]
         public Task<IActionResult> GetComplexityForMethodsInAssembly([FromBody] string pathToAssembly)
         {
             return ExecuteAndMapToActionResult(() =>
