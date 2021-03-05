@@ -8,6 +8,7 @@ using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Services.OctoKit.GraphQL;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
@@ -29,17 +30,17 @@ namespace RepoAnalyser.API.Controllers
             _authFacade = authFacade;
         }
 
-        [HttpGet("")]
+        [HttpGet("{filterOption}")]
         [SwaggerResponse(HttpStatusCode.OK, typeof(IEnumerable<Repo>), Description = "Success getting repos")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
         [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "not found")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting repos")]
-        public Task<IActionResult> Repositories()
+        public Task<IActionResult> Repositories([FromRoute] RepoFilterOptions filterOption = RepoFilterOptions.All )
         {
             return ExecuteAndMapToActionResult(() =>
             {
                 var token = HttpContext.Request.GetAuthorizationToken();
-                return _octoKitServiceAgent.GetRepositories(token);
+                return _octoKitServiceAgent.GetRepositories(token, filterOption);
             });
         }
 

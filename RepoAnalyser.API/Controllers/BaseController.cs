@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -77,7 +78,7 @@ namespace RepoAnalyser.API.Controllers
             catch (Exception ex)
             {
                 Log.Error(ex, ex.Message);
-                return Problem(ex.Message, statusCode: 500, title: ex.GetType().Name);
+                return Problem(ex.Message, statusCode: (int)HttpStatusCode.InternalServerError, title: ex.GetType().Name, type: ex.GetType().FullName);
             }
             finally
             {

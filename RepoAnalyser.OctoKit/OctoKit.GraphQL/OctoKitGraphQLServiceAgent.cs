@@ -2,9 +2,10 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Octokit.GraphQL;
+using Octokit.GraphQL.Model;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
-using static RepoAnalyser.Objects.Constants.GitHubConstants;
 using static RepoAnalyser.Objects.Helpers.OctoKitHelper;
 
 namespace RepoAnalyser.Services.OctoKit.GraphQL
@@ -18,15 +19,14 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
             _productHeaderValue = new ProductHeaderValue(options.Value.AppName);
         }
 
-        public Task<IEnumerable<Repo>> GetRepositories(string token)
+        public Task<IEnumerable<Repo>> GetRepositories(string token, RepoFilterOptions option)
         {
             var query = new Query().Viewer
-                .Repositories(100, affiliations: RepositoryScopes).Nodes
+                .Repositories(100, affiliations: BuildRepositoryScopes(option)).Nodes
                 .Select(x => new Repo
                 {
                     Description = x.Description,
-                    Name = x.Collaborators(null, null, null, null, null, null).Nodes.Select(user => $"{user.Name}")
-                        .ToList()
+                    Name = x.Name,
                 }).Compile();
             return BuildConnectionExecuteQuery(token, query);
         }
@@ -41,7 +41,8 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
 
     public class Repo
     {
-        public List<string> Name { get; set; }
+        public string Name { get; set; }
         public string Description { get; set; }
+        public List<Commit> MasterCommits { get; set; }
     }
 }
