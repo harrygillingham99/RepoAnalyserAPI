@@ -16,9 +16,9 @@ namespace RepoAnalyser.API.Controllers
     [Route("auth")]
     public class AuthenticationController : BaseController
     {
-        private readonly IAuthFacade _authFacade;
+        private readonly IAuthenticationFacade _authFacade;
 
-        public AuthenticationController(IAuthFacade authFacade, IRepoAnalyserAuditRepository repository,
+        public AuthenticationController(IAuthenticationFacade authFacade, IRepoAnalyserAuditRepository repository,
             IBackgroundTaskQueue worker, IOptions<AppSettings> options) : base(repository, worker, options)
         {
             _authFacade = authFacade;

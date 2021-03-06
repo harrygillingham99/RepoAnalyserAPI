@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using LibGit2Sharp;
 using RepoAnalyser.Objects.API.Responses;
 
 namespace RepoAnalyser.Logic.Interfaces
 {
-    public interface IAuthFacade
+    public interface IAuthenticationFacade
     {
         Task<TokenUserResponse> GetOAuthTokenWithUserInfo(string code, string state);
         Task<string> GetLoginRedirectUrl();
 
         Task<UserInfoResult> GetUserInformation(string token);
-        Task<Dictionary<string, int>> GetComplexityForAssemblies(string pathToAssembly);
     }
 }

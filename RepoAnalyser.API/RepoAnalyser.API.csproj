@@ -10,8 +10,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.3" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="10.3.9" />
-    <PackageReference Include="NJsonSchema.CodeGeneration.TypeScript" Version="10.3.9" />
+    <PackageReference Include="NJsonSchema.CodeGeneration.CSharp" Version="10.3.11" />
+    <PackageReference Include="NJsonSchema.CodeGeneration.TypeScript" Version="10.3.11" />
     <PackageReference Include="NSwag.Annotations" Version="13.10.7" />
     <PackageReference Include="NSwag.AspNetCore" Version="13.10.7" />
     <PackageReference Include="NSwag.CodeGeneration" Version="13.10.7" />
@@ -23,7 +23,7 @@
     </PackageReference>
     <PackageReference Include="Scrutor" Version="3.3.0" />
     <PackageReference Include="Serilog" Version="2.10.0" />
-    <PackageReference Include="Serilog.Extensions.Hosting" Version="4.1.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="4.1.2" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
   </ItemGroup>
@@ -35,7 +35,7 @@
     <ProjectReference Include="..\RepoAnalyser.SqlServer.DAL\RepoAnalyser.SqlServer.DAL.csproj" />
   </ItemGroup>
 
-  <Target Name="NSwag" AfterTargets="Build"  Condition="'$(Configuration)' == 'Debug'">
+  <Target Name="NSwag" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
     <Copy SourceFiles="@(Reference)" DestinationFolder="$(OutDir)References" />
     <Exec Command="$(NSwagExe_Net50) run nswag.json /variables:Configuration=$(Configuration)" />
     <RemoveDir Directories="$(OutDir)References" />

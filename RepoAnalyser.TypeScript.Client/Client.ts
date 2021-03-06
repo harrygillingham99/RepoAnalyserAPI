@@ -326,13 +326,13 @@ export class Client extends AuthorizedApiBase {
 
     /**
      * @param metadata (optional) ClientMetadata
-     * @return Success getting repos
+     * @return Success getting commits for repo
      */
-    repository_GetComplexityForMethodsInAssembly(metadata: any | undefined, pathToAssembly: string): Promise<{ [key: string]: number; }> {
-        let url_ = this.baseUrl + "/repo/TestCyclomaticComplexity";
+    repository_GetCommits(metadata: any | undefined, request: RepositoryCommitsRequest): Promise<Commit[]> {
+        let url_ = this.baseUrl + "/repo/commits";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(pathToAssembly);
+        const content_ = JSON.stringify(request);
 
         let options_ = <RequestInit>{
             body: content_,
@@ -347,23 +347,21 @@ export class Client extends AuthorizedApiBase {
         return this.transformOptions(options_).then(transformedOptions_ => {
             return this.http.fetch(url_, transformedOptions_);
         }).then((_response: Response) => {
-            return this.processRepository_GetComplexityForMethodsInAssembly(_response);
+            return this.processRepository_GetCommits(_response);
         });
     }
 
-    protected processRepository_GetComplexityForMethodsInAssembly(response: Response): Promise<{ [key: string]: number; }> {
+    protected processRepository_GetCommits(response: Response): Promise<Commit[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (resultData200) {
-                result200 = {} as any;
-                for (let key in resultData200) {
-                    if (resultData200.hasOwnProperty(key))
-                        result200![key] = resultData200[key];
-                }
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(Commit.fromJS(item));
             }
             return result200;
             });
@@ -379,21 +377,21 @@ export class Client extends AuthorizedApiBase {
             let result404: any = null;
             let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result404 = NotFoundResponse.fromJS(resultData404);
-            return throwException("not found", status, _responseText, _headers, result404);
+            return throwException("Repo not found", status, _responseText, _headers, result404);
             });
         } else if (status === 500) {
             return response.text().then((_responseText) => {
             let result500: any = null;
             let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Error getting repos", status, _responseText, _headers, result500);
+            return throwException("Error getting commits for repo", status, _responseText, _headers, result500);
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<{ [key: string]: number; }>(<any>null);
+        return Promise.resolve<Commit[]>(<any>null);
     }
 }
 
@@ -988,7 +986,6 @@ export interface IUserInfoResult {
 export class Repo implements IRepo {
     name?: string | undefined;
     description?: string | undefined;
-    masterCommits?: Commit[] | undefined;
 
     constructor(data?: IRepo) {
         if (data) {
@@ -1003,11 +1000,6 @@ export class Repo implements IRepo {
         if (_data) {
             this.name = _data["name"];
             this.description = _data["description"];
-            if (Array.isArray(_data["masterCommits"])) {
-                this.masterCommits = [] as any;
-                for (let item of _data["masterCommits"])
-                    this.masterCommits!.push(Commit.fromJS(item));
-            }
         }
     }
 
@@ -1022,11 +1014,6 @@ export class Repo implements IRepo {
         data = typeof data === 'object' ? data : {};
         data["name"] = this.name;
         data["description"] = this.description;
-        if (Array.isArray(this.masterCommits)) {
-            data["masterCommits"] = [];
-            for (let item of this.masterCommits)
-                data["masterCommits"].push(item.toJSON());
-        }
         return data; 
     }
 }
@@ -1034,13 +1021,19 @@ export class Repo implements IRepo {
 export interface IRepo {
     name?: string | undefined;
     description?: string | undefined;
-    masterCommits?: Commit[] | undefined;
 }
 
-export class QueryableValueOfCommit implements IQueryableValueOfCommit {
-    expression?: Expression | undefined;
+export enum RepoFilterOptions {
+    All = 1,
+    Owned = 2,
+    ContributedNotOwned = 3,
+}
 
-    constructor(data?: IQueryableValueOfCommit) {
+export abstract class GitObject implements IGitObject {
+    id?: ObjectId | undefined;
+    sha?: string | undefined;
+
+    constructor(data?: IGitObject) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1051,63 +1044,38 @@ export class QueryableValueOfCommit implements IQueryableValueOfCommit {
 
     init(_data?: any) {
         if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
+            this.id = _data["id"] ? ObjectId.fromJS(_data["id"]) : <any>undefined;
+            this.sha = _data["sha"];
         }
     }
 
-    static fromJS(data: any): QueryableValueOfCommit {
+    static fromJS(data: any): GitObject {
         data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfCommit();
-        result.init(data);
-        return result;
+        throw new Error("The abstract class 'GitObject' cannot be instantiated.");
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
+        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
+        data["sha"] = this.sha;
         return data; 
     }
 }
 
-export interface IQueryableValueOfCommit {
-    expression?: Expression | undefined;
+export interface IGitObject {
+    id?: ObjectId | undefined;
+    sha?: string | undefined;
 }
 
-export class Commit extends QueryableValueOfCommit implements ICommit {
-    abbreviatedOid?: string | undefined;
-    additions?: number;
-    author?: GitActor | undefined;
-    authoredByCommitter?: boolean;
-    authoredDate?: Date;
-    changedFiles?: number;
-    commitResourcePath?: string | undefined;
-    commitUrl?: string | undefined;
-    committedDate?: Date;
-    committedViaWeb?: boolean;
-    committer?: GitActor | undefined;
-    deletions?: number;
-    id?: ID;
+export class Commit extends GitObject implements ICommit {
     message?: string | undefined;
-    messageBody?: string | undefined;
-    messageBodyHTML?: string | undefined;
-    messageHeadline?: string | undefined;
-    messageHeadlineHTML?: string | undefined;
-    oid?: string | undefined;
-    onBehalfOf?: Organization | undefined;
-    pushedDate?: Date | undefined;
-    repository?: Repository | undefined;
-    resourcePath?: string | undefined;
-    signature?: IGitSignature | undefined;
-    status?: Status | undefined;
-    statusCheckRollup?: StatusCheckRollup | undefined;
-    tarballUrl?: string | undefined;
-    tree?: Tree | undefined;
-    treeResourcePath?: string | undefined;
-    treeUrl?: string | undefined;
-    url?: string | undefined;
-    viewerCanSubscribe?: boolean;
-    viewerSubscription?: SubscriptionState | undefined;
-    zipballUrl?: string | undefined;
+    messageShort?: string | undefined;
+    encoding?: string | undefined;
+    author?: Signature | undefined;
+    committer?: Signature | undefined;
+    tree?: TreeEntry[] | undefined;
+    parents?: Commit[] | undefined;
+    notes?: Note[] | undefined;
 
     constructor(data?: ICommit) {
         super(data);
@@ -1116,40 +1084,26 @@ export class Commit extends QueryableValueOfCommit implements ICommit {
     init(_data?: any) {
         super.init(_data);
         if (_data) {
-            this.abbreviatedOid = _data["abbreviatedOid"];
-            this.additions = _data["additions"];
-            this.author = _data["author"] ? GitActor.fromJS(_data["author"]) : <any>undefined;
-            this.authoredByCommitter = _data["authoredByCommitter"];
-            this.authoredDate = _data["authoredDate"] ? new Date(_data["authoredDate"].toString()) : <any>undefined;
-            this.changedFiles = _data["changedFiles"];
-            this.commitResourcePath = _data["commitResourcePath"];
-            this.commitUrl = _data["commitUrl"];
-            this.committedDate = _data["committedDate"] ? new Date(_data["committedDate"].toString()) : <any>undefined;
-            this.committedViaWeb = _data["committedViaWeb"];
-            this.committer = _data["committer"] ? GitActor.fromJS(_data["committer"]) : <any>undefined;
-            this.deletions = _data["deletions"];
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
             this.message = _data["message"];
-            this.messageBody = _data["messageBody"];
-            this.messageBodyHTML = _data["messageBodyHTML"];
-            this.messageHeadline = _data["messageHeadline"];
-            this.messageHeadlineHTML = _data["messageHeadlineHTML"];
-            this.oid = _data["oid"];
-            this.onBehalfOf = _data["onBehalfOf"] ? Organization.fromJS(_data["onBehalfOf"]) : <any>undefined;
-            this.pushedDate = _data["pushedDate"] ? new Date(_data["pushedDate"].toString()) : <any>undefined;
-            this.repository = _data["repository"] ? Repository.fromJS(_data["repository"]) : <any>undefined;
-            this.resourcePath = _data["resourcePath"];
-            this.signature = _data["signature"] ? IGitSignature.fromJS(_data["signature"]) : <any>undefined;
-            this.status = _data["status"] ? Status.fromJS(_data["status"]) : <any>undefined;
-            this.statusCheckRollup = _data["statusCheckRollup"] ? StatusCheckRollup.fromJS(_data["statusCheckRollup"]) : <any>undefined;
-            this.tarballUrl = _data["tarballUrl"];
-            this.tree = _data["tree"] ? Tree.fromJS(_data["tree"]) : <any>undefined;
-            this.treeResourcePath = _data["treeResourcePath"];
-            this.treeUrl = _data["treeUrl"];
-            this.url = _data["url"];
-            this.viewerCanSubscribe = _data["viewerCanSubscribe"];
-            this.viewerSubscription = _data["viewerSubscription"];
-            this.zipballUrl = _data["zipballUrl"];
+            this.messageShort = _data["messageShort"];
+            this.encoding = _data["encoding"];
+            this.author = _data["author"] ? Signature.fromJS(_data["author"]) : <any>undefined;
+            this.committer = _data["committer"] ? Signature.fromJS(_data["committer"]) : <any>undefined;
+            if (Array.isArray(_data["tree"])) {
+                this.tree = [] as any;
+                for (let item of _data["tree"])
+                    this.tree!.push(TreeEntry.fromJS(item));
+            }
+            if (Array.isArray(_data["parents"])) {
+                this.parents = [] as any;
+                for (let item of _data["parents"])
+                    this.parents!.push(Commit.fromJS(item));
+            }
+            if (Array.isArray(_data["notes"])) {
+                this.notes = [] as any;
+                for (let item of _data["notes"])
+                    this.notes!.push(Note.fromJS(item));
+            }
         }
     }
 
@@ -1162,86 +1116,48 @@ export class Commit extends QueryableValueOfCommit implements ICommit {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["abbreviatedOid"] = this.abbreviatedOid;
-        data["additions"] = this.additions;
+        data["message"] = this.message;
+        data["messageShort"] = this.messageShort;
+        data["encoding"] = this.encoding;
         data["author"] = this.author ? this.author.toJSON() : <any>undefined;
-        data["authoredByCommitter"] = this.authoredByCommitter;
-        data["authoredDate"] = this.authoredDate ? this.authoredDate.toISOString() : <any>undefined;
-        data["changedFiles"] = this.changedFiles;
-        data["commitResourcePath"] = this.commitResourcePath;
-        data["commitUrl"] = this.commitUrl;
-        data["committedDate"] = this.committedDate ? this.committedDate.toISOString() : <any>undefined;
-        data["committedViaWeb"] = this.committedViaWeb;
         data["committer"] = this.committer ? this.committer.toJSON() : <any>undefined;
-        data["deletions"] = this.deletions;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["message"] = this.message;
-        data["messageBody"] = this.messageBody;
-        data["messageBodyHTML"] = this.messageBodyHTML;
-        data["messageHeadline"] = this.messageHeadline;
-        data["messageHeadlineHTML"] = this.messageHeadlineHTML;
-        data["oid"] = this.oid;
-        data["onBehalfOf"] = this.onBehalfOf ? this.onBehalfOf.toJSON() : <any>undefined;
-        data["pushedDate"] = this.pushedDate ? this.pushedDate.toISOString() : <any>undefined;
-        data["repository"] = this.repository ? this.repository.toJSON() : <any>undefined;
-        data["resourcePath"] = this.resourcePath;
-        data["signature"] = this.signature ? this.signature.toJSON() : <any>undefined;
-        data["status"] = this.status ? this.status.toJSON() : <any>undefined;
-        data["statusCheckRollup"] = this.statusCheckRollup ? this.statusCheckRollup.toJSON() : <any>undefined;
-        data["tarballUrl"] = this.tarballUrl;
-        data["tree"] = this.tree ? this.tree.toJSON() : <any>undefined;
-        data["treeResourcePath"] = this.treeResourcePath;
-        data["treeUrl"] = this.treeUrl;
-        data["url"] = this.url;
-        data["viewerCanSubscribe"] = this.viewerCanSubscribe;
-        data["viewerSubscription"] = this.viewerSubscription;
-        data["zipballUrl"] = this.zipballUrl;
+        if (Array.isArray(this.tree)) {
+            data["tree"] = [];
+            for (let item of this.tree)
+                data["tree"].push(item.toJSON());
+        }
+        if (Array.isArray(this.parents)) {
+            data["parents"] = [];
+            for (let item of this.parents)
+                data["parents"].push(item.toJSON());
+        }
+        if (Array.isArray(this.notes)) {
+            data["notes"] = [];
+            for (let item of this.notes)
+                data["notes"].push(item.toJSON());
+        }
         super.toJSON(data);
         return data; 
     }
 }
 
-export interface ICommit extends IQueryableValueOfCommit {
-    abbreviatedOid?: string | undefined;
-    additions?: number;
-    author?: GitActor | undefined;
-    authoredByCommitter?: boolean;
-    authoredDate?: Date;
-    changedFiles?: number;
-    commitResourcePath?: string | undefined;
-    commitUrl?: string | undefined;
-    committedDate?: Date;
-    committedViaWeb?: boolean;
-    committer?: GitActor | undefined;
-    deletions?: number;
-    id?: ID;
+export interface ICommit extends IGitObject {
     message?: string | undefined;
-    messageBody?: string | undefined;
-    messageBodyHTML?: string | undefined;
-    messageHeadline?: string | undefined;
-    messageHeadlineHTML?: string | undefined;
-    oid?: string | undefined;
-    onBehalfOf?: Organization | undefined;
-    pushedDate?: Date | undefined;
-    repository?: Repository | undefined;
-    resourcePath?: string | undefined;
-    signature?: IGitSignature | undefined;
-    status?: Status | undefined;
-    statusCheckRollup?: StatusCheckRollup | undefined;
-    tarballUrl?: string | undefined;
-    tree?: Tree | undefined;
-    treeResourcePath?: string | undefined;
-    treeUrl?: string | undefined;
-    url?: string | undefined;
-    viewerCanSubscribe?: boolean;
-    viewerSubscription?: SubscriptionState | undefined;
-    zipballUrl?: string | undefined;
+    messageShort?: string | undefined;
+    encoding?: string | undefined;
+    author?: Signature | undefined;
+    committer?: Signature | undefined;
+    tree?: TreeEntry[] | undefined;
+    parents?: Commit[] | undefined;
+    notes?: Note[] | undefined;
 }
 
-export class QueryableValueOfGitActor implements IQueryableValueOfGitActor {
-    expression?: Expression | undefined;
+export class Signature implements ISignature {
+    name?: string | undefined;
+    email?: string | undefined;
+    when?: Date;
 
-    constructor(data?: IQueryableValueOfGitActor) {
+    constructor(data?: ISignature) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1252,77 +1168,42 @@ export class QueryableValueOfGitActor implements IQueryableValueOfGitActor {
 
     init(_data?: any) {
         if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfGitActor {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfGitActor();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfGitActor {
-    expression?: Expression | undefined;
-}
-
-export class GitActor extends QueryableValueOfGitActor implements IGitActor {
-    date?: string | undefined;
-    email?: string | undefined;
-    name?: string | undefined;
-    user?: User2 | undefined;
-
-    constructor(data?: IGitActor) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.date = _data["date"];
+            this.name = _data["name"];
             this.email = _data["email"];
-            this.name = _data["name"];
-            this.user = _data["user"] ? User2.fromJS(_data["user"]) : <any>undefined;
+            this.when = _data["when"] ? new Date(_data["when"].toString()) : <any>undefined;
         }
     }
 
-    static fromJS(data: any): GitActor {
+    static fromJS(data: any): Signature {
         data = typeof data === 'object' ? data : {};
-        let result = new GitActor();
+        let result = new Signature();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["date"] = this.date;
+        data["name"] = this.name;
         data["email"] = this.email;
-        data["name"] = this.name;
-        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
-        super.toJSON(data);
+        data["when"] = this.when ? this.when.toISOString() : <any>undefined;
         return data; 
     }
 }
 
-export interface IGitActor extends IQueryableValueOfGitActor {
-    date?: string | undefined;
+export interface ISignature {
+    name?: string | undefined;
     email?: string | undefined;
-    name?: string | undefined;
-    user?: User2 | undefined;
+    when?: Date;
 }
 
-export class QueryableValueOfUser implements IQueryableValueOfUser {
-    expression?: Expression | undefined;
+export class TreeEntry implements ITreeEntry {
+    mode?: Mode;
+    name?: string | undefined;
+    path?: string | undefined;
+    target?: GitObject | undefined;
+    targetType?: TreeEntryTargetType;
 
-    constructor(data?: IQueryableValueOfUser) {
+    constructor(data?: ITreeEntry) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1333,1397 +1214,55 @@ export class QueryableValueOfUser implements IQueryableValueOfUser {
 
     init(_data?: any) {
         if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfUser {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfUser();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfUser {
-    expression?: Expression | undefined;
-}
-
-export class User2 extends QueryableValueOfUser implements IUser2 {
-    bio?: string | undefined;
-    bioHTML?: string | undefined;
-    company?: string | undefined;
-    companyHTML?: string | undefined;
-    createdAt?: Date;
-    databaseId?: number | undefined;
-    email?: string | undefined;
-    id?: ID;
-    isBountyHunter?: boolean;
-    isCampusExpert?: boolean;
-    isDeveloperProgramMember?: boolean;
-    isEmployee?: boolean;
-    isHireable?: boolean;
-    isSiteAdmin?: boolean;
-    isViewer?: boolean;
-    itemShowcase?: ProfileItemShowcase | undefined;
-    location?: string | undefined;
-    login?: string | undefined;
-    name?: string | undefined;
-    pinnedItemsRemaining?: number;
-    projectsResourcePath?: string | undefined;
-    projectsUrl?: string | undefined;
-    resourcePath?: string | undefined;
-    sponsorsListing?: SponsorsListing | undefined;
-    status?: UserStatus | undefined;
-    twitterUsername?: string | undefined;
-    updatedAt?: Date;
-    url?: string | undefined;
-    viewerCanChangePinnedItems?: boolean;
-    viewerCanCreateProjects?: boolean;
-    viewerCanFollow?: boolean;
-    viewerIsFollowing?: boolean;
-    websiteUrl?: string | undefined;
-
-    constructor(data?: IUser2) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.bio = _data["bio"];
-            this.bioHTML = _data["bioHTML"];
-            this.company = _data["company"];
-            this.companyHTML = _data["companyHTML"];
-            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
-            this.databaseId = _data["databaseId"];
-            this.email = _data["email"];
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.isBountyHunter = _data["isBountyHunter"];
-            this.isCampusExpert = _data["isCampusExpert"];
-            this.isDeveloperProgramMember = _data["isDeveloperProgramMember"];
-            this.isEmployee = _data["isEmployee"];
-            this.isHireable = _data["isHireable"];
-            this.isSiteAdmin = _data["isSiteAdmin"];
-            this.isViewer = _data["isViewer"];
-            this.itemShowcase = _data["itemShowcase"] ? ProfileItemShowcase.fromJS(_data["itemShowcase"]) : <any>undefined;
-            this.location = _data["location"];
-            this.login = _data["login"];
+            this.mode = _data["mode"];
             this.name = _data["name"];
-            this.pinnedItemsRemaining = _data["pinnedItemsRemaining"];
-            this.projectsResourcePath = _data["projectsResourcePath"];
-            this.projectsUrl = _data["projectsUrl"];
-            this.resourcePath = _data["resourcePath"];
-            this.sponsorsListing = _data["sponsorsListing"] ? SponsorsListing.fromJS(_data["sponsorsListing"]) : <any>undefined;
-            this.status = _data["status"] ? UserStatus.fromJS(_data["status"]) : <any>undefined;
-            this.twitterUsername = _data["twitterUsername"];
-            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
-            this.url = _data["url"];
-            this.viewerCanChangePinnedItems = _data["viewerCanChangePinnedItems"];
-            this.viewerCanCreateProjects = _data["viewerCanCreateProjects"];
-            this.viewerCanFollow = _data["viewerCanFollow"];
-            this.viewerIsFollowing = _data["viewerIsFollowing"];
-            this.websiteUrl = _data["websiteUrl"];
+            this.path = _data["path"];
+            this.target = _data["target"] ? GitObject.fromJS(_data["target"]) : <any>undefined;
+            this.targetType = _data["targetType"];
         }
     }
 
-    static fromJS(data: any): User2 {
+    static fromJS(data: any): TreeEntry {
         data = typeof data === 'object' ? data : {};
-        let result = new User2();
+        let result = new TreeEntry();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["bio"] = this.bio;
-        data["bioHTML"] = this.bioHTML;
-        data["company"] = this.company;
-        data["companyHTML"] = this.companyHTML;
-        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
-        data["databaseId"] = this.databaseId;
-        data["email"] = this.email;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["isBountyHunter"] = this.isBountyHunter;
-        data["isCampusExpert"] = this.isCampusExpert;
-        data["isDeveloperProgramMember"] = this.isDeveloperProgramMember;
-        data["isEmployee"] = this.isEmployee;
-        data["isHireable"] = this.isHireable;
-        data["isSiteAdmin"] = this.isSiteAdmin;
-        data["isViewer"] = this.isViewer;
-        data["itemShowcase"] = this.itemShowcase ? this.itemShowcase.toJSON() : <any>undefined;
-        data["location"] = this.location;
-        data["login"] = this.login;
+        data["mode"] = this.mode;
         data["name"] = this.name;
-        data["pinnedItemsRemaining"] = this.pinnedItemsRemaining;
-        data["projectsResourcePath"] = this.projectsResourcePath;
-        data["projectsUrl"] = this.projectsUrl;
-        data["resourcePath"] = this.resourcePath;
-        data["sponsorsListing"] = this.sponsorsListing ? this.sponsorsListing.toJSON() : <any>undefined;
-        data["status"] = this.status ? this.status.toJSON() : <any>undefined;
-        data["twitterUsername"] = this.twitterUsername;
-        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
-        data["url"] = this.url;
-        data["viewerCanChangePinnedItems"] = this.viewerCanChangePinnedItems;
-        data["viewerCanCreateProjects"] = this.viewerCanCreateProjects;
-        data["viewerCanFollow"] = this.viewerCanFollow;
-        data["viewerIsFollowing"] = this.viewerIsFollowing;
-        data["websiteUrl"] = this.websiteUrl;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IUser2 extends IQueryableValueOfUser {
-    bio?: string | undefined;
-    bioHTML?: string | undefined;
-    company?: string | undefined;
-    companyHTML?: string | undefined;
-    createdAt?: Date;
-    databaseId?: number | undefined;
-    email?: string | undefined;
-    id?: ID;
-    isBountyHunter?: boolean;
-    isCampusExpert?: boolean;
-    isDeveloperProgramMember?: boolean;
-    isEmployee?: boolean;
-    isHireable?: boolean;
-    isSiteAdmin?: boolean;
-    isViewer?: boolean;
-    itemShowcase?: ProfileItemShowcase | undefined;
-    location?: string | undefined;
-    login?: string | undefined;
-    name?: string | undefined;
-    pinnedItemsRemaining?: number;
-    projectsResourcePath?: string | undefined;
-    projectsUrl?: string | undefined;
-    resourcePath?: string | undefined;
-    sponsorsListing?: SponsorsListing | undefined;
-    status?: UserStatus | undefined;
-    twitterUsername?: string | undefined;
-    updatedAt?: Date;
-    url?: string | undefined;
-    viewerCanChangePinnedItems?: boolean;
-    viewerCanCreateProjects?: boolean;
-    viewerCanFollow?: boolean;
-    viewerIsFollowing?: boolean;
-    websiteUrl?: string | undefined;
-}
-
-export class ID implements IID {
-    value?: string | undefined;
-
-    constructor(data?: IID) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.value = _data["value"];
-        }
-    }
-
-    static fromJS(data: any): ID {
-        data = typeof data === 'object' ? data : {};
-        let result = new ID();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["value"] = this.value;
-        return data; 
-    }
-}
-
-export interface IID {
-    value?: string | undefined;
-}
-
-export class QueryableValueOfProfileItemShowcase implements IQueryableValueOfProfileItemShowcase {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfProfileItemShowcase) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfProfileItemShowcase {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfProfileItemShowcase();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfProfileItemShowcase {
-    expression?: Expression | undefined;
-}
-
-export class ProfileItemShowcase extends QueryableValueOfProfileItemShowcase implements IProfileItemShowcase {
-    hasPinnedItems?: boolean;
-
-    constructor(data?: IProfileItemShowcase) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.hasPinnedItems = _data["hasPinnedItems"];
-        }
-    }
-
-    static fromJS(data: any): ProfileItemShowcase {
-        data = typeof data === 'object' ? data : {};
-        let result = new ProfileItemShowcase();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["hasPinnedItems"] = this.hasPinnedItems;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IProfileItemShowcase extends IQueryableValueOfProfileItemShowcase {
-    hasPinnedItems?: boolean;
-}
-
-export abstract class Expression implements IExpression {
-    nodeType?: ExpressionType;
-    type?: string;
-    canReduce?: boolean;
-
-    constructor(data?: IExpression) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.nodeType = _data["nodeType"];
-            this.type = _data["type"];
-            this.canReduce = _data["canReduce"];
-        }
-    }
-
-    static fromJS(data: any): Expression {
-        data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'Expression' cannot be instantiated.");
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["nodeType"] = this.nodeType;
-        data["type"] = this.type;
-        data["canReduce"] = this.canReduce;
-        return data; 
-    }
-}
-
-export interface IExpression {
-    nodeType?: ExpressionType;
-    type?: string;
-    canReduce?: boolean;
-}
-
-export enum ExpressionType {
-    Add = 0,
-    AddChecked = 1,
-    And = 2,
-    AndAlso = 3,
-    ArrayLength = 4,
-    ArrayIndex = 5,
-    Call = 6,
-    Coalesce = 7,
-    Conditional = 8,
-    Constant = 9,
-    Convert = 10,
-    ConvertChecked = 11,
-    Divide = 12,
-    Equal = 13,
-    ExclusiveOr = 14,
-    GreaterThan = 15,
-    GreaterThanOrEqual = 16,
-    Invoke = 17,
-    Lambda = 18,
-    LeftShift = 19,
-    LessThan = 20,
-    LessThanOrEqual = 21,
-    ListInit = 22,
-    MemberAccess = 23,
-    MemberInit = 24,
-    Modulo = 25,
-    Multiply = 26,
-    MultiplyChecked = 27,
-    Negate = 28,
-    UnaryPlus = 29,
-    NegateChecked = 30,
-    New = 31,
-    NewArrayInit = 32,
-    NewArrayBounds = 33,
-    Not = 34,
-    NotEqual = 35,
-    Or = 36,
-    OrElse = 37,
-    Parameter = 38,
-    Power = 39,
-    Quote = 40,
-    RightShift = 41,
-    Subtract = 42,
-    SubtractChecked = 43,
-    TypeAs = 44,
-    TypeIs = 45,
-    Assign = 46,
-    Block = 47,
-    DebugInfo = 48,
-    Decrement = 49,
-    Dynamic = 50,
-    Default = 51,
-    Extension = 52,
-    Goto = 53,
-    Increment = 54,
-    Index = 55,
-    Label = 56,
-    RuntimeVariables = 57,
-    Loop = 58,
-    Switch = 59,
-    Throw = 60,
-    Try = 61,
-    Unbox = 62,
-    AddAssign = 63,
-    AndAssign = 64,
-    DivideAssign = 65,
-    ExclusiveOrAssign = 66,
-    LeftShiftAssign = 67,
-    ModuloAssign = 68,
-    MultiplyAssign = 69,
-    OrAssign = 70,
-    PowerAssign = 71,
-    RightShiftAssign = 72,
-    SubtractAssign = 73,
-    AddAssignChecked = 74,
-    MultiplyAssignChecked = 75,
-    SubtractAssignChecked = 76,
-    PreIncrementAssign = 77,
-    PreDecrementAssign = 78,
-    PostIncrementAssign = 79,
-    PostDecrementAssign = 80,
-    TypeEqual = 81,
-    OnesComplement = 82,
-    IsTrue = 83,
-    IsFalse = 84,
-}
-
-export class QueryableValueOfSponsorsListing implements IQueryableValueOfSponsorsListing {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfSponsorsListing) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfSponsorsListing {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfSponsorsListing();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfSponsorsListing {
-    expression?: Expression | undefined;
-}
-
-export class SponsorsListing extends QueryableValueOfSponsorsListing implements ISponsorsListing {
-    createdAt?: Date;
-    fullDescription?: string | undefined;
-    fullDescriptionHTML?: string | undefined;
-    id?: ID;
-    name?: string | undefined;
-    shortDescription?: string | undefined;
-    slug?: string | undefined;
-
-    constructor(data?: ISponsorsListing) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
-            this.fullDescription = _data["fullDescription"];
-            this.fullDescriptionHTML = _data["fullDescriptionHTML"];
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.name = _data["name"];
-            this.shortDescription = _data["shortDescription"];
-            this.slug = _data["slug"];
-        }
-    }
-
-    static fromJS(data: any): SponsorsListing {
-        data = typeof data === 'object' ? data : {};
-        let result = new SponsorsListing();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
-        data["fullDescription"] = this.fullDescription;
-        data["fullDescriptionHTML"] = this.fullDescriptionHTML;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["name"] = this.name;
-        data["shortDescription"] = this.shortDescription;
-        data["slug"] = this.slug;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface ISponsorsListing extends IQueryableValueOfSponsorsListing {
-    createdAt?: Date;
-    fullDescription?: string | undefined;
-    fullDescriptionHTML?: string | undefined;
-    id?: ID;
-    name?: string | undefined;
-    shortDescription?: string | undefined;
-    slug?: string | undefined;
-}
-
-export class QueryableValueOfUserStatus implements IQueryableValueOfUserStatus {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfUserStatus) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfUserStatus {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfUserStatus();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfUserStatus {
-    expression?: Expression | undefined;
-}
-
-export class UserStatus extends QueryableValueOfUserStatus implements IUserStatus {
-    createdAt?: Date;
-    emoji?: string | undefined;
-    emojiHTML?: string | undefined;
-    expiresAt?: Date | undefined;
-    id?: ID;
-    indicatesLimitedAvailability?: boolean;
-    message?: string | undefined;
-    organization?: Organization | undefined;
-    updatedAt?: Date;
-    user?: User2 | undefined;
-
-    constructor(data?: IUserStatus) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
-            this.emoji = _data["emoji"];
-            this.emojiHTML = _data["emojiHTML"];
-            this.expiresAt = _data["expiresAt"] ? new Date(_data["expiresAt"].toString()) : <any>undefined;
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.indicatesLimitedAvailability = _data["indicatesLimitedAvailability"];
-            this.message = _data["message"];
-            this.organization = _data["organization"] ? Organization.fromJS(_data["organization"]) : <any>undefined;
-            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
-            this.user = _data["user"] ? User2.fromJS(_data["user"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): UserStatus {
-        data = typeof data === 'object' ? data : {};
-        let result = new UserStatus();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
-        data["emoji"] = this.emoji;
-        data["emojiHTML"] = this.emojiHTML;
-        data["expiresAt"] = this.expiresAt ? this.expiresAt.toISOString() : <any>undefined;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["indicatesLimitedAvailability"] = this.indicatesLimitedAvailability;
-        data["message"] = this.message;
-        data["organization"] = this.organization ? this.organization.toJSON() : <any>undefined;
-        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
-        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IUserStatus extends IQueryableValueOfUserStatus {
-    createdAt?: Date;
-    emoji?: string | undefined;
-    emojiHTML?: string | undefined;
-    expiresAt?: Date | undefined;
-    id?: ID;
-    indicatesLimitedAvailability?: boolean;
-    message?: string | undefined;
-    organization?: Organization | undefined;
-    updatedAt?: Date;
-    user?: User2 | undefined;
-}
-
-export class QueryableValueOfOrganization implements IQueryableValueOfOrganization {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfOrganization) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfOrganization {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfOrganization();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfOrganization {
-    expression?: Expression | undefined;
-}
-
-export class Organization extends QueryableValueOfOrganization implements IOrganization {
-    createdAt?: Date;
-    databaseId?: number | undefined;
-    description?: string | undefined;
-    descriptionHTML?: string | undefined;
-    email?: string | undefined;
-    id?: ID;
-    ipAllowListEnabledSetting?: IpAllowListEnabledSettingValue;
-    isVerified?: boolean;
-    itemShowcase?: ProfileItemShowcase | undefined;
-    location?: string | undefined;
-    login?: string | undefined;
-    name?: string | undefined;
-    newTeamResourcePath?: string | undefined;
-    newTeamUrl?: string | undefined;
-    organizationBillingEmail?: string | undefined;
-    pinnedItemsRemaining?: number;
-    projectsResourcePath?: string | undefined;
-    projectsUrl?: string | undefined;
-    requiresTwoFactorAuthentication?: boolean | undefined;
-    resourcePath?: string | undefined;
-    samlIdentityProvider?: OrganizationIdentityProvider | undefined;
-    sponsorsListing?: SponsorsListing | undefined;
-    teamsResourcePath?: string | undefined;
-    teamsUrl?: string | undefined;
-    twitterUsername?: string | undefined;
-    updatedAt?: Date;
-    url?: string | undefined;
-    viewerCanAdminister?: boolean;
-    viewerCanChangePinnedItems?: boolean;
-    viewerCanCreateProjects?: boolean;
-    viewerCanCreateRepositories?: boolean;
-    viewerCanCreateTeams?: boolean;
-    viewerIsAMember?: boolean;
-    websiteUrl?: string | undefined;
-
-    constructor(data?: IOrganization) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
-            this.databaseId = _data["databaseId"];
-            this.description = _data["description"];
-            this.descriptionHTML = _data["descriptionHTML"];
-            this.email = _data["email"];
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.ipAllowListEnabledSetting = _data["ipAllowListEnabledSetting"];
-            this.isVerified = _data["isVerified"];
-            this.itemShowcase = _data["itemShowcase"] ? ProfileItemShowcase.fromJS(_data["itemShowcase"]) : <any>undefined;
-            this.location = _data["location"];
-            this.login = _data["login"];
-            this.name = _data["name"];
-            this.newTeamResourcePath = _data["newTeamResourcePath"];
-            this.newTeamUrl = _data["newTeamUrl"];
-            this.organizationBillingEmail = _data["organizationBillingEmail"];
-            this.pinnedItemsRemaining = _data["pinnedItemsRemaining"];
-            this.projectsResourcePath = _data["projectsResourcePath"];
-            this.projectsUrl = _data["projectsUrl"];
-            this.requiresTwoFactorAuthentication = _data["requiresTwoFactorAuthentication"];
-            this.resourcePath = _data["resourcePath"];
-            this.samlIdentityProvider = _data["samlIdentityProvider"] ? OrganizationIdentityProvider.fromJS(_data["samlIdentityProvider"]) : <any>undefined;
-            this.sponsorsListing = _data["sponsorsListing"] ? SponsorsListing.fromJS(_data["sponsorsListing"]) : <any>undefined;
-            this.teamsResourcePath = _data["teamsResourcePath"];
-            this.teamsUrl = _data["teamsUrl"];
-            this.twitterUsername = _data["twitterUsername"];
-            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
-            this.url = _data["url"];
-            this.viewerCanAdminister = _data["viewerCanAdminister"];
-            this.viewerCanChangePinnedItems = _data["viewerCanChangePinnedItems"];
-            this.viewerCanCreateProjects = _data["viewerCanCreateProjects"];
-            this.viewerCanCreateRepositories = _data["viewerCanCreateRepositories"];
-            this.viewerCanCreateTeams = _data["viewerCanCreateTeams"];
-            this.viewerIsAMember = _data["viewerIsAMember"];
-            this.websiteUrl = _data["websiteUrl"];
-        }
-    }
-
-    static fromJS(data: any): Organization {
-        data = typeof data === 'object' ? data : {};
-        let result = new Organization();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
-        data["databaseId"] = this.databaseId;
-        data["description"] = this.description;
-        data["descriptionHTML"] = this.descriptionHTML;
-        data["email"] = this.email;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["ipAllowListEnabledSetting"] = this.ipAllowListEnabledSetting;
-        data["isVerified"] = this.isVerified;
-        data["itemShowcase"] = this.itemShowcase ? this.itemShowcase.toJSON() : <any>undefined;
-        data["location"] = this.location;
-        data["login"] = this.login;
-        data["name"] = this.name;
-        data["newTeamResourcePath"] = this.newTeamResourcePath;
-        data["newTeamUrl"] = this.newTeamUrl;
-        data["organizationBillingEmail"] = this.organizationBillingEmail;
-        data["pinnedItemsRemaining"] = this.pinnedItemsRemaining;
-        data["projectsResourcePath"] = this.projectsResourcePath;
-        data["projectsUrl"] = this.projectsUrl;
-        data["requiresTwoFactorAuthentication"] = this.requiresTwoFactorAuthentication;
-        data["resourcePath"] = this.resourcePath;
-        data["samlIdentityProvider"] = this.samlIdentityProvider ? this.samlIdentityProvider.toJSON() : <any>undefined;
-        data["sponsorsListing"] = this.sponsorsListing ? this.sponsorsListing.toJSON() : <any>undefined;
-        data["teamsResourcePath"] = this.teamsResourcePath;
-        data["teamsUrl"] = this.teamsUrl;
-        data["twitterUsername"] = this.twitterUsername;
-        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
-        data["url"] = this.url;
-        data["viewerCanAdminister"] = this.viewerCanAdminister;
-        data["viewerCanChangePinnedItems"] = this.viewerCanChangePinnedItems;
-        data["viewerCanCreateProjects"] = this.viewerCanCreateProjects;
-        data["viewerCanCreateRepositories"] = this.viewerCanCreateRepositories;
-        data["viewerCanCreateTeams"] = this.viewerCanCreateTeams;
-        data["viewerIsAMember"] = this.viewerIsAMember;
-        data["websiteUrl"] = this.websiteUrl;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IOrganization extends IQueryableValueOfOrganization {
-    createdAt?: Date;
-    databaseId?: number | undefined;
-    description?: string | undefined;
-    descriptionHTML?: string | undefined;
-    email?: string | undefined;
-    id?: ID;
-    ipAllowListEnabledSetting?: IpAllowListEnabledSettingValue;
-    isVerified?: boolean;
-    itemShowcase?: ProfileItemShowcase | undefined;
-    location?: string | undefined;
-    login?: string | undefined;
-    name?: string | undefined;
-    newTeamResourcePath?: string | undefined;
-    newTeamUrl?: string | undefined;
-    organizationBillingEmail?: string | undefined;
-    pinnedItemsRemaining?: number;
-    projectsResourcePath?: string | undefined;
-    projectsUrl?: string | undefined;
-    requiresTwoFactorAuthentication?: boolean | undefined;
-    resourcePath?: string | undefined;
-    samlIdentityProvider?: OrganizationIdentityProvider | undefined;
-    sponsorsListing?: SponsorsListing | undefined;
-    teamsResourcePath?: string | undefined;
-    teamsUrl?: string | undefined;
-    twitterUsername?: string | undefined;
-    updatedAt?: Date;
-    url?: string | undefined;
-    viewerCanAdminister?: boolean;
-    viewerCanChangePinnedItems?: boolean;
-    viewerCanCreateProjects?: boolean;
-    viewerCanCreateRepositories?: boolean;
-    viewerCanCreateTeams?: boolean;
-    viewerIsAMember?: boolean;
-    websiteUrl?: string | undefined;
-}
-
-export enum IpAllowListEnabledSettingValue {
-    Enabled = "ENABLED",
-    Disabled = "DISABLED",
-}
-
-export class QueryableValueOfOrganizationIdentityProvider implements IQueryableValueOfOrganizationIdentityProvider {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfOrganizationIdentityProvider) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfOrganizationIdentityProvider {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfOrganizationIdentityProvider();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfOrganizationIdentityProvider {
-    expression?: Expression | undefined;
-}
-
-export class OrganizationIdentityProvider extends QueryableValueOfOrganizationIdentityProvider implements IOrganizationIdentityProvider {
-    digestMethod?: string | undefined;
-    id?: ID;
-    idpCertificate?: string | undefined;
-    issuer?: string | undefined;
-    organization?: Organization | undefined;
-    signatureMethod?: string | undefined;
-    ssoUrl?: string | undefined;
-
-    constructor(data?: IOrganizationIdentityProvider) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.digestMethod = _data["digestMethod"];
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.idpCertificate = _data["idpCertificate"];
-            this.issuer = _data["issuer"];
-            this.organization = _data["organization"] ? Organization.fromJS(_data["organization"]) : <any>undefined;
-            this.signatureMethod = _data["signatureMethod"];
-            this.ssoUrl = _data["ssoUrl"];
-        }
-    }
-
-    static fromJS(data: any): OrganizationIdentityProvider {
-        data = typeof data === 'object' ? data : {};
-        let result = new OrganizationIdentityProvider();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["digestMethod"] = this.digestMethod;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["idpCertificate"] = this.idpCertificate;
-        data["issuer"] = this.issuer;
-        data["organization"] = this.organization ? this.organization.toJSON() : <any>undefined;
-        data["signatureMethod"] = this.signatureMethod;
-        data["ssoUrl"] = this.ssoUrl;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IOrganizationIdentityProvider extends IQueryableValueOfOrganizationIdentityProvider {
-    digestMethod?: string | undefined;
-    id?: ID;
-    idpCertificate?: string | undefined;
-    issuer?: string | undefined;
-    organization?: Organization | undefined;
-    signatureMethod?: string | undefined;
-    ssoUrl?: string | undefined;
-}
-
-export class QueryableValueOfRepository implements IQueryableValueOfRepository {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfRepository) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfRepository {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfRepository();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfRepository {
-    expression?: Expression | undefined;
-}
-
-export class Repository extends QueryableValueOfRepository implements IRepository {
-    codeOfConduct?: CodeOfConduct | undefined;
-    createdAt?: Date;
-    databaseId?: number | undefined;
-    defaultBranchRef?: Ref | undefined;
-    deleteBranchOnMerge?: boolean;
-    description?: string | undefined;
-    descriptionHTML?: string | undefined;
-    diskUsage?: number | undefined;
-    forkCount?: number;
-    fundingLinks?: IQueryableListOfFundingLink | undefined;
-    hasIssuesEnabled?: boolean;
-    hasProjectsEnabled?: boolean;
-    hasWikiEnabled?: boolean;
-    homepageUrl?: string | undefined;
-    id?: ID;
-    isArchived?: boolean;
-    isDisabled?: boolean;
-    isEmpty?: boolean;
-    isFork?: boolean;
-    isLocked?: boolean;
-    isMirror?: boolean;
-    isPrivate?: boolean;
-    isTemplate?: boolean;
-    licenseInfo?: License | undefined;
-    lockReason?: RepositoryLockReason | undefined;
-    mergeCommitAllowed?: boolean;
-    mirrorUrl?: string | undefined;
-    name?: string | undefined;
-    nameWithOwner?: string | undefined;
-    openGraphImageUrl?: string | undefined;
-    owner?: IRepositoryOwner | undefined;
-    parent?: Repository | undefined;
-    primaryLanguage?: Language | undefined;
-    projectsResourcePath?: string | undefined;
-    projectsUrl?: string | undefined;
-    pushedAt?: Date | undefined;
-    rebaseMergeAllowed?: boolean;
-    resourcePath?: string | undefined;
-    squashMergeAllowed?: boolean;
-    sshUrl?: string | undefined;
-    tempCloneToken?: string | undefined;
-    templateRepository?: Repository | undefined;
-    updatedAt?: Date;
-    url?: string | undefined;
-    usesCustomOpenGraphImage?: boolean;
-    viewerCanAdminister?: boolean;
-    viewerCanCreateProjects?: boolean;
-    viewerCanSubscribe?: boolean;
-    viewerCanUpdateTopics?: boolean;
-    viewerDefaultCommitEmail?: string | undefined;
-    viewerDefaultMergeMethod?: PullRequestMergeMethod;
-    viewerHasStarred?: boolean;
-    viewerPermission?: RepositoryPermission | undefined;
-    viewerPossibleCommitEmails?: string[] | undefined;
-    viewerSubscription?: SubscriptionState | undefined;
-
-    constructor(data?: IRepository) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.codeOfConduct = _data["codeOfConduct"] ? CodeOfConduct.fromJS(_data["codeOfConduct"]) : <any>undefined;
-            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
-            this.databaseId = _data["databaseId"];
-            this.defaultBranchRef = _data["defaultBranchRef"] ? Ref.fromJS(_data["defaultBranchRef"]) : <any>undefined;
-            this.deleteBranchOnMerge = _data["deleteBranchOnMerge"];
-            this.description = _data["description"];
-            this.descriptionHTML = _data["descriptionHTML"];
-            this.diskUsage = _data["diskUsage"];
-            this.forkCount = _data["forkCount"];
-            this.fundingLinks = _data["fundingLinks"] ? IQueryableListOfFundingLink.fromJS(_data["fundingLinks"]) : <any>undefined;
-            this.hasIssuesEnabled = _data["hasIssuesEnabled"];
-            this.hasProjectsEnabled = _data["hasProjectsEnabled"];
-            this.hasWikiEnabled = _data["hasWikiEnabled"];
-            this.homepageUrl = _data["homepageUrl"];
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.isArchived = _data["isArchived"];
-            this.isDisabled = _data["isDisabled"];
-            this.isEmpty = _data["isEmpty"];
-            this.isFork = _data["isFork"];
-            this.isLocked = _data["isLocked"];
-            this.isMirror = _data["isMirror"];
-            this.isPrivate = _data["isPrivate"];
-            this.isTemplate = _data["isTemplate"];
-            this.licenseInfo = _data["licenseInfo"] ? License.fromJS(_data["licenseInfo"]) : <any>undefined;
-            this.lockReason = _data["lockReason"];
-            this.mergeCommitAllowed = _data["mergeCommitAllowed"];
-            this.mirrorUrl = _data["mirrorUrl"];
-            this.name = _data["name"];
-            this.nameWithOwner = _data["nameWithOwner"];
-            this.openGraphImageUrl = _data["openGraphImageUrl"];
-            this.owner = _data["owner"] ? IRepositoryOwner.fromJS(_data["owner"]) : <any>undefined;
-            this.parent = _data["parent"] ? Repository.fromJS(_data["parent"]) : <any>undefined;
-            this.primaryLanguage = _data["primaryLanguage"] ? Language.fromJS(_data["primaryLanguage"]) : <any>undefined;
-            this.projectsResourcePath = _data["projectsResourcePath"];
-            this.projectsUrl = _data["projectsUrl"];
-            this.pushedAt = _data["pushedAt"] ? new Date(_data["pushedAt"].toString()) : <any>undefined;
-            this.rebaseMergeAllowed = _data["rebaseMergeAllowed"];
-            this.resourcePath = _data["resourcePath"];
-            this.squashMergeAllowed = _data["squashMergeAllowed"];
-            this.sshUrl = _data["sshUrl"];
-            this.tempCloneToken = _data["tempCloneToken"];
-            this.templateRepository = _data["templateRepository"] ? Repository.fromJS(_data["templateRepository"]) : <any>undefined;
-            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
-            this.url = _data["url"];
-            this.usesCustomOpenGraphImage = _data["usesCustomOpenGraphImage"];
-            this.viewerCanAdminister = _data["viewerCanAdminister"];
-            this.viewerCanCreateProjects = _data["viewerCanCreateProjects"];
-            this.viewerCanSubscribe = _data["viewerCanSubscribe"];
-            this.viewerCanUpdateTopics = _data["viewerCanUpdateTopics"];
-            this.viewerDefaultCommitEmail = _data["viewerDefaultCommitEmail"];
-            this.viewerDefaultMergeMethod = _data["viewerDefaultMergeMethod"];
-            this.viewerHasStarred = _data["viewerHasStarred"];
-            this.viewerPermission = _data["viewerPermission"];
-            if (Array.isArray(_data["viewerPossibleCommitEmails"])) {
-                this.viewerPossibleCommitEmails = [] as any;
-                for (let item of _data["viewerPossibleCommitEmails"])
-                    this.viewerPossibleCommitEmails!.push(item);
-            }
-            this.viewerSubscription = _data["viewerSubscription"];
-        }
-    }
-
-    static fromJS(data: any): Repository {
-        data = typeof data === 'object' ? data : {};
-        let result = new Repository();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["codeOfConduct"] = this.codeOfConduct ? this.codeOfConduct.toJSON() : <any>undefined;
-        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
-        data["databaseId"] = this.databaseId;
-        data["defaultBranchRef"] = this.defaultBranchRef ? this.defaultBranchRef.toJSON() : <any>undefined;
-        data["deleteBranchOnMerge"] = this.deleteBranchOnMerge;
-        data["description"] = this.description;
-        data["descriptionHTML"] = this.descriptionHTML;
-        data["diskUsage"] = this.diskUsage;
-        data["forkCount"] = this.forkCount;
-        data["fundingLinks"] = this.fundingLinks ? this.fundingLinks.toJSON() : <any>undefined;
-        data["hasIssuesEnabled"] = this.hasIssuesEnabled;
-        data["hasProjectsEnabled"] = this.hasProjectsEnabled;
-        data["hasWikiEnabled"] = this.hasWikiEnabled;
-        data["homepageUrl"] = this.homepageUrl;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["isArchived"] = this.isArchived;
-        data["isDisabled"] = this.isDisabled;
-        data["isEmpty"] = this.isEmpty;
-        data["isFork"] = this.isFork;
-        data["isLocked"] = this.isLocked;
-        data["isMirror"] = this.isMirror;
-        data["isPrivate"] = this.isPrivate;
-        data["isTemplate"] = this.isTemplate;
-        data["licenseInfo"] = this.licenseInfo ? this.licenseInfo.toJSON() : <any>undefined;
-        data["lockReason"] = this.lockReason;
-        data["mergeCommitAllowed"] = this.mergeCommitAllowed;
-        data["mirrorUrl"] = this.mirrorUrl;
-        data["name"] = this.name;
-        data["nameWithOwner"] = this.nameWithOwner;
-        data["openGraphImageUrl"] = this.openGraphImageUrl;
-        data["owner"] = this.owner ? this.owner.toJSON() : <any>undefined;
-        data["parent"] = this.parent ? this.parent.toJSON() : <any>undefined;
-        data["primaryLanguage"] = this.primaryLanguage ? this.primaryLanguage.toJSON() : <any>undefined;
-        data["projectsResourcePath"] = this.projectsResourcePath;
-        data["projectsUrl"] = this.projectsUrl;
-        data["pushedAt"] = this.pushedAt ? this.pushedAt.toISOString() : <any>undefined;
-        data["rebaseMergeAllowed"] = this.rebaseMergeAllowed;
-        data["resourcePath"] = this.resourcePath;
-        data["squashMergeAllowed"] = this.squashMergeAllowed;
-        data["sshUrl"] = this.sshUrl;
-        data["tempCloneToken"] = this.tempCloneToken;
-        data["templateRepository"] = this.templateRepository ? this.templateRepository.toJSON() : <any>undefined;
-        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
-        data["url"] = this.url;
-        data["usesCustomOpenGraphImage"] = this.usesCustomOpenGraphImage;
-        data["viewerCanAdminister"] = this.viewerCanAdminister;
-        data["viewerCanCreateProjects"] = this.viewerCanCreateProjects;
-        data["viewerCanSubscribe"] = this.viewerCanSubscribe;
-        data["viewerCanUpdateTopics"] = this.viewerCanUpdateTopics;
-        data["viewerDefaultCommitEmail"] = this.viewerDefaultCommitEmail;
-        data["viewerDefaultMergeMethod"] = this.viewerDefaultMergeMethod;
-        data["viewerHasStarred"] = this.viewerHasStarred;
-        data["viewerPermission"] = this.viewerPermission;
-        if (Array.isArray(this.viewerPossibleCommitEmails)) {
-            data["viewerPossibleCommitEmails"] = [];
-            for (let item of this.viewerPossibleCommitEmails)
-                data["viewerPossibleCommitEmails"].push(item);
-        }
-        data["viewerSubscription"] = this.viewerSubscription;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IRepository extends IQueryableValueOfRepository {
-    codeOfConduct?: CodeOfConduct | undefined;
-    createdAt?: Date;
-    databaseId?: number | undefined;
-    defaultBranchRef?: Ref | undefined;
-    deleteBranchOnMerge?: boolean;
-    description?: string | undefined;
-    descriptionHTML?: string | undefined;
-    diskUsage?: number | undefined;
-    forkCount?: number;
-    fundingLinks?: IQueryableListOfFundingLink | undefined;
-    hasIssuesEnabled?: boolean;
-    hasProjectsEnabled?: boolean;
-    hasWikiEnabled?: boolean;
-    homepageUrl?: string | undefined;
-    id?: ID;
-    isArchived?: boolean;
-    isDisabled?: boolean;
-    isEmpty?: boolean;
-    isFork?: boolean;
-    isLocked?: boolean;
-    isMirror?: boolean;
-    isPrivate?: boolean;
-    isTemplate?: boolean;
-    licenseInfo?: License | undefined;
-    lockReason?: RepositoryLockReason | undefined;
-    mergeCommitAllowed?: boolean;
-    mirrorUrl?: string | undefined;
-    name?: string | undefined;
-    nameWithOwner?: string | undefined;
-    openGraphImageUrl?: string | undefined;
-    owner?: IRepositoryOwner | undefined;
-    parent?: Repository | undefined;
-    primaryLanguage?: Language | undefined;
-    projectsResourcePath?: string | undefined;
-    projectsUrl?: string | undefined;
-    pushedAt?: Date | undefined;
-    rebaseMergeAllowed?: boolean;
-    resourcePath?: string | undefined;
-    squashMergeAllowed?: boolean;
-    sshUrl?: string | undefined;
-    tempCloneToken?: string | undefined;
-    templateRepository?: Repository | undefined;
-    updatedAt?: Date;
-    url?: string | undefined;
-    usesCustomOpenGraphImage?: boolean;
-    viewerCanAdminister?: boolean;
-    viewerCanCreateProjects?: boolean;
-    viewerCanSubscribe?: boolean;
-    viewerCanUpdateTopics?: boolean;
-    viewerDefaultCommitEmail?: string | undefined;
-    viewerDefaultMergeMethod?: PullRequestMergeMethod;
-    viewerHasStarred?: boolean;
-    viewerPermission?: RepositoryPermission | undefined;
-    viewerPossibleCommitEmails?: string[] | undefined;
-    viewerSubscription?: SubscriptionState | undefined;
-}
-
-export class QueryableValueOfCodeOfConduct implements IQueryableValueOfCodeOfConduct {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfCodeOfConduct) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfCodeOfConduct {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfCodeOfConduct();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfCodeOfConduct {
-    expression?: Expression | undefined;
-}
-
-export class CodeOfConduct extends QueryableValueOfCodeOfConduct implements ICodeOfConduct {
-    body?: string | undefined;
-    id?: ID;
-    key?: string | undefined;
-    name?: string | undefined;
-    resourcePath?: string | undefined;
-    url?: string | undefined;
-
-    constructor(data?: ICodeOfConduct) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.body = _data["body"];
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.key = _data["key"];
-            this.name = _data["name"];
-            this.resourcePath = _data["resourcePath"];
-            this.url = _data["url"];
-        }
-    }
-
-    static fromJS(data: any): CodeOfConduct {
-        data = typeof data === 'object' ? data : {};
-        let result = new CodeOfConduct();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["body"] = this.body;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["key"] = this.key;
-        data["name"] = this.name;
-        data["resourcePath"] = this.resourcePath;
-        data["url"] = this.url;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface ICodeOfConduct extends IQueryableValueOfCodeOfConduct {
-    body?: string | undefined;
-    id?: ID;
-    key?: string | undefined;
-    name?: string | undefined;
-    resourcePath?: string | undefined;
-    url?: string | undefined;
-}
-
-export class QueryableValueOfRef implements IQueryableValueOfRef {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfRef) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfRef {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfRef();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfRef {
-    expression?: Expression | undefined;
-}
-
-export class Ref extends QueryableValueOfRef implements IRef {
-    id?: ID;
-    name?: string | undefined;
-    prefix?: string | undefined;
-    repository?: Repository | undefined;
-    target?: IGitObject | undefined;
-
-    constructor(data?: IRef) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.name = _data["name"];
-            this.prefix = _data["prefix"];
-            this.repository = _data["repository"] ? Repository.fromJS(_data["repository"]) : <any>undefined;
-            this.target = _data["target"] ? IGitObject.fromJS(_data["target"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): Ref {
-        data = typeof data === 'object' ? data : {};
-        let result = new Ref();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["name"] = this.name;
-        data["prefix"] = this.prefix;
-        data["repository"] = this.repository ? this.repository.toJSON() : <any>undefined;
+        data["path"] = this.path;
         data["target"] = this.target ? this.target.toJSON() : <any>undefined;
-        super.toJSON(data);
+        data["targetType"] = this.targetType;
         return data; 
     }
 }
 
-export interface IRef extends IQueryableValueOfRef {
-    id?: ID;
+export interface ITreeEntry {
+    mode?: Mode;
     name?: string | undefined;
-    prefix?: string | undefined;
-    repository?: Repository | undefined;
-    target?: IGitObject | undefined;
+    path?: string | undefined;
+    target?: GitObject | undefined;
+    targetType?: TreeEntryTargetType;
 }
 
-export abstract class IGitObject implements IIGitObject {
-    abbreviatedOid?: string | undefined;
-    commitResourcePath?: string | undefined;
-    commitUrl?: string | undefined;
-    id?: ID;
-    oid?: string | undefined;
-    repository?: Repository | undefined;
+export enum Mode {
+    Nonexistent = 0,
+    Directory = 16384,
+    NonExecutableFile = 33188,
+    NonExecutableGroupWritableFile = 33204,
+    ExecutableFile = 33261,
+    SymbolicLink = 40960,
+    GitLink = 57344,
+}
 
-    constructor(data?: IIGitObject) {
+export class ObjectId implements IObjectId {
+    rawId?: string | undefined;
+    sha?: string | undefined;
+
+    constructor(data?: IObjectId) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -2734,236 +1273,44 @@ export abstract class IGitObject implements IIGitObject {
 
     init(_data?: any) {
         if (_data) {
-            this.abbreviatedOid = _data["abbreviatedOid"];
-            this.commitResourcePath = _data["commitResourcePath"];
-            this.commitUrl = _data["commitUrl"];
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.oid = _data["oid"];
-            this.repository = _data["repository"] ? Repository.fromJS(_data["repository"]) : <any>undefined;
+            this.rawId = _data["rawId"];
+            this.sha = _data["sha"];
         }
     }
 
-    static fromJS(data: any): IGitObject {
+    static fromJS(data: any): ObjectId {
         data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'IGitObject' cannot be instantiated.");
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["abbreviatedOid"] = this.abbreviatedOid;
-        data["commitResourcePath"] = this.commitResourcePath;
-        data["commitUrl"] = this.commitUrl;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["oid"] = this.oid;
-        data["repository"] = this.repository ? this.repository.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IIGitObject {
-    abbreviatedOid?: string | undefined;
-    commitResourcePath?: string | undefined;
-    commitUrl?: string | undefined;
-    id?: ID;
-    oid?: string | undefined;
-    repository?: Repository | undefined;
-}
-
-export abstract class IQueryableListOfFundingLink implements IIQueryableListOfFundingLink {
-
-    constructor(data?: IIQueryableListOfFundingLink) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-    }
-
-    static fromJS(data: any): IQueryableListOfFundingLink {
-        data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'IQueryableListOfFundingLink' cannot be instantiated.");
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        return data; 
-    }
-}
-
-export interface IIQueryableListOfFundingLink {
-}
-
-export class QueryableValueOfLicense implements IQueryableValueOfLicense {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfLicense) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfLicense {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfLicense();
+        let result = new ObjectId();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
+        data["rawId"] = this.rawId;
+        data["sha"] = this.sha;
         return data; 
     }
 }
 
-export interface IQueryableValueOfLicense {
-    expression?: Expression | undefined;
+export interface IObjectId {
+    rawId?: string | undefined;
+    sha?: string | undefined;
 }
 
-export class License extends QueryableValueOfLicense implements ILicense {
-    body?: string | undefined;
-    conditions?: IQueryableListOfLicenseRule | undefined;
-    description?: string | undefined;
-    featured?: boolean;
-    hidden?: boolean;
-    id?: ID;
-    implementation?: string | undefined;
-    key?: string | undefined;
-    limitations?: IQueryableListOfLicenseRule | undefined;
-    name?: string | undefined;
-    nickname?: string | undefined;
-    permissions?: IQueryableListOfLicenseRule | undefined;
-    pseudoLicense?: boolean;
-    spdxId?: string | undefined;
-    url?: string | undefined;
-
-    constructor(data?: ILicense) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.body = _data["body"];
-            this.conditions = _data["conditions"] ? IQueryableListOfLicenseRule.fromJS(_data["conditions"]) : <any>undefined;
-            this.description = _data["description"];
-            this.featured = _data["featured"];
-            this.hidden = _data["hidden"];
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.implementation = _data["implementation"];
-            this.key = _data["key"];
-            this.limitations = _data["limitations"] ? IQueryableListOfLicenseRule.fromJS(_data["limitations"]) : <any>undefined;
-            this.name = _data["name"];
-            this.nickname = _data["nickname"];
-            this.permissions = _data["permissions"] ? IQueryableListOfLicenseRule.fromJS(_data["permissions"]) : <any>undefined;
-            this.pseudoLicense = _data["pseudoLicense"];
-            this.spdxId = _data["spdxId"];
-            this.url = _data["url"];
-        }
-    }
-
-    static fromJS(data: any): License {
-        data = typeof data === 'object' ? data : {};
-        let result = new License();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["body"] = this.body;
-        data["conditions"] = this.conditions ? this.conditions.toJSON() : <any>undefined;
-        data["description"] = this.description;
-        data["featured"] = this.featured;
-        data["hidden"] = this.hidden;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["implementation"] = this.implementation;
-        data["key"] = this.key;
-        data["limitations"] = this.limitations ? this.limitations.toJSON() : <any>undefined;
-        data["name"] = this.name;
-        data["nickname"] = this.nickname;
-        data["permissions"] = this.permissions ? this.permissions.toJSON() : <any>undefined;
-        data["pseudoLicense"] = this.pseudoLicense;
-        data["spdxId"] = this.spdxId;
-        data["url"] = this.url;
-        super.toJSON(data);
-        return data; 
-    }
+export enum TreeEntryTargetType {
+    Blob = 0,
+    Tree = 1,
+    GitLink = 2,
 }
 
-export interface ILicense extends IQueryableValueOfLicense {
-    body?: string | undefined;
-    conditions?: IQueryableListOfLicenseRule | undefined;
-    description?: string | undefined;
-    featured?: boolean;
-    hidden?: boolean;
-    id?: ID;
-    implementation?: string | undefined;
-    key?: string | undefined;
-    limitations?: IQueryableListOfLicenseRule | undefined;
-    name?: string | undefined;
-    nickname?: string | undefined;
-    permissions?: IQueryableListOfLicenseRule | undefined;
-    pseudoLicense?: boolean;
-    spdxId?: string | undefined;
-    url?: string | undefined;
-}
+export class Note implements INote {
+    blobId?: ObjectId | undefined;
+    message?: string | undefined;
+    namespace?: string | undefined;
+    targetObjectId?: ObjectId | undefined;
 
-export abstract class IQueryableListOfLicenseRule implements IIQueryableListOfLicenseRule {
-
-    constructor(data?: IIQueryableListOfLicenseRule) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-    }
-
-    static fromJS(data: any): IQueryableListOfLicenseRule {
-        data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'IQueryableListOfLicenseRule' cannot be instantiated.");
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        return data; 
-    }
-}
-
-export interface IIQueryableListOfLicenseRule {
-}
-
-export enum RepositoryLockReason {
-    Moving = "MOVING",
-    Billing = "BILLING",
-    Rename = "RENAME",
-    Migrating = "MIGRATING",
-}
-
-export abstract class IRepositoryOwner implements IIRepositoryOwner {
-    id?: ID;
-    login?: string | undefined;
-    resourcePath?: string | undefined;
-    url?: string | undefined;
-
-    constructor(data?: IIRepositoryOwner) {
+    constructor(data?: INote) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -2974,142 +1321,43 @@ export abstract class IRepositoryOwner implements IIRepositoryOwner {
 
     init(_data?: any) {
         if (_data) {
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.login = _data["login"];
-            this.resourcePath = _data["resourcePath"];
-            this.url = _data["url"];
+            this.blobId = _data["blobId"] ? ObjectId.fromJS(_data["blobId"]) : <any>undefined;
+            this.message = _data["message"];
+            this.namespace = _data["namespace"];
+            this.targetObjectId = _data["targetObjectId"] ? ObjectId.fromJS(_data["targetObjectId"]) : <any>undefined;
         }
     }
 
-    static fromJS(data: any): IRepositoryOwner {
+    static fromJS(data: any): Note {
         data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'IRepositoryOwner' cannot be instantiated.");
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["login"] = this.login;
-        data["resourcePath"] = this.resourcePath;
-        data["url"] = this.url;
-        return data; 
-    }
-}
-
-export interface IIRepositoryOwner {
-    id?: ID;
-    login?: string | undefined;
-    resourcePath?: string | undefined;
-    url?: string | undefined;
-}
-
-export class QueryableValueOfLanguage implements IQueryableValueOfLanguage {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfLanguage) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfLanguage {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfLanguage();
+        let result = new Note();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
+        data["blobId"] = this.blobId ? this.blobId.toJSON() : <any>undefined;
+        data["message"] = this.message;
+        data["namespace"] = this.namespace;
+        data["targetObjectId"] = this.targetObjectId ? this.targetObjectId.toJSON() : <any>undefined;
         return data; 
     }
 }
 
-export interface IQueryableValueOfLanguage {
-    expression?: Expression | undefined;
+export interface INote {
+    blobId?: ObjectId | undefined;
+    message?: string | undefined;
+    namespace?: string | undefined;
+    targetObjectId?: ObjectId | undefined;
 }
 
-export class Language extends QueryableValueOfLanguage implements ILanguage {
-    color?: string | undefined;
-    id?: ID;
-    name?: string | undefined;
-
-    constructor(data?: ILanguage) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.color = _data["color"];
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.name = _data["name"];
-        }
-    }
-
-    static fromJS(data: any): Language {
-        data = typeof data === 'object' ? data : {};
-        let result = new Language();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["color"] = this.color;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["name"] = this.name;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface ILanguage extends IQueryableValueOfLanguage {
-    color?: string | undefined;
-    id?: ID;
-    name?: string | undefined;
-}
-
-export enum PullRequestMergeMethod {
-    Merge = "MERGE",
-    Squash = "SQUASH",
-    Rebase = "REBASE",
-}
-
-export enum RepositoryPermission {
-    Admin = "ADMIN",
-    Maintain = "MAINTAIN",
-    Write = "WRITE",
-    Triage = "TRIAGE",
-    Read = "READ",
-}
-
-export enum SubscriptionState {
-    Unsubscribed = "UNSUBSCRIBED",
-    Subscribed = "SUBSCRIBED",
-    Ignored = "IGNORED",
-}
-
-export abstract class IGitSignature implements IIGitSignature {
+export class RepositoryCommitsRequest implements IRepositoryCommitsRequest {
+    repositoryUrl?: string | undefined;
+    username?: string | undefined;
     email?: string | undefined;
-    isValid?: boolean;
-    payload?: string | undefined;
-    signature?: string | undefined;
-    signer?: User2 | undefined;
-    state?: GitSignatureState;
-    wasSignedByGitHub?: boolean;
 
-    constructor(data?: IIGitSignature) {
+    constructor(data?: IRepositoryCommitsRequest) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -3120,383 +1368,32 @@ export abstract class IGitSignature implements IIGitSignature {
 
     init(_data?: any) {
         if (_data) {
+            this.repositoryUrl = _data["repositoryUrl"];
+            this.username = _data["username"];
             this.email = _data["email"];
-            this.isValid = _data["isValid"];
-            this.payload = _data["payload"];
-            this.signature = _data["signature"];
-            this.signer = _data["signer"] ? User2.fromJS(_data["signer"]) : <any>undefined;
-            this.state = _data["state"];
-            this.wasSignedByGitHub = _data["wasSignedByGitHub"];
         }
     }
 
-    static fromJS(data: any): IGitSignature {
+    static fromJS(data: any): RepositoryCommitsRequest {
         data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'IGitSignature' cannot be instantiated.");
+        let result = new RepositoryCommitsRequest();
+        result.init(data);
+        return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["repositoryUrl"] = this.repositoryUrl;
+        data["username"] = this.username;
         data["email"] = this.email;
-        data["isValid"] = this.isValid;
-        data["payload"] = this.payload;
-        data["signature"] = this.signature;
-        data["signer"] = this.signer ? this.signer.toJSON() : <any>undefined;
-        data["state"] = this.state;
-        data["wasSignedByGitHub"] = this.wasSignedByGitHub;
         return data; 
     }
 }
 
-export interface IIGitSignature {
+export interface IRepositoryCommitsRequest {
+    repositoryUrl?: string | undefined;
+    username?: string | undefined;
     email?: string | undefined;
-    isValid?: boolean;
-    payload?: string | undefined;
-    signature?: string | undefined;
-    signer?: User2 | undefined;
-    state?: GitSignatureState;
-    wasSignedByGitHub?: boolean;
-}
-
-export enum GitSignatureState {
-    Valid = "VALID",
-    Invalid = "INVALID",
-    MalformedSig = "MALFORMED_SIG",
-    UnknownKey = "UNKNOWN_KEY",
-    BadEmail = "BAD_EMAIL",
-    UnverifiedEmail = "UNVERIFIED_EMAIL",
-    NoUser = "NO_USER",
-    UnknownSigType = "UNKNOWN_SIG_TYPE",
-    Unsigned = "UNSIGNED",
-    GpgverifyUnavailable = "GPGVERIFY_UNAVAILABLE",
-    GpgverifyError = "GPGVERIFY_ERROR",
-    NotSigningKey = "NOT_SIGNING_KEY",
-    ExpiredKey = "EXPIRED_KEY",
-    OcspPending = "OCSP_PENDING",
-    OcspError = "OCSP_ERROR",
-    BadCert = "BAD_CERT",
-    OcspRevoked = "OCSP_REVOKED",
-}
-
-export class QueryableValueOfStatus implements IQueryableValueOfStatus {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfStatus) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfStatus {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfStatus();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfStatus {
-    expression?: Expression | undefined;
-}
-
-export class Status extends QueryableValueOfStatus implements IStatus {
-    commit?: Commit | undefined;
-    contexts?: IQueryableListOfStatusContext | undefined;
-    id?: ID;
-    state?: StatusState;
-
-    constructor(data?: IStatus) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.commit = _data["commit"] ? Commit.fromJS(_data["commit"]) : <any>undefined;
-            this.contexts = _data["contexts"] ? IQueryableListOfStatusContext.fromJS(_data["contexts"]) : <any>undefined;
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.state = _data["state"];
-        }
-    }
-
-    static fromJS(data: any): Status {
-        data = typeof data === 'object' ? data : {};
-        let result = new Status();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["commit"] = this.commit ? this.commit.toJSON() : <any>undefined;
-        data["contexts"] = this.contexts ? this.contexts.toJSON() : <any>undefined;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["state"] = this.state;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IStatus extends IQueryableValueOfStatus {
-    commit?: Commit | undefined;
-    contexts?: IQueryableListOfStatusContext | undefined;
-    id?: ID;
-    state?: StatusState;
-}
-
-export abstract class IQueryableListOfStatusContext implements IIQueryableListOfStatusContext {
-
-    constructor(data?: IIQueryableListOfStatusContext) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-    }
-
-    static fromJS(data: any): IQueryableListOfStatusContext {
-        data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'IQueryableListOfStatusContext' cannot be instantiated.");
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        return data; 
-    }
-}
-
-export interface IIQueryableListOfStatusContext {
-}
-
-export enum StatusState {
-    Expected = "EXPECTED",
-    Error = "ERROR",
-    Failure = "FAILURE",
-    Pending = "PENDING",
-    Success = "SUCCESS",
-}
-
-export class QueryableValueOfStatusCheckRollup implements IQueryableValueOfStatusCheckRollup {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfStatusCheckRollup) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfStatusCheckRollup {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfStatusCheckRollup();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfStatusCheckRollup {
-    expression?: Expression | undefined;
-}
-
-export class StatusCheckRollup extends QueryableValueOfStatusCheckRollup implements IStatusCheckRollup {
-    commit?: Commit | undefined;
-    id?: ID;
-    state?: StatusState;
-
-    constructor(data?: IStatusCheckRollup) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.commit = _data["commit"] ? Commit.fromJS(_data["commit"]) : <any>undefined;
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.state = _data["state"];
-        }
-    }
-
-    static fromJS(data: any): StatusCheckRollup {
-        data = typeof data === 'object' ? data : {};
-        let result = new StatusCheckRollup();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["commit"] = this.commit ? this.commit.toJSON() : <any>undefined;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["state"] = this.state;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IStatusCheckRollup extends IQueryableValueOfStatusCheckRollup {
-    commit?: Commit | undefined;
-    id?: ID;
-    state?: StatusState;
-}
-
-export class QueryableValueOfTree implements IQueryableValueOfTree {
-    expression?: Expression | undefined;
-
-    constructor(data?: IQueryableValueOfTree) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.expression = _data["expression"] ? Expression.fromJS(_data["expression"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): QueryableValueOfTree {
-        data = typeof data === 'object' ? data : {};
-        let result = new QueryableValueOfTree();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["expression"] = this.expression ? this.expression.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IQueryableValueOfTree {
-    expression?: Expression | undefined;
-}
-
-export class Tree extends QueryableValueOfTree implements ITree {
-    abbreviatedOid?: string | undefined;
-    commitResourcePath?: string | undefined;
-    commitUrl?: string | undefined;
-    entries?: IQueryableListOfTreeEntry | undefined;
-    id?: ID;
-    oid?: string | undefined;
-    repository?: Repository | undefined;
-
-    constructor(data?: ITree) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.abbreviatedOid = _data["abbreviatedOid"];
-            this.commitResourcePath = _data["commitResourcePath"];
-            this.commitUrl = _data["commitUrl"];
-            this.entries = _data["entries"] ? IQueryableListOfTreeEntry.fromJS(_data["entries"]) : <any>undefined;
-            this.id = _data["id"] ? ID.fromJS(_data["id"]) : <any>undefined;
-            this.oid = _data["oid"];
-            this.repository = _data["repository"] ? Repository.fromJS(_data["repository"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): Tree {
-        data = typeof data === 'object' ? data : {};
-        let result = new Tree();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["abbreviatedOid"] = this.abbreviatedOid;
-        data["commitResourcePath"] = this.commitResourcePath;
-        data["commitUrl"] = this.commitUrl;
-        data["entries"] = this.entries ? this.entries.toJSON() : <any>undefined;
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["oid"] = this.oid;
-        data["repository"] = this.repository ? this.repository.toJSON() : <any>undefined;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface ITree extends IQueryableValueOfTree {
-    abbreviatedOid?: string | undefined;
-    commitResourcePath?: string | undefined;
-    commitUrl?: string | undefined;
-    entries?: IQueryableListOfTreeEntry | undefined;
-    id?: ID;
-    oid?: string | undefined;
-    repository?: Repository | undefined;
-}
-
-export abstract class IQueryableListOfTreeEntry implements IIQueryableListOfTreeEntry {
-
-    constructor(data?: IIQueryableListOfTreeEntry) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-    }
-
-    static fromJS(data: any): IQueryableListOfTreeEntry {
-        data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'IQueryableListOfTreeEntry' cannot be instantiated.");
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        return data; 
-    }
-}
-
-export interface IIQueryableListOfTreeEntry {
-}
-
-export enum RepoFilterOptions {
-    All = 1,
-    Owned = 2,
-    ContributedNotOwned = 3,
 }
 
 export class ClientMetadata implements IClientMetadata {

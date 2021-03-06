@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LibGit2Sharp;
 using RepoAnalyser.Logic.AnalysisHelpers;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Exceptions;
+using RepoAnalyser.Services.libgit2csharp.Adapter;
 using RepoAnalyser.Services.OctoKit.Interfaces;
 
 namespace RepoAnalyser.Logic
 {
-    public class AuthFacade : IAuthFacade
+    public class AuthenticationFacade : IAuthenticationFacade
     {
         private readonly IOctoKitAuthServiceAgent _octoKitAuthServiceAgent;
-        public AuthFacade(IOctoKitAuthServiceAgent octoKitAuthServiceAgent)
+        public AuthenticationFacade(IOctoKitAuthServiceAgent octoKitAuthServiceAgent, IGitAdapter gitAdapter)
         {
             _octoKitAuthServiceAgent = octoKitAuthServiceAgent;
         }
@@ -52,15 +54,6 @@ namespace RepoAnalyser.Logic
                 User = await user ?? throw new NullReferenceException("User is null"),
                 LoginRedirectUrl = (await urlResult)?.AbsoluteUri ?? throw new NullReferenceException("Url was null")
             };
-        }
-
-        public Task<Dictionary<string, int>> GetComplexityForAssemblies(string pathToAssembly)
-        {
-            var dictResult = CecilHelper.ReadAssembly(pathToAssembly)
-                                             .ScanForMethods(new List<string>{"Get"})
-                                             .GetCyclomaticComplexities();
-
-            return Task.FromResult(dictResult);
         }
     }
 }

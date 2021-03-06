@@ -1,18 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using LibGit2Sharp;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NSwag.Annotations;
 using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.API.Helpers;
-using RepoAnalyser.Logic.Interfaces;
+using RepoAnalyser.Logic;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Services.OctoKit.GraphQL;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
-using RepoAnalyser.Services.OctoKit.Interfaces;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 
 namespace RepoAnalyser.API.Controllers
@@ -22,13 +22,13 @@ namespace RepoAnalyser.API.Controllers
     public class RepositoryController : BaseController
     {
         private readonly IOctoKitGraphQlServiceAgent _octoKitServiceAgent;
-        private readonly IAuthFacade _authFacade;
+        private readonly IRepositoryFacade _repositoryFacade;
         public RepositoryController(IRepoAnalyserAuditRepository auditRepository,
             IBackgroundTaskQueue backgroundTaskQueue, IOptions<AppSettings> options,
-            IOctoKitGraphQlServiceAgent octoKitServiceAgent, IAuthFacade authFacade) : base(auditRepository, backgroundTaskQueue, options)
+            IOctoKitGraphQlServiceAgent octoKitServiceAgent, IRepositoryFacade repositoryFacade) : base(auditRepository, backgroundTaskQueue, options)
         {
             _octoKitServiceAgent = octoKitServiceAgent;
-            _authFacade = authFacade;
+            _repositoryFacade = repositoryFacade;
         }
 
         [HttpGet("{filterOption}")]
@@ -45,16 +45,18 @@ namespace RepoAnalyser.API.Controllers
             });
         }
 
-        [HttpPost("TestCyclomaticComplexity")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(Dictionary<string, int>), Description = "Success getting repos")]
+        [HttpPost("commits")]
+        [SwaggerResponse(HttpStatusCode.OK, typeof(List<Commit>), Description = "Success getting commits for repo")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
-        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "not found")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting repos")]
-        public Task<IActionResult> GetComplexityForMethodsInAssembly([FromBody] string pathToAssembly)
+        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Repo not found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting commits for repo")]
+        public Task<IActionResult> GetCommits([FromBody] RepositoryCommitsRequest request)
         {
             return ExecuteAndMapToActionResult(() =>
-                _authFacade.GetComplexityForAssemblies(pathToAssembly)
-            );
+            {
+                var token = HttpContext.Request.GetAuthorizationToken();
+                return _repositoryFacade.GetCommitsForRepo(request, token);
+            });
         }
 
     }
