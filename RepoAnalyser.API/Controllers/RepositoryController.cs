@@ -32,7 +32,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("{filterOption}")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(IEnumerable<Repo>), Description = "Success getting repos")]
+        [SwaggerResponse(HttpStatusCode.OK, typeof(IEnumerable<UserRepositoryResult>), Description = "Success getting repos")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
         [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "not found")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting repos")]
@@ -46,11 +46,11 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpPost("commits")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(List<Commit>), Description = "Success getting commits for repo")]
+        [SwaggerResponse(HttpStatusCode.OK, typeof(IEnumerable<Commit>), Description = "Success getting commits for repo")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
         [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Repo not found")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting commits for repo")]
-        public Task<IActionResult> GetCommits([FromBody] RepositoryCommitsRequest request)
+        public Task<IActionResult> GetCommitsForRepository([FromBody] RepositoryCommitsRequest request)
         {
             return ExecuteAndMapToActionResult(() =>
             {

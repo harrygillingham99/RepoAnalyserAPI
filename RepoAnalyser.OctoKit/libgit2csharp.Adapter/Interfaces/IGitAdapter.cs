@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using Octokit;
 using Commit = LibGit2Sharp.Commit;
 
-namespace RepoAnalyser.Services.libgit2csharp.Adapter
+namespace RepoAnalyser.Services.libgit2csharp.Adapter.Interfaces
 {
     public interface IGitAdapter
     {

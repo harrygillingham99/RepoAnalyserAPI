@@ -533,24 +533,24 @@ namespace NetCore31ApiTemplate.Client
         /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting repos</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Repo>> RepositoriesAsync(RepoFilterOptions filterOption, object metadata);
+        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<UserRepositoryResult>> RepositoriesAsync(RepoFilterOptions filterOption, object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting repos</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Repo>> RepositoriesAsync(RepoFilterOptions filterOption, object metadata, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<UserRepositoryResult>> RepositoriesAsync(RepoFilterOptions filterOption, object metadata, System.Threading.CancellationToken cancellationToken);
     
         /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting commits for repo</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Commit>> GetCommitsAsync(object metadata, RepositoryCommitsRequest request);
+        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Commit>> GetCommitsForRepositoryAsync(object metadata, RepositoryCommitsRequest request);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting commits for repo</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Commit>> GetCommitsAsync(object metadata, RepositoryCommitsRequest request, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Commit>> GetCommitsForRepositoryAsync(object metadata, RepositoryCommitsRequest request, System.Threading.CancellationToken cancellationToken);
     
     }
     
@@ -592,7 +592,7 @@ namespace NetCore31ApiTemplate.Client
         /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting repos</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Repo>> RepositoriesAsync(RepoFilterOptions filterOption, object metadata)
+        public System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<UserRepositoryResult>> RepositoriesAsync(RepoFilterOptions filterOption, object metadata)
         {
             return RepositoriesAsync(filterOption, metadata, System.Threading.CancellationToken.None);
         }
@@ -601,7 +601,7 @@ namespace NetCore31ApiTemplate.Client
         /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting repos</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Repo>> RepositoriesAsync(RepoFilterOptions filterOption, object metadata, System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<UserRepositoryResult>> RepositoriesAsync(RepoFilterOptions filterOption, object metadata, System.Threading.CancellationToken cancellationToken)
         {
             if (filterOption == null)
                 throw new System.ArgumentNullException("filterOption");
@@ -644,7 +644,7 @@ namespace NetCore31ApiTemplate.Client
                         var status_ = (int)response_.StatusCode;
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.ObjectModel.ObservableCollection<Repo>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.ObjectModel.ObservableCollection<UserRepositoryResult>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -704,16 +704,16 @@ namespace NetCore31ApiTemplate.Client
         /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting commits for repo</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Commit>> GetCommitsAsync(object metadata, RepositoryCommitsRequest request)
+        public System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Commit>> GetCommitsForRepositoryAsync(object metadata, RepositoryCommitsRequest request)
         {
-            return GetCommitsAsync(metadata, request, System.Threading.CancellationToken.None);
+            return GetCommitsForRepositoryAsync(metadata, request, System.Threading.CancellationToken.None);
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <param name="metadata">ClientMetadata</param>
         /// <returns>Success getting commits for repo</returns>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Commit>> GetCommitsAsync(object metadata, RepositoryCommitsRequest request, System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<Commit>> GetCommitsForRepositoryAsync(object metadata, RepositoryCommitsRequest request, System.Threading.CancellationToken cancellationToken)
         {
             if (request == null)
                 throw new System.ArgumentNullException("request");
@@ -1263,7 +1263,7 @@ namespace NetCore31ApiTemplate.Client
     }
     
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.3.9.0 (Newtonsoft.Json v12.0.0.0)")]
-    public partial class Repo 
+    public partial class UserRepositoryResult 
     {
         [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Name { get; set; }
@@ -1271,14 +1271,50 @@ namespace NetCore31ApiTemplate.Client
         [Newtonsoft.Json.JsonProperty("description", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string Description { get; set; }
     
+        [Newtonsoft.Json.JsonProperty("pullUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string PullUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("private", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Private { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("template", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Template { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("collaborators", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.ObjectModel.ObservableCollection<Collaborator> Collaborators { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("lastUpdated", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime LastUpdated { get; set; }
+    
         public string ToJson() 
         {
             return Newtonsoft.Json.JsonConvert.SerializeObject(this);
         }
     
-        public static Repo FromJson(string data)
+        public static UserRepositoryResult FromJson(string data)
         {
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<Repo>(data);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<UserRepositoryResult>(data);
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.3.9.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class Collaborator 
+    {
+        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Name { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("avatarUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string AvatarUrl { get; set; }
+    
+        public string ToJson() 
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this);
+        }
+    
+        public static Collaborator FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<Collaborator>(data);
         }
     
     }

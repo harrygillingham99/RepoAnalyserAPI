@@ -259,7 +259,7 @@ export class Client extends AuthorizedApiBase {
      * @param metadata (optional) ClientMetadata
      * @return Success getting repos
      */
-    repository_Repositories(filterOption: RepoFilterOptions, metadata: any | undefined): Promise<Repo[]> {
+    repository_Repositories(filterOption: RepoFilterOptions, metadata: any | undefined): Promise<UserRepositoryResult[]> {
         let url_ = this.baseUrl + "/repo/{filterOption}";
         if (filterOption === undefined || filterOption === null)
             throw new Error("The parameter 'filterOption' must be defined.");
@@ -281,7 +281,7 @@ export class Client extends AuthorizedApiBase {
         });
     }
 
-    protected processRepository_Repositories(response: Response): Promise<Repo[]> {
+    protected processRepository_Repositories(response: Response): Promise<UserRepositoryResult[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -291,7 +291,7 @@ export class Client extends AuthorizedApiBase {
             if (Array.isArray(resultData200)) {
                 result200 = [] as any;
                 for (let item of resultData200)
-                    result200!.push(Repo.fromJS(item));
+                    result200!.push(UserRepositoryResult.fromJS(item));
             }
             return result200;
             });
@@ -321,14 +321,14 @@ export class Client extends AuthorizedApiBase {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Repo[]>(<any>null);
+        return Promise.resolve<UserRepositoryResult[]>(<any>null);
     }
 
     /**
      * @param metadata (optional) ClientMetadata
      * @return Success getting commits for repo
      */
-    repository_GetCommits(metadata: any | undefined, request: RepositoryCommitsRequest): Promise<Commit[]> {
+    repository_GetCommitsForRepository(metadata: any | undefined, request: RepositoryCommitsRequest): Promise<Commit[]> {
         let url_ = this.baseUrl + "/repo/commits";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -347,11 +347,11 @@ export class Client extends AuthorizedApiBase {
         return this.transformOptions(options_).then(transformedOptions_ => {
             return this.http.fetch(url_, transformedOptions_);
         }).then((_response: Response) => {
-            return this.processRepository_GetCommits(_response);
+            return this.processRepository_GetCommitsForRepository(_response);
         });
     }
 
-    protected processRepository_GetCommits(response: Response): Promise<Commit[]> {
+    protected processRepository_GetCommitsForRepository(response: Response): Promise<Commit[]> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
@@ -983,11 +983,16 @@ export interface IUserInfoResult {
     loginRedirectUrl?: string | undefined;
 }
 
-export class Repo implements IRepo {
+export class UserRepositoryResult implements IUserRepositoryResult {
     name?: string | undefined;
     description?: string | undefined;
+    pullUrl?: string | undefined;
+    private?: boolean;
+    template?: boolean;
+    collaborators?: Collaborator[] | undefined;
+    lastUpdated?: Date;
 
-    constructor(data?: IRepo) {
+    constructor(data?: IUserRepositoryResult) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1000,12 +1005,21 @@ export class Repo implements IRepo {
         if (_data) {
             this.name = _data["name"];
             this.description = _data["description"];
+            this.pullUrl = _data["pullUrl"];
+            this.private = _data["private"];
+            this.template = _data["template"];
+            if (Array.isArray(_data["collaborators"])) {
+                this.collaborators = [] as any;
+                for (let item of _data["collaborators"])
+                    this.collaborators!.push(Collaborator.fromJS(item));
+            }
+            this.lastUpdated = _data["lastUpdated"] ? new Date(_data["lastUpdated"].toString()) : <any>undefined;
         }
     }
 
-    static fromJS(data: any): Repo {
+    static fromJS(data: any): UserRepositoryResult {
         data = typeof data === 'object' ? data : {};
-        let result = new Repo();
+        let result = new UserRepositoryResult();
         result.init(data);
         return result;
     }
@@ -1014,13 +1028,67 @@ export class Repo implements IRepo {
         data = typeof data === 'object' ? data : {};
         data["name"] = this.name;
         data["description"] = this.description;
+        data["pullUrl"] = this.pullUrl;
+        data["private"] = this.private;
+        data["template"] = this.template;
+        if (Array.isArray(this.collaborators)) {
+            data["collaborators"] = [];
+            for (let item of this.collaborators)
+                data["collaborators"].push(item.toJSON());
+        }
+        data["lastUpdated"] = this.lastUpdated ? this.lastUpdated.toISOString() : <any>undefined;
         return data; 
     }
 }
 
-export interface IRepo {
+export interface IUserRepositoryResult {
     name?: string | undefined;
     description?: string | undefined;
+    pullUrl?: string | undefined;
+    private?: boolean;
+    template?: boolean;
+    collaborators?: Collaborator[] | undefined;
+    lastUpdated?: Date;
+}
+
+export class Collaborator implements ICollaborator {
+    name?: string | undefined;
+    avatarUrl?: string | undefined;
+
+    constructor(data?: ICollaborator) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.name = _data["name"];
+            this.avatarUrl = _data["avatarUrl"];
+        }
+    }
+
+    static fromJS(data: any): Collaborator {
+        data = typeof data === 'object' ? data : {};
+        let result = new Collaborator();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["avatarUrl"] = this.avatarUrl;
+        return data; 
+    }
+}
+
+export interface ICollaborator {
+    name?: string | undefined;
+    avatarUrl?: string | undefined;
 }
 
 export enum RepoFilterOptions {

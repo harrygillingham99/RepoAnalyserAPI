@@ -3,7 +3,7 @@ using System.Linq;
 using Mono.Cecil;
 using RepoAnalyser.Objects;
 
-namespace RepoAnalyser.Logic.AnalysisHelpers
+namespace RepoAnalyser.Logic.Analysis
 {
     public static class CecilHelper
     {

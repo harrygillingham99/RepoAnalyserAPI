@@ -5,7 +5,7 @@ using Gendarme.Framework.Rocks;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-namespace RepoAnalyser.Logic.AnalysisHelpers
+namespace RepoAnalyser.Logic.Analysis
 {
     /*
      * Helper class derived and adapted from logic in Gendarme AvoidComplexMethodsRule.cs

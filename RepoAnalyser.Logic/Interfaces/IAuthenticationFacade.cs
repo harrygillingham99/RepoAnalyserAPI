@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using LibGit2Sharp;
+﻿using System.Threading.Tasks;
 using RepoAnalyser.Objects.API.Responses;
 
 namespace RepoAnalyser.Logic.Interfaces

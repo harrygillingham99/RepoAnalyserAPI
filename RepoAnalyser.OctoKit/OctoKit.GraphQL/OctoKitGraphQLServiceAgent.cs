@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Octokit.GraphQL;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
+using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
 using static RepoAnalyser.Objects.Helpers.OctoKitHelper;
 
@@ -18,15 +20,21 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
             _productHeaderValue = new ProductHeaderValue(options.Value.AppName);
         }
 
-        public Task<IEnumerable<Repo>> GetRepositories(string token, RepoFilterOptions option)
+        public Task<IEnumerable<UserRepositoryResult>> GetRepositories(string token, RepoFilterOptions option)
         {
             var query = new Query().Viewer
                 .Repositories(100, affiliations: BuildRepositoryScopes(option)).Nodes
-                .Select(x => new Repo
+                .Select(repository => new UserRepositoryResult
                 {
-                    Description = x.Description,
-                    Name = x.Name,
-
+                    Description = repository.Description,
+                    Name = repository.Name,
+                    PullUrl = repository.Url,
+                    Private = repository.IsPrivate,
+                    Template = repository.IsTemplate,
+                    Collaborators = repository.Collaborators(null, null, null, null, null, null)
+                        .Select(conn => conn.Nodes)
+                        .Select(user => new Collaborator(user.Name, user.AvatarUrl(128))).ToList(),
+                    LastUpdated = repository.UpdatedAt.DateTime
                 }).Compile();
             return BuildConnectionExecuteQuery(token, query);
         }
@@ -37,11 +45,5 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
             var connection = BuildConnection(_productHeaderValue, token);
             return connection.Run(query, variables);
         }
-    }
-
-    public class Repo
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
     }
 }

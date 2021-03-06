@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using LibGit2Sharp;
 using RepoAnalyser.Objects.API.Requests;
-using RepoAnalyser.Services.libgit2csharp.Adapter;
+using RepoAnalyser.Services.libgit2csharp.Adapter.Interfaces;
 
 namespace RepoAnalyser.Logic
 {
