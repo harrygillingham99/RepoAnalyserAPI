@@ -6,13 +6,13 @@ using LibGit2Sharp;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
-using RepoAnalyser.Services.libgit2csharp.Adapter.Interfaces;
+using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
 using Commit = LibGit2Sharp.Commit;
 using Credentials = LibGit2Sharp.Credentials;
 using Repository = LibGit2Sharp.Repository;
 using Signature = LibGit2Sharp.Signature;
 
-namespace RepoAnalyser.Services.libgit2csharp.Adapter
+namespace RepoAnalyser.Services.libgit2sharp.Adapter
 {
     public class GitAdapter : IGitAdapter
     {
@@ -26,12 +26,12 @@ namespace RepoAnalyser.Services.libgit2csharp.Adapter
 
         public IEnumerable<Commit> GetCommits(GitActionRequest request)
         {
-            var repoLocation = GetOrCloneRepository(request);
+            var repoLocation = CloneOrPullLatestRepository(request);
             using var repo = new Repository(repoLocation);
             foreach (var commit in repo.Commits) yield return commit;
         }
 
-        public string GetOrCloneRepository(GitActionRequest request)
+        public string CloneOrPullLatestRepository(GitActionRequest request)
         {
             var repoDirectory = Path.Combine(_workDir, GetRepoNameFromUrl(request.RepoUrl));
             if (!Directory.Exists(repoDirectory))
@@ -52,7 +52,7 @@ namespace RepoAnalyser.Services.libgit2csharp.Adapter
                     new PullOptions {FetchOptions = options});
                 if (result.Status == MergeStatus.Conflicts)
                     throw new Exception(
-                        $"Error in {nameof(GetOrCloneRepository)}, merge conflicts for {GetRepoNameFromUrl(request.RepoUrl)}");
+                        $"Error in {nameof(CloneOrPullLatestRepository)}, merge conflicts for {GetRepoNameFromUrl(request.RepoUrl)}");
             }
 
             return repoDirectory;

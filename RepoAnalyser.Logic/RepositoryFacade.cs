@@ -4,7 +4,7 @@ using LibGit2Sharp;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
-using RepoAnalyser.Services.libgit2csharp.Adapter.Interfaces;
+using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
 
 namespace RepoAnalyser.Logic

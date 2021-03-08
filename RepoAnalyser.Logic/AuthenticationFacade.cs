@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Exceptions;
-using RepoAnalyser.Services.libgit2csharp.Adapter.Interfaces;
+using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
 using RepoAnalyser.Services.OctoKit.Interfaces;
 
 namespace RepoAnalyser.Logic
