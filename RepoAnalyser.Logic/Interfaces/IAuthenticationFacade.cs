@@ -6,7 +6,7 @@ namespace RepoAnalyser.Logic.Interfaces
     public interface IAuthenticationFacade
     {
         Task<TokenUserResponse> GetOAuthTokenWithUserInfo(string code, string state);
-        Task<string> GetLoginRedirectUrl();
+        string GetLoginRedirectUrl();
 
         Task<UserInfoResult> GetUserInformation(string token);
     }

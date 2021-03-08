@@ -5,6 +5,7 @@ using System.Linq;
 using LibGit2Sharp;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Services.libgit2csharp.Adapter.Interfaces;
 using Commit = LibGit2Sharp.Commit;
 using Credentials = LibGit2Sharp.Credentials;
@@ -23,21 +24,21 @@ namespace RepoAnalyser.Services.libgit2csharp.Adapter
         }
 
 
-        public IEnumerable<Commit> GetCommits(string repoUrl, string token, string username, string email)
+        public IEnumerable<Commit> GetCommits(GitActionRequest request)
         {
-            var repoLocation = GetOrCloneRepository(repoUrl, token, username, email);
+            var repoLocation = GetOrCloneRepository(request);
             using var repo = new Repository(repoLocation);
             foreach (var commit in repo.Commits) yield return commit;
         }
 
-        public string GetOrCloneRepository(string repoUrl, string token, string username, string email)
+        public string GetOrCloneRepository(GitActionRequest request)
         {
-            var repoDirectory = Path.Combine(_workDir, GetRepoNameFromUrl(repoUrl));
+            var repoDirectory = Path.Combine(_workDir, GetRepoNameFromUrl(request.RepoUrl));
             if (!Directory.Exists(repoDirectory))
             {
-                _ = Repository.Clone(repoUrl, repoDirectory, new CloneOptions
+                _ = Repository.Clone(request.RepoUrl, repoDirectory, new CloneOptions
                 {
-                    CredentialsProvider = (url, fromUrl, types) => BuildCredentials(token)
+                    CredentialsProvider = (url, fromUrl, types) => BuildCredentials(request.Token)
                 });
             }
             else
@@ -45,13 +46,13 @@ namespace RepoAnalyser.Services.libgit2csharp.Adapter
                 using var repo = new Repository(repoDirectory);
                 var options = new FetchOptions
                 {
-                    CredentialsProvider = (url, fromUrl, types) => BuildCredentials(token)
+                    CredentialsProvider = (url, fromUrl, types) => BuildCredentials(request.Token)
                 };
-                var result = Commands.Pull(repo, new Signature(username, email, DateTimeOffset.Now),
+                var result = Commands.Pull(repo, new Signature(request.Username, request.Email, DateTimeOffset.Now),
                     new PullOptions {FetchOptions = options});
                 if (result.Status == MergeStatus.Conflicts)
                     throw new Exception(
-                        $"Error in {nameof(GetOrCloneRepository)}, merge conflicts for {GetRepoNameFromUrl(repoUrl)}");
+                        $"Error in {nameof(GetOrCloneRepository)}, merge conflicts for {GetRepoNameFromUrl(request.RepoUrl)}");
             }
 
             return repoDirectory;

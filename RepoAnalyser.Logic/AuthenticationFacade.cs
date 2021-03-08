@@ -31,9 +31,9 @@ namespace RepoAnalyser.Logic
             };
         }
 
-        public async Task<string> GetLoginRedirectUrl()
+        public string GetLoginRedirectUrl()
         {
-            var urlResult = await _octoKitAuthServiceAgent.GetLoginRedirectUrl();
+            var urlResult =  _octoKitAuthServiceAgent.GetLoginRedirectUrl();
 
             if (urlResult is null) throw new NullReferenceException("Returned URL is null");
 
@@ -49,7 +49,7 @@ namespace RepoAnalyser.Logic
             return new UserInfoResult
             {
                 User = await user ?? throw new NullReferenceException("User is null"),
-                LoginRedirectUrl = (await urlResult)?.AbsoluteUri ?? throw new NullReferenceException("Url was null")
+                LoginRedirectUrl =  urlResult?.AbsoluteUri ?? throw new NullReferenceException("Url was null")
             };
         }
     }

@@ -32,7 +32,7 @@ namespace RepoAnalyser.API.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting auth token")]
         public Task<IActionResult> GetOAuthTokenWithUserInfo([FromRoute]string code, [FromRoute]string state)
         {
-            return ExecuteAndMapToActionResult(() =>
+            return ExecuteAndMapToActionResultAsync(() =>
                 _authFacade.GetOAuthTokenWithUserInfo(code, state)
             );
         }
@@ -42,7 +42,7 @@ namespace RepoAnalyser.API.Controllers
         [SwaggerResponse(HttpStatusCode.BadRequest, typeof(ValidationResponse), Description = "Bad request getting redirect url")]
         [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Error getting redirect url")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting redirect url")]
-        public Task<IActionResult> GetLoginRedirectUrl()
+        public IActionResult GetLoginRedirectUrl()
         {
             return ExecuteAndMapToActionResult(() =>
                 _authFacade.GetLoginRedirectUrl());
@@ -55,7 +55,7 @@ namespace RepoAnalyser.API.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting user")]
         public Task<IActionResult> GetUserInformationForToken()
         {
-            return ExecuteAndMapToActionResult(() =>
+            return ExecuteAndMapToActionResultAsync(() =>
             {
                 var token = HttpContext.Request.GetAuthorizationToken();
                 return _authFacade.GetUserInformation(token);

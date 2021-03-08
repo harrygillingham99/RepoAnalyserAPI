@@ -8,6 +8,7 @@ using NSwag.Annotations;
 using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic;
+using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
@@ -21,13 +22,11 @@ namespace RepoAnalyser.API.Controllers
     [Route("repo")]
     public class RepositoryController : BaseController
     {
-        private readonly IOctoKitGraphQlServiceAgent _octoKitServiceAgent;
         private readonly IRepositoryFacade _repositoryFacade;
         public RepositoryController(IRepoAnalyserAuditRepository auditRepository,
             IBackgroundTaskQueue backgroundTaskQueue, IOptions<AppSettings> options,
-            IOctoKitGraphQlServiceAgent octoKitServiceAgent, IRepositoryFacade repositoryFacade) : base(auditRepository, backgroundTaskQueue, options)
+            IRepositoryFacade repositoryFacade) : base(auditRepository, backgroundTaskQueue, options)
         {
-            _octoKitServiceAgent = octoKitServiceAgent;
             _repositoryFacade = repositoryFacade;
         }
 
@@ -38,10 +37,10 @@ namespace RepoAnalyser.API.Controllers
         [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting repos")]
         public Task<IActionResult> Repositories([FromRoute] RepoFilterOptions filterOption = RepoFilterOptions.All )
         {
-            return ExecuteAndMapToActionResult(() =>
+            return ExecuteAndMapToActionResultAsync(() =>
             {
                 var token = HttpContext.Request.GetAuthorizationToken();
-                return _octoKitServiceAgent.GetRepositories(token, filterOption);
+                return _repositoryFacade.GetRepositories(token, filterOption);
             });
         }
 
@@ -50,7 +49,7 @@ namespace RepoAnalyser.API.Controllers
         [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
         [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Repo not found")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting commits for repo")]
-        public Task<IActionResult> GetCommitsForRepository([FromBody] RepositoryCommitsRequest request)
+        public IActionResult GetCommitsForRepository([FromBody] RepositoryCommitsRequest request)
         {
             return ExecuteAndMapToActionResult(() =>
             {

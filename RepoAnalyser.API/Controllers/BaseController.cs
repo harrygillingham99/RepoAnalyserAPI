@@ -31,7 +31,7 @@ namespace RepoAnalyser.API.Controllers
             _requestLogging = options.Value.RequestLogging;
         }
 
-        protected async Task<IActionResult> ExecuteAndMapToActionResult<T>(Func<Task<T>> request)
+        protected async Task<IActionResult> ExecuteAndMapToActionResultAsync<T>(Func<Task<T>> request)
         {
             try
             {
@@ -88,12 +88,89 @@ namespace RepoAnalyser.API.Controllers
             }
         }
 
-        protected async Task<T> ExecuteAndReturn<T>(Func<Task<T>> request)
+        protected IActionResult ExecuteAndMapToActionResult<T>(Func<T> request)
+        {
+            try
+            {
+                _stopwatch.Start();
+                var response = request.Invoke();
+                return response switch
+                {
+                    null => throw new NullReferenceException($"null response from {request.Method.Name}"),
+
+                    Exception errorResponse => throw errorResponse,
+
+                    _ => Ok(response)
+                };
+            }
+            catch (NullReferenceException ex)
+            {
+                Log.Error(ex, ex.Message);
+                return NotFound(new NotFoundResponse
+                {
+                    Message = ex.Message,
+                    Title = ex.GetType().Name,
+                    BadProperties = new Dictionary<string, string>()
+                });
+            }
+            catch (UnauthorizedRequestException ex)
+            {
+                Log.Error(ex, ex.Message);
+                return Unauthorized(new UnauthorizedResponse
+                {
+                    Message = ex.Message,
+                    Title = ex.GetType().Name
+                });
+            }
+            catch (BadRequestException ex)
+            {
+                Log.Error(ex, $"Bad Request: {ex.Message}");
+                return BadRequest(new ValidationResponse
+                {
+                    Message = ex.Message,
+                    Title = ex.GetType().Name,
+                    ValidationErrors = new Dictionary<string, string>()
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, ex.Message);
+                return Problem(ex.Message, statusCode: (int)HttpStatusCode.InternalServerError, title: ex.GetType().Name, type: ex.GetType().FullName);
+            }
+            finally
+            {
+                _stopwatch.Stop();
+                RequestAudit(new RequestAudit(HttpContext.Request.GetMetadataFromRequestHeaders(),
+                    _stopwatch.ElapsedMilliseconds, HttpContext.Request.Path.Value ?? "unknown"));
+            }
+        }
+
+        protected async Task<T> ExecuteAndReturnAsync<T>(Func<Task<T>> request)
         {
             try
             {
                 _stopwatch.Start();
                 return await request.Invoke();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message, ex);
+                throw;
+            }
+            finally
+            {
+                _stopwatch.Stop();
+                RequestAudit(new RequestAudit(HttpContext.Request.GetMetadataFromRequestHeaders(),
+                    _stopwatch.ElapsedMilliseconds, HttpContext.Request.Path.Value ?? "unknown"));
+            }
+        }
+
+        protected T ExecuteAndReturn<T>(Func<T> request)
+        {
+            try
+            {
+                _stopwatch.Start();
+                return request.Invoke();
             }
             catch (Exception ex)
             {

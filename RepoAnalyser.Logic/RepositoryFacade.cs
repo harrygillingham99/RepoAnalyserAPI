@@ -1,29 +1,33 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using LibGit2Sharp;
+using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Requests;
+using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Services.libgit2csharp.Adapter.Interfaces;
+using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
 
 namespace RepoAnalyser.Logic
 {
     public class RepositoryFacade : IRepositoryFacade
     {
         private readonly IGitAdapter _gitAdapter;
+        private readonly IOctoKitGraphQlServiceAgent _octoKitGraphQlServiceAgent;
 
-        public RepositoryFacade(IGitAdapter gitAdapter)
+        public RepositoryFacade(IGitAdapter gitAdapter, IOctoKitGraphQlServiceAgent octoKitGraphQlServiceAgent)
         {
             _gitAdapter = gitAdapter;
+            _octoKitGraphQlServiceAgent = octoKitGraphQlServiceAgent;
         }
 
-        public Task<IEnumerable<Commit>> GetCommitsForRepo(RepositoryCommitsRequest request, string token)
+        public IEnumerable<Commit> GetCommitsForRepo(RepositoryCommitsRequest request, string token)
         {
-            return Task.FromResult(
-                _gitAdapter.GetCommits(request.RepositoryUrl, token, request.Username, request.Email));
+            return _gitAdapter.GetCommits(new GitActionRequest(request, token));
         }
-    }
 
-    public interface IRepositoryFacade
-    {
-        Task<IEnumerable<Commit>> GetCommitsForRepo(RepositoryCommitsRequest request, string token);
+        public Task<IEnumerable<UserRepositoryResult>> GetRepositories(string token, RepoFilterOptions filterOption)
+        {
+            return _octoKitGraphQlServiceAgent.GetRepositories(token, filterOption);
+        }
     }
 }

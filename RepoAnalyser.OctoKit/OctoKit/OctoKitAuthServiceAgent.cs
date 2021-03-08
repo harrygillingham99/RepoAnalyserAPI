@@ -24,8 +24,8 @@ namespace RepoAnalyser.Services.OctoKit
             _frontEndRedirectUrl = options.Value.FrontEndRedirectUrl;
             _client = BuildRestClient(options.Value.AppName);
         }
-        //Everything else is actually async, just want to follow the task pattern
-        public Task<Uri> GetLoginRedirectUrl()
+
+        public Uri GetLoginRedirectUrl()
         {
             var request = new OauthLoginRequest(_clientId)
             {
@@ -34,7 +34,7 @@ namespace RepoAnalyser.Services.OctoKit
                 Scopes = { "read:user", "repo", "security_events", "gist", "notifications" }
             };
 
-            return Task.FromResult(_client.Oauth.GetGitHubLoginUrl(request));
+            return _client.Oauth.GetGitHubLoginUrl(request);
         }
 
         public Task<OauthToken> GetOAuthToken(string code, string state)
