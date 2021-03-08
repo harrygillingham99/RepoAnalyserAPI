@@ -25,28 +25,22 @@ namespace RepoAnalyser.Logic.Analysis
             var pathToProjectFile = Directory.GetFiles(repoDir, "*.sln", SearchOption.AllDirectories).FirstOrDefault();
 
             if (string.IsNullOrWhiteSpace(pathToProjectFile))
-            {
                 throw new Exception("No project file found. Solution cannot be built");
-            }
 
             var process = new Process
             {
-               StartInfo = new ProcessStartInfo("dotnet")
-               {
-                   Arguments = $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo --verbosity minimal"
-               }
+                StartInfo = new ProcessStartInfo("dotnet")
+                {
+                    Arguments =
+                        $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo --verbosity minimal"
+                }
             };
 
-           process.Start();
+            process.Start();
 
-           process.WaitForExit();
+            process.WaitForExit();
 
-           return outputDir;
+            return outputDir;
         }
-    }
-
-    public interface IMsBuildRunner
-    {
-        string Build(string repoName, string outputDir = null);
     }
 }

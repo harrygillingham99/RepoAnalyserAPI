@@ -23,7 +23,6 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
             _workDir = options.Value.WorkingDirectory;
         }
 
-
         public IEnumerable<Commit> GetCommits(GitActionRequest request)
         {
             var repoLocation = CloneOrPullLatestRepository(request);
