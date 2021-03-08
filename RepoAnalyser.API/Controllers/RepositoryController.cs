@@ -7,13 +7,11 @@ using Microsoft.Extensions.Options;
 using NSwag.Annotations;
 using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.API.Helpers;
-using RepoAnalyser.Logic;
+using RepoAnalyser.Logic.Analysis;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
-using RepoAnalyser.Services.OctoKit.GraphQL;
-using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 
 namespace RepoAnalyser.API.Controllers
@@ -23,11 +21,13 @@ namespace RepoAnalyser.API.Controllers
     public class RepositoryController : BaseController
     {
         private readonly IRepositoryFacade _repositoryFacade;
+        private readonly IMsBuildRunner _msBuildRunner;
         public RepositoryController(IRepoAnalyserAuditRepository auditRepository,
             IBackgroundTaskQueue backgroundTaskQueue, IOptions<AppSettings> options,
-            IRepositoryFacade repositoryFacade) : base(auditRepository, backgroundTaskQueue, options)
+            IRepositoryFacade repositoryFacade, IMsBuildRunner msBuildRunner) : base(auditRepository, backgroundTaskQueue, options)
         {
             _repositoryFacade = repositoryFacade;
+            _msBuildRunner = msBuildRunner;
         }
 
         [HttpGet("{filterOption}")]
@@ -57,6 +57,17 @@ namespace RepoAnalyser.API.Controllers
                 return _repositoryFacade.GetCommitsForRepo(request, token);
             });
         }
+        [HttpGet("build-test")]
 
+        [SwaggerResponse(HttpStatusCode.OK, typeof(bool), Description = "Woo")]
+        public IActionResult BuildTest()
+        {
+            return ExecuteAndMapToActionResult(() =>
+            {
+                _msBuildRunner.Build(
+                    "RepoAnalyserAPI");
+                return true;
+            });
+        }
     }
 }

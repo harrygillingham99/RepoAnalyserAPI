@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace RepoAnalyser.Objects
+﻿namespace RepoAnalyser.Objects
 {
     public class AppSettings
     {
