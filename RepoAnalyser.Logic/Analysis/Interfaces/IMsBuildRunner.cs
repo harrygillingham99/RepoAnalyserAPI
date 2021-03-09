@@ -1,4 +1,4 @@
-﻿namespace RepoAnalyser.Logic.Analysis
+﻿namespace RepoAnalyser.Logic.Analysis.Interfaces
 {
     public interface IMsBuildRunner
     {

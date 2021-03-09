@@ -1,13 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
-using LibGit2Sharp;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NSwag.Annotations;
+using Octokit;
 using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.API.Helpers;
+using RepoAnalyser.Logic;
 using RepoAnalyser.Logic.Analysis;
+using RepoAnalyser.Logic.Analysis.Interfaces;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
@@ -44,21 +46,20 @@ namespace RepoAnalyser.API.Controllers
             });
         }
 
-        [HttpPost("commits")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(IEnumerable<Commit>), Description = "Success getting commits for repo")]
+        [HttpGet("detailed/{repoId}")]
+        [SwaggerResponse(HttpStatusCode.OK, typeof(DetailedRepository), Description = "Success getting detailed repo")]
         [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
         [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Repo not found")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting commits for repo")]
-        public IActionResult GetCommitsForRepository([FromBody] RepositoryCommitsRequest request)
+        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting detailed repo information")]
+        public Task<IActionResult> GetDetailedRepository([FromRoute] long repoId)
         {
-            return ExecuteAndMapToActionResult(() =>
+            return ExecuteAndMapToActionResultAsync(() =>
             {
                 var token = HttpContext.Request.GetAuthorizationToken();
-                return _repositoryFacade.GetCommitsForRepo(request, token);
+                return _repositoryFacade.GetDetailedRepository(repoId, token);
             });
         }
         [HttpGet("build-test")]
-
         [SwaggerResponse(HttpStatusCode.OK, typeof(bool), Description = "Woo")]
         public IActionResult BuildTest()
         {

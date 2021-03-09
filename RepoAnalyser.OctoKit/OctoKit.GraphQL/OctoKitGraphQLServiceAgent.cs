@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Octokit.GraphQL;
@@ -19,12 +20,16 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
             _productHeaderValue = new ProductHeaderValue(options.Value.AppName);
         }
 
+        public async Task<UserRepositoryResult> GetRepository(string token, long repoId) =>
+            (await GetRepositories(token, RepoFilterOptions.All)).FirstOrDefault(x => x.Id == repoId);
+      
         public Task<IEnumerable<UserRepositoryResult>> GetRepositories(string token, RepoFilterOptions option)
         {
             var query = new Query().Viewer
                 .Repositories(100, affiliations: BuildRepositoryScopes(option)).Nodes
                 .Select(repository => new UserRepositoryResult
                 {
+                    Id = repository.DatabaseId.Value,
                     Description = repository.Description,
                     Name = repository.Name,
                     PullUrl = repository.Url,

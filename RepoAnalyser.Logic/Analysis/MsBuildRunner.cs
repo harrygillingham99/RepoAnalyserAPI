@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Options;
+using RepoAnalyser.Logic.Analysis.Interfaces;
 using RepoAnalyser.Objects;
 
 namespace RepoAnalyser.Logic.Analysis
@@ -18,11 +20,17 @@ namespace RepoAnalyser.Logic.Analysis
 
         public string Build(string repoName, string outputDir = null)
         {
+            var slnFilesLastWritten = new Dictionary<string, DateTime>();
+
             var repoDir = Path.Combine(_workDir, repoName);
 
             outputDir ??= Path.Combine(repoDir, "build");
 
-            var pathToProjectFile = Directory.GetFiles(repoDir, "*.sln", SearchOption.AllDirectories).FirstOrDefault();
+            var slnPaths = Directory.GetFiles(repoDir, "*.sln", SearchOption.AllDirectories);
+
+            foreach (var sln in slnPaths) slnFilesLastWritten.Add(sln, File.GetLastWriteTime(sln));
+
+            var pathToProjectFile = slnFilesLastWritten.OrderByDescending(x => x.Value).First().Key;
 
             if (string.IsNullOrWhiteSpace(pathToProjectFile))
                 throw new Exception("No project file found. Solution cannot be built");

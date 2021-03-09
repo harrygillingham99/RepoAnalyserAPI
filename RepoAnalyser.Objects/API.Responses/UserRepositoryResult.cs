@@ -5,6 +5,7 @@ namespace RepoAnalyser.Objects.API.Responses
 {
     public class UserRepositoryResult
     {
+        public long Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string PullUrl { get; set; }

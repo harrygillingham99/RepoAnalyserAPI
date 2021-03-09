@@ -326,20 +326,19 @@ export class Client extends AuthorizedApiBase {
 
     /**
      * @param metadata (optional) ClientMetadata
-     * @return Success getting commits for repo
+     * @return Success getting detailed repo
      */
-    repository_GetCommitsForRepository(metadata: any | undefined, request: RepositoryCommitsRequest): Promise<Commit[]> {
-        let url_ = this.baseUrl + "/repo/commits";
+    repository_GetDetailedRepository(repoId: number, metadata: any | undefined): Promise<DetailedRepository> {
+        let url_ = this.baseUrl + "/repo/detailed/{repoId}";
+        if (repoId === undefined || repoId === null)
+            throw new Error("The parameter 'repoId' must be defined.");
+        url_ = url_.replace("{repoId}", encodeURIComponent("" + repoId));
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(request);
-
         let options_ = <RequestInit>{
-            body: content_,
-            method: "POST",
+            method: "GET",
             headers: {
                 "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
-                "Content-Type": "application/json",
                 "Accept": "application/json"
             }
         };
@@ -347,22 +346,18 @@ export class Client extends AuthorizedApiBase {
         return this.transformOptions(options_).then(transformedOptions_ => {
             return this.http.fetch(url_, transformedOptions_);
         }).then((_response: Response) => {
-            return this.processRepository_GetCommitsForRepository(_response);
+            return this.processRepository_GetDetailedRepository(_response);
         });
     }
 
-    protected processRepository_GetCommitsForRepository(response: Response): Promise<Commit[]> {
+    protected processRepository_GetDetailedRepository(response: Response): Promise<DetailedRepository> {
         const status = response.status;
         let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
         if (status === 200) {
             return response.text().then((_responseText) => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (Array.isArray(resultData200)) {
-                result200 = [] as any;
-                for (let item of resultData200)
-                    result200!.push(Commit.fromJS(item));
-            }
+            result200 = DetailedRepository.fromJS(resultData200);
             return result200;
             });
         } else if (status === 401) {
@@ -384,14 +379,14 @@ export class Client extends AuthorizedApiBase {
             let result500: any = null;
             let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
             result500 = ProblemDetails.fromJS(resultData500);
-            return throwException("Error getting commits for repo", status, _responseText, _headers, result500);
+            return throwException("Error getting detailed repo information", status, _responseText, _headers, result500);
             });
         } else if (status !== 200 && status !== 204) {
             return response.text().then((_responseText) => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             });
         }
-        return Promise.resolve<Commit[]>(<any>null);
+        return Promise.resolve<DetailedRepository>(<any>null);
     }
 
     /**
@@ -433,6 +428,75 @@ export class Client extends AuthorizedApiBase {
             });
         }
         return Promise.resolve<boolean>(<any>null);
+    }
+
+    /**
+     * @param metadata (optional) ClientMetadata
+     * @return Success getting user stats
+     */
+    statistics_GetUserStatistics(metadata: any | undefined): Promise<UserActivity> {
+        let url_ = this.baseUrl + "/stats/user";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            headers: {
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.processStatistics_GetUserStatistics(_response);
+        });
+    }
+
+    protected processStatistics_GetUserStatistics(response: Response): Promise<UserActivity> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = UserActivity.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationResponse.fromJS(resultData400);
+            return throwException("Bad request getting user stats", status, _responseText, _headers, result400);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = UnauthorizedResponse.fromJS(resultData401);
+            return throwException("No token provided when getting user stats", status, _responseText, _headers, result401);
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = NotFoundResponse.fromJS(resultData404);
+            return throwException("Error getting user stats, user not found", status, _responseText, _headers, result404);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Error getting user stats", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<UserActivity>(<any>null);
     }
 }
 
@@ -1025,6 +1089,7 @@ export interface IUserInfoResult {
 }
 
 export class UserRepositoryResult implements IUserRepositoryResult {
+    id?: number;
     name?: string | undefined;
     description?: string | undefined;
     pullUrl?: string | undefined;
@@ -1044,6 +1109,7 @@ export class UserRepositoryResult implements IUserRepositoryResult {
 
     init(_data?: any) {
         if (_data) {
+            this.id = _data["id"];
             this.name = _data["name"];
             this.description = _data["description"];
             this.pullUrl = _data["pullUrl"];
@@ -1067,6 +1133,7 @@ export class UserRepositoryResult implements IUserRepositoryResult {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
         data["name"] = this.name;
         data["description"] = this.description;
         data["pullUrl"] = this.pullUrl;
@@ -1083,6 +1150,7 @@ export class UserRepositoryResult implements IUserRepositoryResult {
 }
 
 export interface IUserRepositoryResult {
+    id?: number;
     name?: string | undefined;
     description?: string | undefined;
     pullUrl?: string | undefined;
@@ -1138,11 +1206,12 @@ export enum RepoFilterOptions {
     ContributedNotOwned = 3,
 }
 
-export abstract class GitObject implements IGitObject {
-    id?: ObjectId | undefined;
-    sha?: string | undefined;
+export class DetailedRepository implements IDetailedRepository {
+    repository?: UserRepositoryResult | undefined;
+    commits?: GitHubCommit[] | undefined;
+    statistics?: RepoStatistics | undefined;
 
-    constructor(data?: IGitObject) {
+    constructor(data?: IDetailedRepository) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1153,38 +1222,287 @@ export abstract class GitObject implements IGitObject {
 
     init(_data?: any) {
         if (_data) {
-            this.id = _data["id"] ? ObjectId.fromJS(_data["id"]) : <any>undefined;
-            this.sha = _data["sha"];
+            this.repository = _data["repository"] ? UserRepositoryResult.fromJS(_data["repository"]) : <any>undefined;
+            if (Array.isArray(_data["commits"])) {
+                this.commits = [] as any;
+                for (let item of _data["commits"])
+                    this.commits!.push(GitHubCommit.fromJS(item));
+            }
+            this.statistics = _data["statistics"] ? RepoStatistics.fromJS(_data["statistics"]) : <any>undefined;
         }
     }
 
-    static fromJS(data: any): GitObject {
+    static fromJS(data: any): DetailedRepository {
         data = typeof data === 'object' ? data : {};
-        throw new Error("The abstract class 'GitObject' cannot be instantiated.");
+        let result = new DetailedRepository();
+        result.init(data);
+        return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["id"] = this.id ? this.id.toJSON() : <any>undefined;
-        data["sha"] = this.sha;
+        data["repository"] = this.repository ? this.repository.toJSON() : <any>undefined;
+        if (Array.isArray(this.commits)) {
+            data["commits"] = [];
+            for (let item of this.commits)
+                data["commits"].push(item.toJSON());
+        }
+        data["statistics"] = this.statistics ? this.statistics.toJSON() : <any>undefined;
         return data; 
     }
 }
 
-export interface IGitObject {
-    id?: ObjectId | undefined;
-    sha?: string | undefined;
+export interface IDetailedRepository {
+    repository?: UserRepositoryResult | undefined;
+    commits?: GitHubCommit[] | undefined;
+    statistics?: RepoStatistics | undefined;
 }
 
-export class Commit extends GitObject implements ICommit {
+export class GitReference implements IGitReference {
+    nodeId?: string | undefined;
+    url?: string | undefined;
+    label?: string | undefined;
+    ref?: string | undefined;
+    sha?: string | undefined;
+    user?: User | undefined;
+    repository?: Repository | undefined;
+
+    constructor(data?: IGitReference) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.nodeId = _data["nodeId"];
+            this.url = _data["url"];
+            this.label = _data["label"];
+            this.ref = _data["ref"];
+            this.sha = _data["sha"];
+            this.user = _data["user"] ? User.fromJS(_data["user"]) : <any>undefined;
+            this.repository = _data["repository"] ? Repository.fromJS(_data["repository"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): GitReference {
+        data = typeof data === 'object' ? data : {};
+        let result = new GitReference();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["nodeId"] = this.nodeId;
+        data["url"] = this.url;
+        data["label"] = this.label;
+        data["ref"] = this.ref;
+        data["sha"] = this.sha;
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        data["repository"] = this.repository ? this.repository.toJSON() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IGitReference {
+    nodeId?: string | undefined;
+    url?: string | undefined;
+    label?: string | undefined;
+    ref?: string | undefined;
+    sha?: string | undefined;
+    user?: User | undefined;
+    repository?: Repository | undefined;
+}
+
+export class GitHubCommit extends GitReference implements IGitHubCommit {
+    author?: Author | undefined;
+    commentsUrl?: string | undefined;
+    commit?: Commit | undefined;
+    committer?: Author | undefined;
+    htmlUrl?: string | undefined;
+    stats?: GitHubCommitStats | undefined;
+    parents?: GitReference[] | undefined;
+    files?: GitHubCommitFile[] | undefined;
+
+    constructor(data?: IGitHubCommit) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.author = _data["author"] ? Author.fromJS(_data["author"]) : <any>undefined;
+            this.commentsUrl = _data["commentsUrl"];
+            this.commit = _data["commit"] ? Commit.fromJS(_data["commit"]) : <any>undefined;
+            this.committer = _data["committer"] ? Author.fromJS(_data["committer"]) : <any>undefined;
+            this.htmlUrl = _data["htmlUrl"];
+            this.stats = _data["stats"] ? GitHubCommitStats.fromJS(_data["stats"]) : <any>undefined;
+            if (Array.isArray(_data["parents"])) {
+                this.parents = [] as any;
+                for (let item of _data["parents"])
+                    this.parents!.push(GitReference.fromJS(item));
+            }
+            if (Array.isArray(_data["files"])) {
+                this.files = [] as any;
+                for (let item of _data["files"])
+                    this.files!.push(GitHubCommitFile.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): GitHubCommit {
+        data = typeof data === 'object' ? data : {};
+        let result = new GitHubCommit();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["author"] = this.author ? this.author.toJSON() : <any>undefined;
+        data["commentsUrl"] = this.commentsUrl;
+        data["commit"] = this.commit ? this.commit.toJSON() : <any>undefined;
+        data["committer"] = this.committer ? this.committer.toJSON() : <any>undefined;
+        data["htmlUrl"] = this.htmlUrl;
+        data["stats"] = this.stats ? this.stats.toJSON() : <any>undefined;
+        if (Array.isArray(this.parents)) {
+            data["parents"] = [];
+            for (let item of this.parents)
+                data["parents"].push(item.toJSON());
+        }
+        if (Array.isArray(this.files)) {
+            data["files"] = [];
+            for (let item of this.files)
+                data["files"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IGitHubCommit extends IGitReference {
+    author?: Author | undefined;
+    commentsUrl?: string | undefined;
+    commit?: Commit | undefined;
+    committer?: Author | undefined;
+    htmlUrl?: string | undefined;
+    stats?: GitHubCommitStats | undefined;
+    parents?: GitReference[] | undefined;
+    files?: GitHubCommitFile[] | undefined;
+}
+
+export class Author implements IAuthor {
+    login?: string | undefined;
+    id?: number;
+    nodeId?: string | undefined;
+    avatarUrl?: string | undefined;
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    followersUrl?: string | undefined;
+    followingUrl?: string | undefined;
+    gistsUrl?: string | undefined;
+    starredUrl?: string | undefined;
+    subscriptionsUrl?: string | undefined;
+    organizationsUrl?: string | undefined;
+    reposUrl?: string | undefined;
+    eventsUrl?: string | undefined;
+    receivedEventsUrl?: string | undefined;
+    type?: string | undefined;
+    siteAdmin?: boolean;
+
+    constructor(data?: IAuthor) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.login = _data["login"];
+            this.id = _data["id"];
+            this.nodeId = _data["nodeId"];
+            this.avatarUrl = _data["avatarUrl"];
+            this.url = _data["url"];
+            this.htmlUrl = _data["htmlUrl"];
+            this.followersUrl = _data["followersUrl"];
+            this.followingUrl = _data["followingUrl"];
+            this.gistsUrl = _data["gistsUrl"];
+            this.starredUrl = _data["starredUrl"];
+            this.subscriptionsUrl = _data["subscriptionsUrl"];
+            this.organizationsUrl = _data["organizationsUrl"];
+            this.reposUrl = _data["reposUrl"];
+            this.eventsUrl = _data["eventsUrl"];
+            this.receivedEventsUrl = _data["receivedEventsUrl"];
+            this.type = _data["type"];
+            this.siteAdmin = _data["siteAdmin"];
+        }
+    }
+
+    static fromJS(data: any): Author {
+        data = typeof data === 'object' ? data : {};
+        let result = new Author();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["login"] = this.login;
+        data["id"] = this.id;
+        data["nodeId"] = this.nodeId;
+        data["avatarUrl"] = this.avatarUrl;
+        data["url"] = this.url;
+        data["htmlUrl"] = this.htmlUrl;
+        data["followersUrl"] = this.followersUrl;
+        data["followingUrl"] = this.followingUrl;
+        data["gistsUrl"] = this.gistsUrl;
+        data["starredUrl"] = this.starredUrl;
+        data["subscriptionsUrl"] = this.subscriptionsUrl;
+        data["organizationsUrl"] = this.organizationsUrl;
+        data["reposUrl"] = this.reposUrl;
+        data["eventsUrl"] = this.eventsUrl;
+        data["receivedEventsUrl"] = this.receivedEventsUrl;
+        data["type"] = this.type;
+        data["siteAdmin"] = this.siteAdmin;
+        return data; 
+    }
+}
+
+export interface IAuthor {
+    login?: string | undefined;
+    id?: number;
+    nodeId?: string | undefined;
+    avatarUrl?: string | undefined;
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    followersUrl?: string | undefined;
+    followingUrl?: string | undefined;
+    gistsUrl?: string | undefined;
+    starredUrl?: string | undefined;
+    subscriptionsUrl?: string | undefined;
+    organizationsUrl?: string | undefined;
+    reposUrl?: string | undefined;
+    eventsUrl?: string | undefined;
+    receivedEventsUrl?: string | undefined;
+    type?: string | undefined;
+    siteAdmin?: boolean;
+}
+
+export class Commit extends GitReference implements ICommit {
     message?: string | undefined;
-    messageShort?: string | undefined;
-    encoding?: string | undefined;
-    author?: Signature | undefined;
-    committer?: Signature | undefined;
-    tree?: TreeEntry[] | undefined;
-    parents?: Commit[] | undefined;
-    notes?: Note[] | undefined;
+    author?: Committer | undefined;
+    committer?: Committer | undefined;
+    tree?: GitReference | undefined;
+    parents?: GitReference[] | undefined;
+    commentCount?: number;
+    verification?: Verification | undefined;
 
     constructor(data?: ICommit) {
         super(data);
@@ -1194,25 +1512,16 @@ export class Commit extends GitObject implements ICommit {
         super.init(_data);
         if (_data) {
             this.message = _data["message"];
-            this.messageShort = _data["messageShort"];
-            this.encoding = _data["encoding"];
-            this.author = _data["author"] ? Signature.fromJS(_data["author"]) : <any>undefined;
-            this.committer = _data["committer"] ? Signature.fromJS(_data["committer"]) : <any>undefined;
-            if (Array.isArray(_data["tree"])) {
-                this.tree = [] as any;
-                for (let item of _data["tree"])
-                    this.tree!.push(TreeEntry.fromJS(item));
-            }
+            this.author = _data["author"] ? Committer.fromJS(_data["author"]) : <any>undefined;
+            this.committer = _data["committer"] ? Committer.fromJS(_data["committer"]) : <any>undefined;
+            this.tree = _data["tree"] ? GitReference.fromJS(_data["tree"]) : <any>undefined;
             if (Array.isArray(_data["parents"])) {
                 this.parents = [] as any;
                 for (let item of _data["parents"])
-                    this.parents!.push(Commit.fromJS(item));
+                    this.parents!.push(GitReference.fromJS(item));
             }
-            if (Array.isArray(_data["notes"])) {
-                this.notes = [] as any;
-                for (let item of _data["notes"])
-                    this.notes!.push(Note.fromJS(item));
-            }
+            this.commentCount = _data["commentCount"];
+            this.verification = _data["verification"] ? Verification.fromJS(_data["verification"]) : <any>undefined;
         }
     }
 
@@ -1226,47 +1535,38 @@ export class Commit extends GitObject implements ICommit {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["message"] = this.message;
-        data["messageShort"] = this.messageShort;
-        data["encoding"] = this.encoding;
         data["author"] = this.author ? this.author.toJSON() : <any>undefined;
         data["committer"] = this.committer ? this.committer.toJSON() : <any>undefined;
-        if (Array.isArray(this.tree)) {
-            data["tree"] = [];
-            for (let item of this.tree)
-                data["tree"].push(item.toJSON());
-        }
+        data["tree"] = this.tree ? this.tree.toJSON() : <any>undefined;
         if (Array.isArray(this.parents)) {
             data["parents"] = [];
             for (let item of this.parents)
                 data["parents"].push(item.toJSON());
         }
-        if (Array.isArray(this.notes)) {
-            data["notes"] = [];
-            for (let item of this.notes)
-                data["notes"].push(item.toJSON());
-        }
+        data["commentCount"] = this.commentCount;
+        data["verification"] = this.verification ? this.verification.toJSON() : <any>undefined;
         super.toJSON(data);
         return data; 
     }
 }
 
-export interface ICommit extends IGitObject {
+export interface ICommit extends IGitReference {
     message?: string | undefined;
-    messageShort?: string | undefined;
-    encoding?: string | undefined;
-    author?: Signature | undefined;
-    committer?: Signature | undefined;
-    tree?: TreeEntry[] | undefined;
-    parents?: Commit[] | undefined;
-    notes?: Note[] | undefined;
+    author?: Committer | undefined;
+    committer?: Committer | undefined;
+    tree?: GitReference | undefined;
+    parents?: GitReference[] | undefined;
+    commentCount?: number;
+    verification?: Verification | undefined;
 }
 
-export class Signature implements ISignature {
+export class Committer implements ICommitter {
+    nodeId?: string | undefined;
     name?: string | undefined;
     email?: string | undefined;
-    when?: Date;
+    date?: Date;
 
-    constructor(data?: ISignature) {
+    constructor(data?: ICommitter) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1277,42 +1577,82 @@ export class Signature implements ISignature {
 
     init(_data?: any) {
         if (_data) {
+            this.nodeId = _data["nodeId"];
             this.name = _data["name"];
             this.email = _data["email"];
-            this.when = _data["when"] ? new Date(_data["when"].toString()) : <any>undefined;
+            this.date = _data["date"] ? new Date(_data["date"].toString()) : <any>undefined;
         }
     }
 
-    static fromJS(data: any): Signature {
+    static fromJS(data: any): Committer {
         data = typeof data === 'object' ? data : {};
-        let result = new Signature();
+        let result = new Committer();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["nodeId"] = this.nodeId;
         data["name"] = this.name;
         data["email"] = this.email;
-        data["when"] = this.when ? this.when.toISOString() : <any>undefined;
+        data["date"] = this.date ? this.date.toISOString() : <any>undefined;
         return data; 
     }
 }
 
-export interface ISignature {
+export interface ICommitter {
+    nodeId?: string | undefined;
     name?: string | undefined;
     email?: string | undefined;
-    when?: Date;
+    date?: Date;
 }
 
-export class TreeEntry implements ITreeEntry {
-    mode?: Mode;
+export class Repository implements IRepository {
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    cloneUrl?: string | undefined;
+    gitUrl?: string | undefined;
+    sshUrl?: string | undefined;
+    svnUrl?: string | undefined;
+    mirrorUrl?: string | undefined;
+    id?: number;
+    nodeId?: string | undefined;
+    owner?: User | undefined;
     name?: string | undefined;
-    path?: string | undefined;
-    target?: GitObject | undefined;
-    targetType?: TreeEntryTargetType;
+    fullName?: string | undefined;
+    isTemplate?: boolean;
+    description?: string | undefined;
+    homepage?: string | undefined;
+    language?: string | undefined;
+    private?: boolean;
+    fork?: boolean;
+    forksCount?: number;
+    stargazersCount?: number;
+    watchersCount?: number;
+    defaultBranch?: string | undefined;
+    openIssuesCount?: number;
+    pushedAt?: Date | undefined;
+    createdAt?: Date;
+    updatedAt?: Date;
+    permissions?: RepositoryPermissions | undefined;
+    parent?: Repository | undefined;
+    source?: Repository | undefined;
+    license?: LicenseMetadata | undefined;
+    hasIssues?: boolean;
+    hasWiki?: boolean;
+    hasDownloads?: boolean;
+    allowRebaseMerge?: boolean | undefined;
+    allowSquashMerge?: boolean | undefined;
+    allowMergeCommit?: boolean | undefined;
+    hasPages?: boolean;
+    subscribersCount?: number;
+    size?: number;
+    archived?: boolean;
+    deleteBranchOnMerge?: boolean | undefined;
+    visibility?: RepositoryVisibility | undefined;
 
-    constructor(data?: ITreeEntry) {
+    constructor(data?: IRepository) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1323,55 +1663,160 @@ export class TreeEntry implements ITreeEntry {
 
     init(_data?: any) {
         if (_data) {
-            this.mode = _data["mode"];
+            this.url = _data["url"];
+            this.htmlUrl = _data["htmlUrl"];
+            this.cloneUrl = _data["cloneUrl"];
+            this.gitUrl = _data["gitUrl"];
+            this.sshUrl = _data["sshUrl"];
+            this.svnUrl = _data["svnUrl"];
+            this.mirrorUrl = _data["mirrorUrl"];
+            this.id = _data["id"];
+            this.nodeId = _data["nodeId"];
+            this.owner = _data["owner"] ? User.fromJS(_data["owner"]) : <any>undefined;
             this.name = _data["name"];
-            this.path = _data["path"];
-            this.target = _data["target"] ? GitObject.fromJS(_data["target"]) : <any>undefined;
-            this.targetType = _data["targetType"];
+            this.fullName = _data["fullName"];
+            this.isTemplate = _data["isTemplate"];
+            this.description = _data["description"];
+            this.homepage = _data["homepage"];
+            this.language = _data["language"];
+            this.private = _data["private"];
+            this.fork = _data["fork"];
+            this.forksCount = _data["forksCount"];
+            this.stargazersCount = _data["stargazersCount"];
+            this.watchersCount = _data["watchersCount"];
+            this.defaultBranch = _data["defaultBranch"];
+            this.openIssuesCount = _data["openIssuesCount"];
+            this.pushedAt = _data["pushedAt"] ? new Date(_data["pushedAt"].toString()) : <any>undefined;
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
+            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
+            this.permissions = _data["permissions"] ? RepositoryPermissions.fromJS(_data["permissions"]) : <any>undefined;
+            this.parent = _data["parent"] ? Repository.fromJS(_data["parent"]) : <any>undefined;
+            this.source = _data["source"] ? Repository.fromJS(_data["source"]) : <any>undefined;
+            this.license = _data["license"] ? LicenseMetadata.fromJS(_data["license"]) : <any>undefined;
+            this.hasIssues = _data["hasIssues"];
+            this.hasWiki = _data["hasWiki"];
+            this.hasDownloads = _data["hasDownloads"];
+            this.allowRebaseMerge = _data["allowRebaseMerge"];
+            this.allowSquashMerge = _data["allowSquashMerge"];
+            this.allowMergeCommit = _data["allowMergeCommit"];
+            this.hasPages = _data["hasPages"];
+            this.subscribersCount = _data["subscribersCount"];
+            this.size = _data["size"];
+            this.archived = _data["archived"];
+            this.deleteBranchOnMerge = _data["deleteBranchOnMerge"];
+            this.visibility = _data["visibility"];
         }
     }
 
-    static fromJS(data: any): TreeEntry {
+    static fromJS(data: any): Repository {
         data = typeof data === 'object' ? data : {};
-        let result = new TreeEntry();
+        let result = new Repository();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["mode"] = this.mode;
+        data["url"] = this.url;
+        data["htmlUrl"] = this.htmlUrl;
+        data["cloneUrl"] = this.cloneUrl;
+        data["gitUrl"] = this.gitUrl;
+        data["sshUrl"] = this.sshUrl;
+        data["svnUrl"] = this.svnUrl;
+        data["mirrorUrl"] = this.mirrorUrl;
+        data["id"] = this.id;
+        data["nodeId"] = this.nodeId;
+        data["owner"] = this.owner ? this.owner.toJSON() : <any>undefined;
         data["name"] = this.name;
-        data["path"] = this.path;
-        data["target"] = this.target ? this.target.toJSON() : <any>undefined;
-        data["targetType"] = this.targetType;
+        data["fullName"] = this.fullName;
+        data["isTemplate"] = this.isTemplate;
+        data["description"] = this.description;
+        data["homepage"] = this.homepage;
+        data["language"] = this.language;
+        data["private"] = this.private;
+        data["fork"] = this.fork;
+        data["forksCount"] = this.forksCount;
+        data["stargazersCount"] = this.stargazersCount;
+        data["watchersCount"] = this.watchersCount;
+        data["defaultBranch"] = this.defaultBranch;
+        data["openIssuesCount"] = this.openIssuesCount;
+        data["pushedAt"] = this.pushedAt ? this.pushedAt.toISOString() : <any>undefined;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
+        data["permissions"] = this.permissions ? this.permissions.toJSON() : <any>undefined;
+        data["parent"] = this.parent ? this.parent.toJSON() : <any>undefined;
+        data["source"] = this.source ? this.source.toJSON() : <any>undefined;
+        data["license"] = this.license ? this.license.toJSON() : <any>undefined;
+        data["hasIssues"] = this.hasIssues;
+        data["hasWiki"] = this.hasWiki;
+        data["hasDownloads"] = this.hasDownloads;
+        data["allowRebaseMerge"] = this.allowRebaseMerge;
+        data["allowSquashMerge"] = this.allowSquashMerge;
+        data["allowMergeCommit"] = this.allowMergeCommit;
+        data["hasPages"] = this.hasPages;
+        data["subscribersCount"] = this.subscribersCount;
+        data["size"] = this.size;
+        data["archived"] = this.archived;
+        data["deleteBranchOnMerge"] = this.deleteBranchOnMerge;
+        data["visibility"] = this.visibility;
         return data; 
     }
 }
 
-export interface ITreeEntry {
-    mode?: Mode;
+export interface IRepository {
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    cloneUrl?: string | undefined;
+    gitUrl?: string | undefined;
+    sshUrl?: string | undefined;
+    svnUrl?: string | undefined;
+    mirrorUrl?: string | undefined;
+    id?: number;
+    nodeId?: string | undefined;
+    owner?: User | undefined;
     name?: string | undefined;
-    path?: string | undefined;
-    target?: GitObject | undefined;
-    targetType?: TreeEntryTargetType;
+    fullName?: string | undefined;
+    isTemplate?: boolean;
+    description?: string | undefined;
+    homepage?: string | undefined;
+    language?: string | undefined;
+    private?: boolean;
+    fork?: boolean;
+    forksCount?: number;
+    stargazersCount?: number;
+    watchersCount?: number;
+    defaultBranch?: string | undefined;
+    openIssuesCount?: number;
+    pushedAt?: Date | undefined;
+    createdAt?: Date;
+    updatedAt?: Date;
+    permissions?: RepositoryPermissions | undefined;
+    parent?: Repository | undefined;
+    source?: Repository | undefined;
+    license?: LicenseMetadata | undefined;
+    hasIssues?: boolean;
+    hasWiki?: boolean;
+    hasDownloads?: boolean;
+    allowRebaseMerge?: boolean | undefined;
+    allowSquashMerge?: boolean | undefined;
+    allowMergeCommit?: boolean | undefined;
+    hasPages?: boolean;
+    subscribersCount?: number;
+    size?: number;
+    archived?: boolean;
+    deleteBranchOnMerge?: boolean | undefined;
+    visibility?: RepositoryVisibility | undefined;
 }
 
-export enum Mode {
-    Nonexistent = 0,
-    Directory = 16384,
-    NonExecutableFile = 33188,
-    NonExecutableGroupWritableFile = 33204,
-    ExecutableFile = 33261,
-    SymbolicLink = 40960,
-    GitLink = 57344,
-}
+export class LicenseMetadata implements ILicenseMetadata {
+    key?: string | undefined;
+    nodeId?: string | undefined;
+    name?: string | undefined;
+    spdxId?: string | undefined;
+    url?: string | undefined;
+    featured?: boolean;
 
-export class ObjectId implements IObjectId {
-    rawId?: string | undefined;
-    sha?: string | undefined;
-
-    constructor(data?: IObjectId) {
+    constructor(data?: ILicenseMetadata) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1382,44 +1827,280 @@ export class ObjectId implements IObjectId {
 
     init(_data?: any) {
         if (_data) {
-            this.rawId = _data["rawId"];
+            this.key = _data["key"];
+            this.nodeId = _data["nodeId"];
+            this.name = _data["name"];
+            this.spdxId = _data["spdxId"];
+            this.url = _data["url"];
+            this.featured = _data["featured"];
+        }
+    }
+
+    static fromJS(data: any): LicenseMetadata {
+        data = typeof data === 'object' ? data : {};
+        let result = new LicenseMetadata();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["key"] = this.key;
+        data["nodeId"] = this.nodeId;
+        data["name"] = this.name;
+        data["spdxId"] = this.spdxId;
+        data["url"] = this.url;
+        data["featured"] = this.featured;
+        return data; 
+    }
+}
+
+export interface ILicenseMetadata {
+    key?: string | undefined;
+    nodeId?: string | undefined;
+    name?: string | undefined;
+    spdxId?: string | undefined;
+    url?: string | undefined;
+    featured?: boolean;
+}
+
+export enum RepositoryVisibility {
+    Public = 0,
+    Private = 1,
+    Internal = 2,
+}
+
+export class Verification implements IVerification {
+    verified?: boolean;
+    reason?: StringEnumOfVerificationReason;
+    signature?: string | undefined;
+    payload?: string | undefined;
+
+    constructor(data?: IVerification) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.verified = _data["verified"];
+            this.reason = _data["reason"] ? StringEnumOfVerificationReason.fromJS(_data["reason"]) : <any>undefined;
+            this.signature = _data["signature"];
+            this.payload = _data["payload"];
+        }
+    }
+
+    static fromJS(data: any): Verification {
+        data = typeof data === 'object' ? data : {};
+        let result = new Verification();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["verified"] = this.verified;
+        data["reason"] = this.reason ? this.reason.toJSON() : <any>undefined;
+        data["signature"] = this.signature;
+        data["payload"] = this.payload;
+        return data; 
+    }
+}
+
+export interface IVerification {
+    verified?: boolean;
+    reason?: StringEnumOfVerificationReason;
+    signature?: string | undefined;
+    payload?: string | undefined;
+}
+
+export class StringEnumOfVerificationReason implements IStringEnumOfVerificationReason {
+    stringValue?: string | undefined;
+    value?: VerificationReason;
+
+    constructor(data?: IStringEnumOfVerificationReason) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.stringValue = _data["stringValue"];
+            this.value = _data["value"];
+        }
+    }
+
+    static fromJS(data: any): StringEnumOfVerificationReason {
+        data = typeof data === 'object' ? data : {};
+        let result = new StringEnumOfVerificationReason();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["stringValue"] = this.stringValue;
+        data["value"] = this.value;
+        return data; 
+    }
+}
+
+export interface IStringEnumOfVerificationReason {
+    stringValue?: string | undefined;
+    value?: VerificationReason;
+}
+
+export enum VerificationReason {
+    ExpiredKey = 0,
+    NotSigningKey = 1,
+    GpgVerifyError = 2,
+    GpgVerifyUnavailable = 3,
+    Unsigned = 4,
+    UnknownSignatureType = 5,
+    NoUser = 6,
+    UnverifiedEmail = 7,
+    BadEmail = 8,
+    UnknownKey = 9,
+    MalformedSignature = 10,
+    Invalid = 11,
+    Valid = 12,
+}
+
+export class GitHubCommitStats implements IGitHubCommitStats {
+    additions?: number;
+    deletions?: number;
+    total?: number;
+
+    constructor(data?: IGitHubCommitStats) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.additions = _data["additions"];
+            this.deletions = _data["deletions"];
+            this.total = _data["total"];
+        }
+    }
+
+    static fromJS(data: any): GitHubCommitStats {
+        data = typeof data === 'object' ? data : {};
+        let result = new GitHubCommitStats();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["additions"] = this.additions;
+        data["deletions"] = this.deletions;
+        data["total"] = this.total;
+        return data; 
+    }
+}
+
+export interface IGitHubCommitStats {
+    additions?: number;
+    deletions?: number;
+    total?: number;
+}
+
+export class GitHubCommitFile implements IGitHubCommitFile {
+    filename?: string | undefined;
+    additions?: number;
+    deletions?: number;
+    changes?: number;
+    status?: string | undefined;
+    blobUrl?: string | undefined;
+    contentsUrl?: string | undefined;
+    rawUrl?: string | undefined;
+    sha?: string | undefined;
+    patch?: string | undefined;
+    previousFileName?: string | undefined;
+
+    constructor(data?: IGitHubCommitFile) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.filename = _data["filename"];
+            this.additions = _data["additions"];
+            this.deletions = _data["deletions"];
+            this.changes = _data["changes"];
+            this.status = _data["status"];
+            this.blobUrl = _data["blobUrl"];
+            this.contentsUrl = _data["contentsUrl"];
+            this.rawUrl = _data["rawUrl"];
             this.sha = _data["sha"];
+            this.patch = _data["patch"];
+            this.previousFileName = _data["previousFileName"];
         }
     }
 
-    static fromJS(data: any): ObjectId {
+    static fromJS(data: any): GitHubCommitFile {
         data = typeof data === 'object' ? data : {};
-        let result = new ObjectId();
+        let result = new GitHubCommitFile();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["rawId"] = this.rawId;
+        data["filename"] = this.filename;
+        data["additions"] = this.additions;
+        data["deletions"] = this.deletions;
+        data["changes"] = this.changes;
+        data["status"] = this.status;
+        data["blobUrl"] = this.blobUrl;
+        data["contentsUrl"] = this.contentsUrl;
+        data["rawUrl"] = this.rawUrl;
         data["sha"] = this.sha;
+        data["patch"] = this.patch;
+        data["previousFileName"] = this.previousFileName;
         return data; 
     }
 }
 
-export interface IObjectId {
-    rawId?: string | undefined;
+export interface IGitHubCommitFile {
+    filename?: string | undefined;
+    additions?: number;
+    deletions?: number;
+    changes?: number;
+    status?: string | undefined;
+    blobUrl?: string | undefined;
+    contentsUrl?: string | undefined;
+    rawUrl?: string | undefined;
     sha?: string | undefined;
+    patch?: string | undefined;
+    previousFileName?: string | undefined;
 }
 
-export enum TreeEntryTargetType {
-    Blob = 0,
-    Tree = 1,
-    GitLink = 2,
-}
+export class RepoStatistics implements IRepoStatistics {
+    codeFrequency?: CodeFrequency | undefined;
+    commitActivity?: CommitActivity | undefined;
+    participation?: Participation | undefined;
+    commitPunchCard?: PunchCard | undefined;
 
-export class Note implements INote {
-    blobId?: ObjectId | undefined;
-    message?: string | undefined;
-    namespace?: string | undefined;
-    targetObjectId?: ObjectId | undefined;
-
-    constructor(data?: INote) {
+    constructor(data?: IRepoStatistics) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1430,43 +2111,41 @@ export class Note implements INote {
 
     init(_data?: any) {
         if (_data) {
-            this.blobId = _data["blobId"] ? ObjectId.fromJS(_data["blobId"]) : <any>undefined;
-            this.message = _data["message"];
-            this.namespace = _data["namespace"];
-            this.targetObjectId = _data["targetObjectId"] ? ObjectId.fromJS(_data["targetObjectId"]) : <any>undefined;
+            this.codeFrequency = _data["codeFrequency"] ? CodeFrequency.fromJS(_data["codeFrequency"]) : <any>undefined;
+            this.commitActivity = _data["commitActivity"] ? CommitActivity.fromJS(_data["commitActivity"]) : <any>undefined;
+            this.participation = _data["participation"] ? Participation.fromJS(_data["participation"]) : <any>undefined;
+            this.commitPunchCard = _data["commitPunchCard"] ? PunchCard.fromJS(_data["commitPunchCard"]) : <any>undefined;
         }
     }
 
-    static fromJS(data: any): Note {
+    static fromJS(data: any): RepoStatistics {
         data = typeof data === 'object' ? data : {};
-        let result = new Note();
+        let result = new RepoStatistics();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["blobId"] = this.blobId ? this.blobId.toJSON() : <any>undefined;
-        data["message"] = this.message;
-        data["namespace"] = this.namespace;
-        data["targetObjectId"] = this.targetObjectId ? this.targetObjectId.toJSON() : <any>undefined;
+        data["codeFrequency"] = this.codeFrequency ? this.codeFrequency.toJSON() : <any>undefined;
+        data["commitActivity"] = this.commitActivity ? this.commitActivity.toJSON() : <any>undefined;
+        data["participation"] = this.participation ? this.participation.toJSON() : <any>undefined;
+        data["commitPunchCard"] = this.commitPunchCard ? this.commitPunchCard.toJSON() : <any>undefined;
         return data; 
     }
 }
 
-export interface INote {
-    blobId?: ObjectId | undefined;
-    message?: string | undefined;
-    namespace?: string | undefined;
-    targetObjectId?: ObjectId | undefined;
+export interface IRepoStatistics {
+    codeFrequency?: CodeFrequency | undefined;
+    commitActivity?: CommitActivity | undefined;
+    participation?: Participation | undefined;
+    commitPunchCard?: PunchCard | undefined;
 }
 
-export class RepositoryCommitsRequest implements IRepositoryCommitsRequest {
-    repositoryUrl?: string | undefined;
-    username?: string | undefined;
-    email?: string | undefined;
+export class CodeFrequency implements ICodeFrequency {
+    additionsAndDeletionsByWeek?: AdditionsAndDeletions[] | undefined;
 
-    constructor(data?: IRepositoryCommitsRequest) {
+    constructor(data?: ICodeFrequency) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -1477,32 +2156,761 @@ export class RepositoryCommitsRequest implements IRepositoryCommitsRequest {
 
     init(_data?: any) {
         if (_data) {
-            this.repositoryUrl = _data["repositoryUrl"];
-            this.username = _data["username"];
-            this.email = _data["email"];
+            if (Array.isArray(_data["additionsAndDeletionsByWeek"])) {
+                this.additionsAndDeletionsByWeek = [] as any;
+                for (let item of _data["additionsAndDeletionsByWeek"])
+                    this.additionsAndDeletionsByWeek!.push(AdditionsAndDeletions.fromJS(item));
+            }
         }
     }
 
-    static fromJS(data: any): RepositoryCommitsRequest {
+    static fromJS(data: any): CodeFrequency {
         data = typeof data === 'object' ? data : {};
-        let result = new RepositoryCommitsRequest();
+        let result = new CodeFrequency();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["repositoryUrl"] = this.repositoryUrl;
-        data["username"] = this.username;
-        data["email"] = this.email;
+        if (Array.isArray(this.additionsAndDeletionsByWeek)) {
+            data["additionsAndDeletionsByWeek"] = [];
+            for (let item of this.additionsAndDeletionsByWeek)
+                data["additionsAndDeletionsByWeek"].push(item.toJSON());
+        }
         return data; 
     }
 }
 
-export interface IRepositoryCommitsRequest {
-    repositoryUrl?: string | undefined;
-    username?: string | undefined;
-    email?: string | undefined;
+export interface ICodeFrequency {
+    additionsAndDeletionsByWeek?: AdditionsAndDeletions[] | undefined;
+}
+
+export class AdditionsAndDeletions implements IAdditionsAndDeletions {
+    timestamp?: Date;
+    additions?: number;
+    deletions?: number;
+
+    constructor(data?: IAdditionsAndDeletions) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.timestamp = _data["timestamp"] ? new Date(_data["timestamp"].toString()) : <any>undefined;
+            this.additions = _data["additions"];
+            this.deletions = _data["deletions"];
+        }
+    }
+
+    static fromJS(data: any): AdditionsAndDeletions {
+        data = typeof data === 'object' ? data : {};
+        let result = new AdditionsAndDeletions();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["timestamp"] = this.timestamp ? this.timestamp.toISOString() : <any>undefined;
+        data["additions"] = this.additions;
+        data["deletions"] = this.deletions;
+        return data; 
+    }
+}
+
+export interface IAdditionsAndDeletions {
+    timestamp?: Date;
+    additions?: number;
+    deletions?: number;
+}
+
+export class CommitActivity implements ICommitActivity {
+    activity?: WeeklyCommitActivity[] | undefined;
+
+    constructor(data?: ICommitActivity) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["activity"])) {
+                this.activity = [] as any;
+                for (let item of _data["activity"])
+                    this.activity!.push(WeeklyCommitActivity.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): CommitActivity {
+        data = typeof data === 'object' ? data : {};
+        let result = new CommitActivity();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.activity)) {
+            data["activity"] = [];
+            for (let item of this.activity)
+                data["activity"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface ICommitActivity {
+    activity?: WeeklyCommitActivity[] | undefined;
+}
+
+export class WeeklyCommitActivity implements IWeeklyCommitActivity {
+    days?: number[] | undefined;
+    total?: number;
+    week?: number;
+    weekTimestamp?: Date;
+
+    constructor(data?: IWeeklyCommitActivity) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["days"])) {
+                this.days = [] as any;
+                for (let item of _data["days"])
+                    this.days!.push(item);
+            }
+            this.total = _data["total"];
+            this.week = _data["week"];
+            this.weekTimestamp = _data["weekTimestamp"] ? new Date(_data["weekTimestamp"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): WeeklyCommitActivity {
+        data = typeof data === 'object' ? data : {};
+        let result = new WeeklyCommitActivity();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.days)) {
+            data["days"] = [];
+            for (let item of this.days)
+                data["days"].push(item);
+        }
+        data["total"] = this.total;
+        data["week"] = this.week;
+        data["weekTimestamp"] = this.weekTimestamp ? this.weekTimestamp.toISOString() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IWeeklyCommitActivity {
+    days?: number[] | undefined;
+    total?: number;
+    week?: number;
+    weekTimestamp?: Date;
+}
+
+export class Participation implements IParticipation {
+    all?: number[] | undefined;
+    owner?: number[] | undefined;
+
+    constructor(data?: IParticipation) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["all"])) {
+                this.all = [] as any;
+                for (let item of _data["all"])
+                    this.all!.push(item);
+            }
+            if (Array.isArray(_data["owner"])) {
+                this.owner = [] as any;
+                for (let item of _data["owner"])
+                    this.owner!.push(item);
+            }
+        }
+    }
+
+    static fromJS(data: any): Participation {
+        data = typeof data === 'object' ? data : {};
+        let result = new Participation();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.all)) {
+            data["all"] = [];
+            for (let item of this.all)
+                data["all"].push(item);
+        }
+        if (Array.isArray(this.owner)) {
+            data["owner"] = [];
+            for (let item of this.owner)
+                data["owner"].push(item);
+        }
+        return data; 
+    }
+}
+
+export interface IParticipation {
+    all?: number[] | undefined;
+    owner?: number[] | undefined;
+}
+
+export class PunchCard implements IPunchCard {
+    punchPoints?: PunchCardPoint[] | undefined;
+
+    constructor(data?: IPunchCard) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["punchPoints"])) {
+                this.punchPoints = [] as any;
+                for (let item of _data["punchPoints"])
+                    this.punchPoints!.push(PunchCardPoint.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): PunchCard {
+        data = typeof data === 'object' ? data : {};
+        let result = new PunchCard();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.punchPoints)) {
+            data["punchPoints"] = [];
+            for (let item of this.punchPoints)
+                data["punchPoints"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface IPunchCard {
+    punchPoints?: PunchCardPoint[] | undefined;
+}
+
+export class PunchCardPoint implements IPunchCardPoint {
+    dayOfWeek?: StringEnumOfDayOfWeek;
+    hourOfTheDay?: number;
+    commitCount?: number;
+
+    constructor(data?: IPunchCardPoint) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.dayOfWeek = _data["dayOfWeek"] ? StringEnumOfDayOfWeek.fromJS(_data["dayOfWeek"]) : <any>undefined;
+            this.hourOfTheDay = _data["hourOfTheDay"];
+            this.commitCount = _data["commitCount"];
+        }
+    }
+
+    static fromJS(data: any): PunchCardPoint {
+        data = typeof data === 'object' ? data : {};
+        let result = new PunchCardPoint();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["dayOfWeek"] = this.dayOfWeek ? this.dayOfWeek.toJSON() : <any>undefined;
+        data["hourOfTheDay"] = this.hourOfTheDay;
+        data["commitCount"] = this.commitCount;
+        return data; 
+    }
+}
+
+export interface IPunchCardPoint {
+    dayOfWeek?: StringEnumOfDayOfWeek;
+    hourOfTheDay?: number;
+    commitCount?: number;
+}
+
+export class StringEnumOfDayOfWeek implements IStringEnumOfDayOfWeek {
+    stringValue?: string | undefined;
+    value?: DayOfWeek;
+
+    constructor(data?: IStringEnumOfDayOfWeek) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.stringValue = _data["stringValue"];
+            this.value = _data["value"];
+        }
+    }
+
+    static fromJS(data: any): StringEnumOfDayOfWeek {
+        data = typeof data === 'object' ? data : {};
+        let result = new StringEnumOfDayOfWeek();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["stringValue"] = this.stringValue;
+        data["value"] = this.value;
+        return data; 
+    }
+}
+
+export interface IStringEnumOfDayOfWeek {
+    stringValue?: string | undefined;
+    value?: DayOfWeek;
+}
+
+export enum DayOfWeek {
+    Sunday = 0,
+    Monday = 1,
+    Tuesday = 2,
+    Wednesday = 3,
+    Thursday = 4,
+    Friday = 5,
+    Saturday = 6,
+}
+
+export class UserActivity implements IUserActivity {
+    notifications?: Notification[] | undefined;
+    events?: Activity[] | undefined;
+
+    constructor(data?: IUserActivity) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["notifications"])) {
+                this.notifications = [] as any;
+                for (let item of _data["notifications"])
+                    this.notifications!.push(Notification.fromJS(item));
+            }
+            if (Array.isArray(_data["events"])) {
+                this.events = [] as any;
+                for (let item of _data["events"])
+                    this.events!.push(Activity.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): UserActivity {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserActivity();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.notifications)) {
+            data["notifications"] = [];
+            for (let item of this.notifications)
+                data["notifications"].push(item.toJSON());
+        }
+        if (Array.isArray(this.events)) {
+            data["events"] = [];
+            for (let item of this.events)
+                data["events"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface IUserActivity {
+    notifications?: Notification[] | undefined;
+    events?: Activity[] | undefined;
+}
+
+export class Notification implements INotification {
+    id?: string | undefined;
+    repository?: Repository | undefined;
+    subject?: NotificationInfo | undefined;
+    reason?: string | undefined;
+    unread?: boolean;
+    updatedAt?: string | undefined;
+    lastReadAt?: string | undefined;
+    url?: string | undefined;
+
+    constructor(data?: INotification) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.repository = _data["repository"] ? Repository.fromJS(_data["repository"]) : <any>undefined;
+            this.subject = _data["subject"] ? NotificationInfo.fromJS(_data["subject"]) : <any>undefined;
+            this.reason = _data["reason"];
+            this.unread = _data["unread"];
+            this.updatedAt = _data["updatedAt"];
+            this.lastReadAt = _data["lastReadAt"];
+            this.url = _data["url"];
+        }
+    }
+
+    static fromJS(data: any): Notification {
+        data = typeof data === 'object' ? data : {};
+        let result = new Notification();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["repository"] = this.repository ? this.repository.toJSON() : <any>undefined;
+        data["subject"] = this.subject ? this.subject.toJSON() : <any>undefined;
+        data["reason"] = this.reason;
+        data["unread"] = this.unread;
+        data["updatedAt"] = this.updatedAt;
+        data["lastReadAt"] = this.lastReadAt;
+        data["url"] = this.url;
+        return data; 
+    }
+}
+
+export interface INotification {
+    id?: string | undefined;
+    repository?: Repository | undefined;
+    subject?: NotificationInfo | undefined;
+    reason?: string | undefined;
+    unread?: boolean;
+    updatedAt?: string | undefined;
+    lastReadAt?: string | undefined;
+    url?: string | undefined;
+}
+
+export class NotificationInfo implements INotificationInfo {
+    title?: string | undefined;
+    url?: string | undefined;
+    latestCommentUrl?: string | undefined;
+    type?: string | undefined;
+
+    constructor(data?: INotificationInfo) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.title = _data["title"];
+            this.url = _data["url"];
+            this.latestCommentUrl = _data["latestCommentUrl"];
+            this.type = _data["type"];
+        }
+    }
+
+    static fromJS(data: any): NotificationInfo {
+        data = typeof data === 'object' ? data : {};
+        let result = new NotificationInfo();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["title"] = this.title;
+        data["url"] = this.url;
+        data["latestCommentUrl"] = this.latestCommentUrl;
+        data["type"] = this.type;
+        return data; 
+    }
+}
+
+export interface INotificationInfo {
+    title?: string | undefined;
+    url?: string | undefined;
+    latestCommentUrl?: string | undefined;
+    type?: string | undefined;
+}
+
+export class Activity implements IActivity {
+    type?: string | undefined;
+    public?: boolean;
+    repo?: Repository | undefined;
+    actor?: User | undefined;
+    org?: Organization | undefined;
+    createdAt?: Date;
+    id?: string | undefined;
+    payload?: ActivityPayload | undefined;
+
+    constructor(data?: IActivity) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.type = _data["type"];
+            this.public = _data["public"];
+            this.repo = _data["repo"] ? Repository.fromJS(_data["repo"]) : <any>undefined;
+            this.actor = _data["actor"] ? User.fromJS(_data["actor"]) : <any>undefined;
+            this.org = _data["org"] ? Organization.fromJS(_data["org"]) : <any>undefined;
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
+            this.id = _data["id"];
+            this.payload = _data["payload"] ? ActivityPayload.fromJS(_data["payload"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): Activity {
+        data = typeof data === 'object' ? data : {};
+        let result = new Activity();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["type"] = this.type;
+        data["public"] = this.public;
+        data["repo"] = this.repo ? this.repo.toJSON() : <any>undefined;
+        data["actor"] = this.actor ? this.actor.toJSON() : <any>undefined;
+        data["org"] = this.org ? this.org.toJSON() : <any>undefined;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["id"] = this.id;
+        data["payload"] = this.payload ? this.payload.toJSON() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IActivity {
+    type?: string | undefined;
+    public?: boolean;
+    repo?: Repository | undefined;
+    actor?: User | undefined;
+    org?: Organization | undefined;
+    createdAt?: Date;
+    id?: string | undefined;
+    payload?: ActivityPayload | undefined;
+}
+
+export class Organization extends Account implements IOrganization {
+    billingAddress?: string | undefined;
+    reposUrl?: string | undefined;
+    eventsUrl?: string | undefined;
+    hooksUrl?: string | undefined;
+    issuesUrl?: string | undefined;
+    membersUrl?: string | undefined;
+    publicMembersUrl?: string | undefined;
+    description?: string | undefined;
+    isVerified?: boolean;
+    hasOrganizationProjects?: boolean;
+    hasRepositoryProjects?: boolean;
+    updatedAt?: Date;
+
+    constructor(data?: IOrganization) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.billingAddress = _data["billingAddress"];
+            this.reposUrl = _data["reposUrl"];
+            this.eventsUrl = _data["eventsUrl"];
+            this.hooksUrl = _data["hooksUrl"];
+            this.issuesUrl = _data["issuesUrl"];
+            this.membersUrl = _data["membersUrl"];
+            this.publicMembersUrl = _data["publicMembersUrl"];
+            this.description = _data["description"];
+            this.isVerified = _data["isVerified"];
+            this.hasOrganizationProjects = _data["hasOrganizationProjects"];
+            this.hasRepositoryProjects = _data["hasRepositoryProjects"];
+            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): Organization {
+        data = typeof data === 'object' ? data : {};
+        let result = new Organization();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["billingAddress"] = this.billingAddress;
+        data["reposUrl"] = this.reposUrl;
+        data["eventsUrl"] = this.eventsUrl;
+        data["hooksUrl"] = this.hooksUrl;
+        data["issuesUrl"] = this.issuesUrl;
+        data["membersUrl"] = this.membersUrl;
+        data["publicMembersUrl"] = this.publicMembersUrl;
+        data["description"] = this.description;
+        data["isVerified"] = this.isVerified;
+        data["hasOrganizationProjects"] = this.hasOrganizationProjects;
+        data["hasRepositoryProjects"] = this.hasRepositoryProjects;
+        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IOrganization extends IAccount {
+    billingAddress?: string | undefined;
+    reposUrl?: string | undefined;
+    eventsUrl?: string | undefined;
+    hooksUrl?: string | undefined;
+    issuesUrl?: string | undefined;
+    membersUrl?: string | undefined;
+    publicMembersUrl?: string | undefined;
+    description?: string | undefined;
+    isVerified?: boolean;
+    hasOrganizationProjects?: boolean;
+    hasRepositoryProjects?: boolean;
+    updatedAt?: Date;
+}
+
+export class ActivityPayload implements IActivityPayload {
+    repository?: Repository | undefined;
+    sender?: User | undefined;
+    installation?: InstallationId | undefined;
+
+    constructor(data?: IActivityPayload) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.repository = _data["repository"] ? Repository.fromJS(_data["repository"]) : <any>undefined;
+            this.sender = _data["sender"] ? User.fromJS(_data["sender"]) : <any>undefined;
+            this.installation = _data["installation"] ? InstallationId.fromJS(_data["installation"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): ActivityPayload {
+        data = typeof data === 'object' ? data : {};
+        let result = new ActivityPayload();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["repository"] = this.repository ? this.repository.toJSON() : <any>undefined;
+        data["sender"] = this.sender ? this.sender.toJSON() : <any>undefined;
+        data["installation"] = this.installation ? this.installation.toJSON() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IActivityPayload {
+    repository?: Repository | undefined;
+    sender?: User | undefined;
+    installation?: InstallationId | undefined;
+}
+
+export class InstallationId implements IInstallationId {
+    id?: number;
+
+    constructor(data?: IInstallationId) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+        }
+    }
+
+    static fromJS(data: any): InstallationId {
+        data = typeof data === 'object' ? data : {};
+        let result = new InstallationId();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        return data; 
+    }
+}
+
+export interface IInstallationId {
+    id?: number;
 }
 
 export class ClientMetadata implements IClientMetadata {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using LibGit2Sharp;
@@ -7,7 +6,6 @@ using Microsoft.Extensions.Options;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
-using Commit = LibGit2Sharp.Commit;
 using Credentials = LibGit2Sharp.Credentials;
 using Repository = LibGit2Sharp.Repository;
 using Signature = LibGit2Sharp.Signature;
@@ -21,13 +19,6 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
         public GitAdapter(IOptions<AppSettings> options)
         {
             _workDir = options.Value.WorkingDirectory;
-        }
-
-        public IEnumerable<Commit> GetCommits(GitActionRequest request)
-        {
-            var repoLocation = CloneOrPullLatestRepository(request);
-            using var repo = new Repository(repoLocation);
-            foreach (var commit in repo.Commits) yield return commit;
         }
 
         public string CloneOrPullLatestRepository(GitActionRequest request)

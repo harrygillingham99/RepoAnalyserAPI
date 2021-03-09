@@ -8,5 +8,6 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL.Interfaces
     public interface IOctoKitGraphQlServiceAgent
     {
         Task<IEnumerable<UserRepositoryResult>> GetRepositories(string token, RepoFilterOptions option);
+        Task<UserRepositoryResult> GetRepository(string token, long repoId);
     }
 }

@@ -20,14 +20,6 @@ namespace RepoAnalyser.Objects.API.Requests
             Username = user.Login;
         }
 
-        public GitActionRequest(RepositoryCommitsRequest request, string token)
-        {
-            RepoUrl = request.RepositoryUrl;
-            Token = token;
-            Username = request.Username;
-            Email = request.Email;
-        }
-
         public string RepoUrl { get; }
         public string Token { get; }
         public string Username { get; }
