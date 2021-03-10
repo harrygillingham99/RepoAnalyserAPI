@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Requests;
@@ -23,13 +24,13 @@ namespace RepoAnalyser.Logic
 
         public async Task<DetailedRepository> GetDetailedRepository(long repoId, string token)
         {
-            var repository = _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
-            var commits = _octoKitServiceAgent.GetCommitsForRepo(repoId, token);
-            var repoStats = _octoKitServiceAgent.GetStatisticsForRepository(repoId, token);
+            var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
+            var commits = _octoKitServiceAgent.GetCommitsForRepo(repoId,repository.LastUpdated, token);
+            var repoStats = _octoKitServiceAgent.GetStatisticsForRepository(repoId,repository.LastUpdated ,token);
 
             return new DetailedRepository
             {
-                Repository = await repository,
+                Repository = repository,
                 Commits = await commits,
                 Statistics = await repoStats
             };

@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using LazyCache;
 using Microsoft.Extensions.Options;
 using Octokit;
 using RepoAnalyser.Objects;
@@ -11,61 +13,67 @@ namespace RepoAnalyser.Services.OctoKit
 {
     public class OctoKitServiceAgent : IOctoKitServiceAgent
     {
+        private readonly IAppCache _cache;
         private readonly GitHubClient _client;
 
-        public OctoKitServiceAgent(IOptions<GitHubSettings> options)
+        public OctoKitServiceAgent(IOptions<GitHubSettings> options, IAppCache cache)
         {
+            _cache = cache;
             _client = BuildRestClient(options.Value.AppName);
         }
 
-        public async Task<IEnumerable<GitHubCommit>> GetCommitsForRepo(long repoId, string token)
+        public Task<IEnumerable<GitHubCommit>> GetCommitsForRepo(long repoId, DateTime repoLastUpdated, string token)
         {
-            List<Task<GitHubCommit>> commits = new List<Task<GitHubCommit>>();
-
+            var commits = new List<Task<GitHubCommit>>();
             _client.Connection.Credentials = GetCredentials(token);
 
-            var result = await _client.Repository.Commit.GetAll(repoId);
-
-            foreach (var commit in result)
+            async Task<IEnumerable<GitHubCommit>> GetCommits()
             {
-                commits.Add(_client.Repository.Commit.Get(repoId, commit.Sha));
+                var result = _client.Repository.Commit.GetAll(repoId);
+
+                foreach (var commit in await result) commits.Add(_client.Repository.Commit.Get(repoId, commit.Sha));
+
+                return await Task.WhenAll(commits);
             }
 
-            return await Task.WhenAll(commits);
+            return _cache.GetOrAddAsync($"{repoLastUpdated.ToLongDateString()}-{repoId}-commits", GetCommits);
         }
 
-        public async Task<RepoStatistics> GetStatisticsForRepository(long repoId, string token)
+        public Task<RepoStatistics> GetStatisticsForRepository(long repoId, DateTime repoLastUpdated, string token)
         {
             _client.Connection.Credentials = GetCredentials(token);
 
-            var codeFrequency = _client.Repository.Statistics.GetCodeFrequency(repoId);
-            var commitActivity= _client.Repository.Statistics.GetCommitActivity(repoId);
-            var participation= _client.Repository.Statistics.GetParticipation(repoId);
-            var commitPunchCard= _client.Repository.Statistics.GetPunchCard(repoId);
-
-            return new RepoStatistics
+            async Task<RepoStatistics> GetStatistics()
             {
-                CommitActivity = await commitActivity,
-                CodeFrequency = await codeFrequency,
-                Participation = await participation,
-                CommitPunchCard = await commitPunchCard
-            };
+                var codeFrequency = _client.Repository.Statistics.GetCodeFrequency(repoId);
+                var commitActivity = _client.Repository.Statistics.GetCommitActivity(repoId);
+                var participation = _client.Repository.Statistics.GetParticipation(repoId);
+                var commitPunchCard = _client.Repository.Statistics.GetPunchCard(repoId);
+
+                return new RepoStatistics
+                {
+                    CommitActivity = await commitActivity, CodeFrequency = await codeFrequency,
+                    Participation = await participation, CommitPunchCard = await commitPunchCard
+                };
+            }
+
+            return _cache.GetOrAddAsync($"{repoLastUpdated.ToLongDateString()}-{repoId}-stats", GetStatistics);
         }
 
-        public async Task<UserActivity> GetDetailedUserActivity(string token)
+        public Task<UserActivity> GetDetailedUserActivity(string token)
         {
             _client.Connection.Credentials = GetCredentials(token);
 
-            var userLogin = (await _client.User.Current()).Login;
-
-            var notifications = _client.Activity.Notifications.GetAllForCurrent();
-            var events = _client.Activity.Events.GetAllUserPerformed(userLogin);
-
-            return new UserActivity
+            async Task<UserActivity> GetUserStats()
             {
-                Notifications = await notifications,
-                Events = await events
-            };
+                var userAccount = await _client.User.Current();
+                var notifications = _client.Activity.Notifications.GetAllForCurrent();
+                var events = _client.Activity.Events.GetAllUserPerformed(userAccount.Login);
+
+                return new UserActivity {Notifications = await notifications, Events = await events};
+            }
+
+            return _cache.GetOrAddAsync($"{token}-stats", GetUserStats, DateTimeOffset.Now.AddDays(1));
         }
     }
 }

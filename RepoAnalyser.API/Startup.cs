@@ -57,6 +57,8 @@ namespace RepoAnalyser.API
                 configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("GitHub Token"));
             });
 
+            services.AddLazyCache();
+
             ServiceRegistry.AddConfigs(services, _configuration);
 
             ServiceRegistry.AddBackgroundTaskQueue(services);
