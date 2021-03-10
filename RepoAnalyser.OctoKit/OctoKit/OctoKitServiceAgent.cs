@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using LazyCache;
 using Microsoft.Extensions.Options;
@@ -36,7 +37,7 @@ namespace RepoAnalyser.Services.OctoKit
                 return await Task.WhenAll(commits);
             }
 
-            return _cache.GetOrAddAsync($"{repoLastUpdated.ToLongDateString()}-{repoId}-commits", GetCommits);
+            return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-commits", GetCommits);
         }
 
         public Task<RepoStatistics> GetStatisticsForRepository(long repoId, DateTime repoLastUpdated, string token)
@@ -57,7 +58,7 @@ namespace RepoAnalyser.Services.OctoKit
                 };
             }
 
-            return _cache.GetOrAddAsync($"{repoLastUpdated.ToLongDateString()}-{repoId}-stats", GetStatistics);
+            return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-stats", GetStatistics);
         }
 
         public Task<UserActivity> GetDetailedUserActivity(string token)
