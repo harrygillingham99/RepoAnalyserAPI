@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using LibGit2Sharp;
 using Microsoft.Extensions.Options;
-using Octokit.GraphQL.Core.Builders;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
@@ -50,9 +49,15 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
             return repoDirectory;
         }
 
-        public IEnumerable<string> GetRelativeFilePathsForRepository(string repoDirectory, string repoName)
+        public IEnumerable<string> GetRelativeFilePathsForRepository(string repoDirectory, string repoName, bool ignoreGitFiles = true)
         {
-            return Directory.GetFiles(repoDirectory, "*.*", SearchOption.AllDirectories).Select(path => path.Replace(_workDir,"").Replace("\\", "/").Replace($"/{repoName}", ""));
+            var files = Directory.GetFiles(repoDirectory, "*.*", SearchOption.AllDirectories)
+                .Select(path => path
+                    .Replace(_workDir, "")
+                    .Replace("\\", "/")
+                    .Replace($"/{repoName}", ""));
+
+            return ignoreGitFiles ? files.Where(x => !x.StartsWith("/.git")) : files;
         }
 
         private string GetRepoNameFromUrl(string repoUrl)

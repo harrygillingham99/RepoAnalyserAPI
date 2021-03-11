@@ -7,7 +7,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces
     {
         string CloneOrPullLatestRepository(GitActionRequest request);
 
-        IEnumerable<string> GetRelativeFilePathsForRepository(string repoDirectory, string repoName);
+        IEnumerable<string> GetRelativeFilePathsForRepository(string repoDirectory, string repoName, bool ignoreGitFiles = true);
 
     }
 }

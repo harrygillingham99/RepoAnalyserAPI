@@ -82,18 +82,18 @@ namespace RepoAnalyser.Services.OctoKit
         {
             _client.Connection.Credentials = GetCredentials(token);
 
-            async Task<IReadOnlyList<GitHubCommit>> GetCommitsForFile (string path)
-            {
-                return await _client.Repository.Commit.GetAll(repoId, new CommitRequest
+            var filePathsList = filePaths.ToList();
+
+            async Task<IReadOnlyList<GitHubCommit>> GetCommitsForFile (string path) =>
+                await _client.Repository.Commit.GetAll(repoId, new CommitRequest
                 {
                     Path = path,
                 });
-            }
 
             async Task<Dictionary<string, string>> GetCodeOwners()
             {
                 var commitsForFiles = new Dictionary<string, IReadOnlyList<GitHubCommit>>();
-                foreach (var path in filePaths)
+                foreach (var path in filePathsList)
                     commitsForFiles.Add(path, await _cache.GetOrAddAsync($"{repoId}-{path}-{repoLastUpdated}-fileCommits", () => GetCommitsForFile(path)));
 
                 return commitsForFiles.ToDictionary(key => key.Key,
@@ -104,7 +104,7 @@ namespace RepoAnalyser.Services.OctoKit
                         ?.Key);
             }
 
-            return _cache.GetOrAddAsync($"{repoLastUpdated}-{string.Join("-", filePaths)}codeOwners", GetCodeOwners);
+            return GetCodeOwners();
         }
     }
 }

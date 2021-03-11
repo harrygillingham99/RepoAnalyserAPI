@@ -8,7 +8,6 @@ using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Responses;
-using RepoAnalyser.Services.OctoKit;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 
 namespace RepoAnalyser.API.Controllers

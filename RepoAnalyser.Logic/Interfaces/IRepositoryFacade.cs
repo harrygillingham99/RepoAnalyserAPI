@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Octokit;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 

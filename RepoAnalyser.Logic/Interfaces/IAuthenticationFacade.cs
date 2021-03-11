@@ -7,7 +7,6 @@ namespace RepoAnalyser.Logic.Interfaces
     {
         Task<TokenUserResponse> GetOAuthTokenWithUserInfo(string code, string state);
         string GetLoginRedirectUrl();
-
         Task<UserInfoResult> GetUserInformation(string token);
     }
 }
