@@ -60,15 +60,17 @@ namespace RepoAnalyser.API.Controllers
             });
         }
 
-        [HttpGet("build-test")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(bool), Description = "Woo")]
-        public IActionResult BuildTest()
+        [HttpGet("code-owners/{repoId}")]
+        [SwaggerResponse(HttpStatusCode.OK, typeof(Dictionary<string,string>), Description = "Success getting codeowners")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
+        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Not found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting code owners")]
+        public Task<IActionResult> GetCodeOwnersForRepo([FromRoute] long repoId)
         {
-            return ExecuteAndMapToActionResult(() =>
+            return ExecuteAndMapToActionResultAsync(() =>
             {
-                _msBuildRunner.Build(
-                    "RepoAnalyserAPI");
-                return true;
+                var token = HttpContext.Request.GetAuthorizationToken();
+                return _repositoryFacade.GetRepositoryCodeOwners(repoId, token);
             });
         }
     }

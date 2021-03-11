@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using LibGit2Sharp;
 using Microsoft.Extensions.Options;
+using Octokit.GraphQL.Core.Builders;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
@@ -46,6 +48,11 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
             }
 
             return repoDirectory;
+        }
+
+        public IEnumerable<string> GetRelativeFilePathsForRepository(string repoDirectory, string repoName)
+        {
+            return Directory.GetFiles(repoDirectory, "*.*", SearchOption.AllDirectories).Select(path => path.Replace(_workDir,"").Replace("\\", "/").Replace($"/{repoName}", ""));
         }
 
         private string GetRepoNameFromUrl(string repoUrl)

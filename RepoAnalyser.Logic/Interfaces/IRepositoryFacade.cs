@@ -10,5 +10,6 @@ namespace RepoAnalyser.Logic.Interfaces
     {
         Task<DetailedRepository> GetDetailedRepository(long repoId, string token);
         Task<IEnumerable<UserRepositoryResult>> GetRepositories(string token, RepoFilterOptions filterOption);
+        Task<Dictionary<string,string>> GetRepositoryCodeOwners(long repoId, string token);
     }
 }

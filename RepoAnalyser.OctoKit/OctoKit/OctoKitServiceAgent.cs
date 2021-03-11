@@ -78,18 +78,23 @@ namespace RepoAnalyser.Services.OctoKit
             return _cache.GetOrAddAsync($"{token}-stats", GetUserStats, DateTimeOffset.Now.AddDays(1));
         }
 
-        public Task<Dictionary<string,string>> GetFileCodeOwners(string token, string[] filePaths, long repoId, DateTime repoLastUpdated)
+        public Task<Dictionary<string,string>> GetFileCodeOwners(string token, IEnumerable<string> filePaths, long repoId, DateTime repoLastUpdated)
         {
             _client.Connection.Credentials = GetCredentials(token);
+
+            async Task<IReadOnlyList<GitHubCommit>> GetCommitsForFile (string path)
+            {
+                return await _client.Repository.Commit.GetAll(repoId, new CommitRequest
+                {
+                    Path = path,
+                });
+            }
 
             async Task<Dictionary<string, string>> GetCodeOwners()
             {
                 var commitsForFiles = new Dictionary<string, IReadOnlyList<GitHubCommit>>();
                 foreach (var path in filePaths)
-                    commitsForFiles.Add(path, await _client.Repository.Commit.GetAll(repoId, new CommitRequest
-                    {
-                        Path = path,
-                    }));
+                    commitsForFiles.Add(path, await _cache.GetOrAddAsync($"{repoId}-{path}-{repoLastUpdated}-fileCommits", () => GetCommitsForFile(path)));
 
                 return commitsForFiles.ToDictionary(key => key.Key,
                     value => value.Value.GroupBy(x => x.Author.Login)
@@ -99,7 +104,7 @@ namespace RepoAnalyser.Services.OctoKit
                         ?.Key);
             }
 
-            return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-codeOwners", GetCodeOwners);
+            return _cache.GetOrAddAsync($"{repoLastUpdated}-{string.Join("-", filePaths)}codeOwners", GetCodeOwners);
         }
     }
 }
