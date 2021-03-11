@@ -9,5 +9,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces
 
         IEnumerable<string> GetRelativeFilePathsForRepository(string repoDirectory, string repoName, bool ignoreGitFiles = true);
 
+        bool IsDotNetProject(string repoName);
+
     }
 }

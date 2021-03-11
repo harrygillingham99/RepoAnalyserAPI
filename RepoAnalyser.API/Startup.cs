@@ -41,20 +41,21 @@ namespace RepoAnalyser.API
 
             services.AddOpenApiDocument(configure =>
             {
+                const string tokenKey = "GitHub Token";
                 configure.Title = "RepoAnalyser API";
                 configure.DocumentName = "API";
                 configure.Description = "An API interface.";
                 configure.OperationProcessors.Add(new HeaderParameterOperationProcessor());
                 configure.DocumentProcessors.Add(new SchemaExtenderDocumentProcessor());
-                configure.AddSecurity("GitHub Token", Enumerable.Empty<string>(), new OpenApiSecurityScheme
+                configure.AddSecurity(tokenKey, Enumerable.Empty<string>(), new OpenApiSecurityScheme
                 {
                     Type = OpenApiSecuritySchemeType.ApiKey,
                     Name = "Authorization",
                     In = OpenApiSecurityApiKeyLocation.Header,
-                    Description = "GitHub Bearer Token"
+                    Description = tokenKey
                 });
 
-                configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor("GitHub Token"));
+                configure.OperationProcessors.Add(new AspNetCoreOperationSecurityScopeProcessor(tokenKey));
             });
 
             services.AddLazyCache();

@@ -50,7 +50,7 @@ namespace RepoAnalyser.Logic
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
             var repositoryDirectory =
                 _gitAdapter.CloneOrPullLatestRepository(new GitActionRequest(repository.PullUrl, token, user.Login,
-                    user.Email ?? "unknown"));
+                    user.Email ?? "unknown", repository.Name));
             var filesInRepo = _gitAdapter.GetRelativeFilePathsForRepository(repositoryDirectory, repository.Name);
 
             return await _octoKitServiceAgent.GetFileCodeOwners(token, filesInRepo, repository.Id, repository.LastUpdated);

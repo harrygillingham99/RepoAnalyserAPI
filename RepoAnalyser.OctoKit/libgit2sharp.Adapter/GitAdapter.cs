@@ -7,9 +7,6 @@ using Microsoft.Extensions.Options;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
-using Credentials = LibGit2Sharp.Credentials;
-using Repository = LibGit2Sharp.Repository;
-using Signature = LibGit2Sharp.Signature;
 
 namespace RepoAnalyser.Services.libgit2sharp.Adapter
 {
@@ -24,7 +21,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
 
         public string CloneOrPullLatestRepository(GitActionRequest request)
         {
-            var repoDirectory = Path.Combine(_workDir, GetRepoNameFromUrl(request.RepoUrl));
+            var repoDirectory = Path.Combine(_workDir, request.RepoName);
             if (!Directory.Exists(repoDirectory))
             {
                 _ = Repository.Clone(request.RepoUrl, repoDirectory, new CloneOptions
@@ -43,13 +40,14 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
                     new PullOptions {FetchOptions = options});
                 if (result.Status == MergeStatus.Conflicts)
                     throw new Exception(
-                        $"Error in {nameof(CloneOrPullLatestRepository)}, merge conflicts for {GetRepoNameFromUrl(request.RepoUrl)}");
+                        $"Error in {nameof(CloneOrPullLatestRepository)}, merge conflicts for {request.RepoName}");
             }
 
             return repoDirectory;
         }
 
-        public IEnumerable<string> GetRelativeFilePathsForRepository(string repoDirectory, string repoName, bool ignoreGitFiles = true)
+        public IEnumerable<string> GetRelativeFilePathsForRepository(string repoDirectory, string repoName,
+            bool ignoreGitFiles = true)
         {
             var files = Directory.GetFiles(repoDirectory, "*.*", SearchOption.AllDirectories)
                 .Select(path => path
@@ -60,9 +58,9 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
             return ignoreGitFiles ? files.Where(x => !x.StartsWith("/.git")) : files;
         }
 
-        private string GetRepoNameFromUrl(string repoUrl)
+        public bool IsDotNetProject(string repoName)
         {
-            return repoUrl.Split('/').Last().Replace(".git", string.Empty);
+            return Directory.GetFiles(Path.Combine(_workDir, repoName), "*.sln", SearchOption.AllDirectories).Any();
         }
 
         private Credentials BuildCredentials(string token)
