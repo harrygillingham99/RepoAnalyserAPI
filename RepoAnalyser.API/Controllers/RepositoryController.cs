@@ -59,6 +59,7 @@ namespace RepoAnalyser.API.Controllers
                 return _repositoryFacade.GetDetailedRepository(repoId, token);
             });
         }
+
         [HttpGet("build-test")]
         [SwaggerResponse(HttpStatusCode.OK, typeof(bool), Description = "Woo")]
         public IActionResult BuildTest()

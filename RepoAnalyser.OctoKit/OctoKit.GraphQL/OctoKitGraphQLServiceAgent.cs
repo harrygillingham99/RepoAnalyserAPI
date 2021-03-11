@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LazyCache;
 using Microsoft.Extensions.Options;
 using Octokit.GraphQL;
 using RepoAnalyser.Objects;
@@ -14,9 +17,11 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
     public class OctoKitGraphQlServiceAgent : IOctoKitGraphQlServiceAgent
     {
         private readonly ProductHeaderValue _productHeaderValue;
+        private readonly IAppCache _cache;
 
-        public OctoKitGraphQlServiceAgent(IOptions<GitHubSettings> options)
+        public OctoKitGraphQlServiceAgent(IOptions<GitHubSettings> options, IAppCache appCache)
         {
+            _cache = appCache;
             _productHeaderValue = new ProductHeaderValue(options.Value.AppName);
         }
 
@@ -40,7 +45,7 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
                         .Select(user => new Collaborator(user.Name, user.AvatarUrl(128))).ToList(),
                     LastUpdated = repository.UpdatedAt.DateTime
                 }).Compile();
-            return BuildConnectionExecuteQuery(token, query);
+            return _cache.GetOrAddAsync($"{token}-{option}-repos", () => BuildConnectionExecuteQuery(token, query), DateTimeOffset.Now.AddHours(1));
         }
 
         private Task<T> BuildConnectionExecuteQuery<T>(string token, ICompiledQuery<T> query,

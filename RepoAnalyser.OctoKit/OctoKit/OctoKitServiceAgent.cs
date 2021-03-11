@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using LazyCache;
 using Microsoft.Extensions.Options;
@@ -25,11 +25,12 @@ namespace RepoAnalyser.Services.OctoKit
 
         public Task<IEnumerable<GitHubCommit>> GetCommitsForRepo(long repoId, DateTime repoLastUpdated, string token)
         {
-            var commits = new List<Task<GitHubCommit>>();
             _client.Connection.Credentials = GetCredentials(token);
 
             async Task<IEnumerable<GitHubCommit>> GetCommits()
             {
+                var commits = new List<Task<GitHubCommit>>();
+
                 var result = _client.Repository.Commit.GetAll(repoId);
 
                 foreach (var commit in await result) commits.Add(_client.Repository.Commit.Get(repoId, commit.Sha));
@@ -75,6 +76,30 @@ namespace RepoAnalyser.Services.OctoKit
             }
 
             return _cache.GetOrAddAsync($"{token}-stats", GetUserStats, DateTimeOffset.Now.AddDays(1));
+        }
+
+        public Task<Dictionary<string,string>> GetFileCodeOwners(string token, string[] filePaths, long repoId, DateTime repoLastUpdated)
+        {
+            _client.Connection.Credentials = GetCredentials(token);
+
+            async Task<Dictionary<string, string>> GetCodeOwners()
+            {
+                var commitsForFiles = new Dictionary<string, IReadOnlyList<GitHubCommit>>();
+                foreach (var path in filePaths)
+                    commitsForFiles.Add(path, await _client.Repository.Commit.GetAll(repoId, new CommitRequest
+                    {
+                        Path = path,
+                    }));
+
+                return commitsForFiles.ToDictionary(key => key.Key,
+                    value => value.Value.GroupBy(x => x.Author.Login)
+                        .Select(x => new {x.Key, Count = x.Count()})
+                        .OrderByDescending(x => x.Count)
+                        .FirstOrDefault()
+                        ?.Key);
+            }
+
+            return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-codeOwners", GetCodeOwners);
         }
     }
 }

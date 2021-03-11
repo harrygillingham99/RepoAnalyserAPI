@@ -135,47 +135,8 @@ namespace RepoAnalyser.API.Controllers
             catch (Exception ex)
             {
                 Log.Error(ex, ex.Message);
-                return Problem(ex.Message, statusCode: (int)HttpStatusCode.InternalServerError, title: ex.GetType().Name, type: ex.GetType().FullName);
-            }
-            finally
-            {
-                _stopwatch.Stop();
-                RequestAudit(new RequestAudit(HttpContext.Request.GetMetadataFromRequestHeaders(),
-                    _stopwatch.ElapsedMilliseconds, HttpContext.Request.Path.Value ?? "unknown"));
-            }
-        }
-
-        protected async Task<T> ExecuteAndReturnAsync<T>(Func<Task<T>> request)
-        {
-            try
-            {
-                _stopwatch.Start();
-                return await request.Invoke();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex.Message, ex);
-                throw;
-            }
-            finally
-            {
-                _stopwatch.Stop();
-                RequestAudit(new RequestAudit(HttpContext.Request.GetMetadataFromRequestHeaders(),
-                    _stopwatch.ElapsedMilliseconds, HttpContext.Request.Path.Value ?? "unknown"));
-            }
-        }
-
-        protected T ExecuteAndReturn<T>(Func<T> request)
-        {
-            try
-            {
-                _stopwatch.Start();
-                return request.Invoke();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex.Message, ex);
-                throw;
+                return Problem(ex.Message, statusCode: (int) HttpStatusCode.InternalServerError,
+                    title: ex.GetType().Name, type: ex.GetType().FullName);
             }
             finally
             {
