@@ -257,10 +257,79 @@ export class Client extends AuthorizedApiBase {
 
     /**
      * @param metadata (optional) ClientMetadata
+     * @return Success getting pull requests
+     */
+    pullRequest_GetPullRequests(pullFilterOption: PullRequestFilterOption, metadata: any | undefined): Promise<UserPullRequestResult[]> {
+        let url_ = this.baseUrl + "/pull-requests/{pullFilterOption}";
+        if (pullFilterOption === undefined || pullFilterOption === null)
+            throw new Error("The parameter 'pullFilterOption' must be defined.");
+        url_ = url_.replace("{pullFilterOption}", encodeURIComponent("" + pullFilterOption));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            headers: {
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.processPullRequest_GetPullRequests(_response);
+        });
+    }
+
+    protected processPullRequest_GetPullRequests(response: Response): Promise<UserPullRequestResult[]> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (Array.isArray(resultData200)) {
+                result200 = [] as any;
+                for (let item of resultData200)
+                    result200!.push(UserPullRequestResult.fromJS(item));
+            }
+            return result200;
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = UnauthorizedResponse.fromJS(resultData401);
+            return throwException("No token provided", status, _responseText, _headers, result401);
+            });
+        } else if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = NotFoundResponse.fromJS(resultData404);
+            return throwException("not found", status, _responseText, _headers, result404);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("Error getting pull requests", status, _responseText, _headers, result500);
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<UserPullRequestResult[]>(<any>null);
+    }
+
+    /**
+     * @param metadata (optional) ClientMetadata
      * @return Success getting repos
      */
     repository_Repositories(filterOption: RepoFilterOptions, metadata: any | undefined): Promise<UserRepositoryResult[]> {
-        let url_ = this.baseUrl + "/repo/{filterOption}";
+        let url_ = this.baseUrl + "/repositories/{filterOption}";
         if (filterOption === undefined || filterOption === null)
             throw new Error("The parameter 'filterOption' must be defined.");
         url_ = url_.replace("{filterOption}", encodeURIComponent("" + filterOption));
@@ -329,7 +398,7 @@ export class Client extends AuthorizedApiBase {
      * @return Success getting detailed repo
      */
     repository_GetDetailedRepository(repoId: number, metadata: any | undefined): Promise<DetailedRepository> {
-        let url_ = this.baseUrl + "/repo/detailed/{repoId}";
+        let url_ = this.baseUrl + "/repositories/detailed/{repoId}";
         if (repoId === undefined || repoId === null)
             throw new Error("The parameter 'repoId' must be defined.");
         url_ = url_.replace("{repoId}", encodeURIComponent("" + repoId));
@@ -394,7 +463,7 @@ export class Client extends AuthorizedApiBase {
      * @return Success getting codeowners
      */
     repository_GetCodeOwnersForRepo(repoId: number, metadata: any | undefined): Promise<{ [key: string]: string; }> {
-        let url_ = this.baseUrl + "/repo/code-owners/{repoId}";
+        let url_ = this.baseUrl + "/repositories/code-owners/{repoId}";
         if (repoId === undefined || repoId === null)
             throw new Error("The parameter 'repoId' must be defined.");
         url_ = url_.replace("{repoId}", encodeURIComponent("" + repoId));
@@ -465,7 +534,7 @@ export class Client extends AuthorizedApiBase {
      * @return Success getting user stats
      */
     statistics_GetUserStatistics(metadata: any | undefined): Promise<UserActivity> {
-        let url_ = this.baseUrl + "/stats/user";
+        let url_ = this.baseUrl + "/statistics/user";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -1116,6 +1185,87 @@ export class UserInfoResult implements IUserInfoResult {
 export interface IUserInfoResult {
     user?: User | undefined;
     loginRedirectUrl?: string | undefined;
+}
+
+export class UserPullRequestResult implements IUserPullRequestResult {
+    repositoryId?: number;
+    closedAt?: Date | undefined;
+    closed?: boolean;
+    state?: PullRequestState;
+    collaborators?: string[] | undefined;
+    title?: string | undefined;
+    description?: string | undefined;
+
+    constructor(data?: IUserPullRequestResult) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.repositoryId = _data["repositoryId"];
+            this.closedAt = _data["closedAt"] ? new Date(_data["closedAt"].toString()) : <any>undefined;
+            this.closed = _data["closed"];
+            this.state = _data["state"];
+            if (Array.isArray(_data["collaborators"])) {
+                this.collaborators = [] as any;
+                for (let item of _data["collaborators"])
+                    this.collaborators!.push(item);
+            }
+            this.title = _data["title"];
+            this.description = _data["description"];
+        }
+    }
+
+    static fromJS(data: any): UserPullRequestResult {
+        data = typeof data === 'object' ? data : {};
+        let result = new UserPullRequestResult();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["repositoryId"] = this.repositoryId;
+        data["closedAt"] = this.closedAt ? this.closedAt.toISOString() : <any>undefined;
+        data["closed"] = this.closed;
+        data["state"] = this.state;
+        if (Array.isArray(this.collaborators)) {
+            data["collaborators"] = [];
+            for (let item of this.collaborators)
+                data["collaborators"].push(item);
+        }
+        data["title"] = this.title;
+        data["description"] = this.description;
+        return data; 
+    }
+}
+
+export interface IUserPullRequestResult {
+    repositoryId?: number;
+    closedAt?: Date | undefined;
+    closed?: boolean;
+    state?: PullRequestState;
+    collaborators?: string[] | undefined;
+    title?: string | undefined;
+    description?: string | undefined;
+}
+
+export enum PullRequestState {
+    Open = "OPEN",
+    Closed = "CLOSED",
+    Merged = "MERGED",
+}
+
+export enum PullRequestFilterOption {
+    All = 1,
+    Closed = 2,
+    Open = 3,
+    Merged = 4,
 }
 
 export class UserRepositoryResult implements IUserRepositoryResult {

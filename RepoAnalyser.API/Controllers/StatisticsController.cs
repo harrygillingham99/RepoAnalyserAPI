@@ -13,7 +13,7 @@ using RepoAnalyser.SqlServer.DAL.Interfaces;
 namespace RepoAnalyser.API.Controllers
 {
     [ApiController]
-    [Route("stats")]
+    [Route("statistics")]
     public class StatisticsController : BaseController
     {
         private readonly IUserFacade _userFacade;

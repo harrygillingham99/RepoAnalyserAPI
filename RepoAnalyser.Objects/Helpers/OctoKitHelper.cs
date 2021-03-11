@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using Octokit;
 using Octokit.GraphQL.Core;
+using Octokit.GraphQL.Model;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.Exceptions;
+using RepoAnalyser.Services.OctoKit.GraphQL;
 using Connection = Octokit.GraphQL.Connection;
 using ProductHeaderValue = Octokit.GraphQL.ProductHeaderValue;
 using RepositoryAffiliation = Octokit.GraphQL.Model.RepositoryAffiliation;
@@ -44,6 +46,29 @@ namespace RepoAnalyser.Objects.Helpers
                     throw new BadRequestException("Supplied filtering option is invalid");
             }
             return new Arg<IEnumerable<RepositoryAffiliation?>>(scopes);
+        }
+
+        public static Arg<IEnumerable<PullRequestState>>? BuildPullRequestScopes(PullRequestFilterOption options)
+        {
+            List<PullRequestState> scopes = new List<PullRequestState>();
+            switch (options)
+            {
+                case PullRequestFilterOption.All:
+                    scopes.AddRange(new List<PullRequestState> {PullRequestState.Closed, PullRequestState.Merged, PullRequestState.Open});
+                    break;
+                case PullRequestFilterOption.Closed:
+                    scopes.Add(PullRequestState.Closed);
+                    break;
+                case PullRequestFilterOption.Merged:
+                    scopes.Add(PullRequestState.Merged);
+                    break;
+                case PullRequestFilterOption.Open:
+                    scopes.Add(PullRequestState.Open);
+                    break;
+                default:
+                    throw new BadRequestException("Supplied filtering option is invalid");
+            }
+            return new Arg<IEnumerable<PullRequestState>>(scopes);
         }
     }
 }

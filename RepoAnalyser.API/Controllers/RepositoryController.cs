@@ -16,7 +16,7 @@ using RepoAnalyser.SqlServer.DAL.Interfaces;
 namespace RepoAnalyser.API.Controllers
 {
     [ApiController]
-    [Route("repo")]
+    [Route("repositories")]
     public class RepositoryController : BaseController
     {
         private readonly IRepositoryFacade _repositoryFacade;
