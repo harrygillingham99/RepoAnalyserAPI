@@ -15,7 +15,7 @@ namespace RepoAnalyser.API
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
                 .WriteTo.File(
-                    new JsonFormatter(renderMessage: true, closingDelimiter: "!"),
+                    new JsonFormatter(renderMessage: true, closingDelimiter: ","),
                     Path.Combine(AppContext.BaseDirectory, "logs//Serilog.json"),
                     shared: true,
                     fileSizeLimitBytes: 20_971_520,
