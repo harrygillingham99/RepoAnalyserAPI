@@ -10,7 +10,6 @@ using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
-using RepoAnalyser.Services.OctoKit.GraphQL;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 
 namespace RepoAnalyser.API.Controllers
