@@ -12,10 +12,10 @@ namespace RepoAnalyser.API
         public static void Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Error()
+                .MinimumLevel.Information()
                 .Enrich.FromLogContext()
                 .WriteTo.File(
-                    new JsonFormatter(renderMessage: true),
+                    new JsonFormatter(renderMessage: true, closingDelimiter: "!"),
                     Path.Combine(AppContext.BaseDirectory, "logs//Serilog.json"),
                     shared: true,
                     fileSizeLimitBytes: 20_971_520,
