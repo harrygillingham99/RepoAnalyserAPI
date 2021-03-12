@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using RepoAnalyser.Logic.Interfaces;
+using RepoAnalyser.Objects.API.Requests;
+using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Services.OctoKit.GraphQL;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
 

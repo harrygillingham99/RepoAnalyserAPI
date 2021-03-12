@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Services.OctoKit.Interfaces;
 
@@ -17,10 +18,5 @@ namespace RepoAnalyser.Logic
         {
             return _octoKitServiceAgent.GetDetailedUserActivity(token);
         }
-    }
-
-    public interface IUserFacade
-    {
-        Task<UserActivity> GetUserStatistics(string token);
     }
 }

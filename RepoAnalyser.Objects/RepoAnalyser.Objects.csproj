@@ -19,9 +19,5 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Constants\" />
-  </ItemGroup>
-
 
 </Project>

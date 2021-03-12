@@ -4,7 +4,6 @@ using Octokit.GraphQL.Core;
 using Octokit.GraphQL.Model;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.Exceptions;
-using RepoAnalyser.Services.OctoKit.GraphQL;
 using Connection = Octokit.GraphQL.Connection;
 using ProductHeaderValue = Octokit.GraphQL.ProductHeaderValue;
 using RepositoryAffiliation = Octokit.GraphQL.Model.RepositoryAffiliation;

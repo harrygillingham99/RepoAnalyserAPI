@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Octokit;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Responses;
+using RepoAnalyser.Objects.Constants;
 using RepoAnalyser.Services.OctoKit.Interfaces;
 using static RepoAnalyser.Objects.Helpers.OctoKitHelper;
 
@@ -75,7 +76,7 @@ namespace RepoAnalyser.Services.OctoKit
                 return new UserActivity {Notifications = await notifications, Events = await events};
             }
 
-            return _cache.GetOrAddAsync($"{token}-stats", GetUserStats, DateTimeOffset.Now.AddDays(1));
+            return _cache.GetOrAddAsync($"{token}-stats", GetUserStats, CacheConstants.DefaultCacheExpiry);
         }
 
         public Task<Dictionary<string,string>> GetFileCodeOwners(string token, IEnumerable<string> filePaths, long repoId, DateTime repoLastUpdated)

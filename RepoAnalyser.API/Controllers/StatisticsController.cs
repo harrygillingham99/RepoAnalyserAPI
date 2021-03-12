@@ -6,6 +6,7 @@ using NSwag.Annotations;
 using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic;
+using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.SqlServer.DAL.Interfaces;

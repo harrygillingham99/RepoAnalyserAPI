@@ -8,6 +8,7 @@ using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Services.OctoKit.GraphQL;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
@@ -30,7 +31,7 @@ namespace RepoAnalyser.API.Controllers
         [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "not found")]
         [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting pull requests")]
         public Task<IActionResult> GetPullRequests(
-            [FromRoute] PullRequestFilterOption pullFilterOption)
+            [FromRoute] PullRequestFilterOption pullFilterOption =  PullRequestFilterOption.All)
         {
             return ExecuteAndMapToActionResultAsync(() =>
             {

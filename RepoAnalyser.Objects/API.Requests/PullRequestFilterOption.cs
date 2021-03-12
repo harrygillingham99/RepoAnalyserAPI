@@ -1,4 +1,4 @@
-﻿namespace RepoAnalyser.Services.OctoKit.GraphQL
+﻿namespace RepoAnalyser.Objects.API.Requests
 {
     public enum PullRequestFilterOption
     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using LazyCache;
 using Microsoft.Extensions.Options;
 using Octokit;
 using RepoAnalyser.Objects;
@@ -16,9 +17,11 @@ namespace RepoAnalyser.Services.OctoKit
         private readonly string _clientSecret;
         private readonly string _frontEndRedirectUrl;
         private readonly GitHubClient _client;
+        private readonly IAppCache _cache;
 
-        public OctoKitAuthServiceAgent(IOptions<GitHubSettings> options)
+        public OctoKitAuthServiceAgent(IOptions<GitHubSettings> options, IAppCache cache)
         {
+            _cache = cache;
             _clientId = options.Value.ClientId;
             _clientSecret = options.Value.ClientSecret;
             _frontEndRedirectUrl = options.Value.FrontEndRedirectUrl;
@@ -52,7 +55,7 @@ namespace RepoAnalyser.Services.OctoKit
 
             _client.Connection.Credentials = GetCredentials(token);
 
-            return _client.User.Current();
+            return _cache.GetOrAddAsync($"{token}-user", () => _client.User.Current());
         }
     }
 }
