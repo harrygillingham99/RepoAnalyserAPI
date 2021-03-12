@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -149,12 +150,14 @@ namespace RepoAnalyser.API.Controllers
         //Doing some performance/debug request logging when deployed on home server, handy to know when react is spamming the backend
         private void RequestAudit(RequestAudit audit)
         {
+            var eventText = $"****Requested {audit.RequestedEndpoint}, It took {audit.ExecutionTime}ms to respond.****"
             if (audit.Metadata != null && _requestLogging)
                 _backgroundTaskQueue.QueueBackgroundWorkItem(token =>
                     _auditRepository.InsertRequestAudit(audit));
+            if(_requestLogging && audit.Metadata == null)
+                Log.Information(eventText);
             else
-                Debug.WriteLine(
-                    $"****Requested {audit.RequestedEndpoint}, It took {audit.ExecutionTime}ms to respond.****");
+                Debug.WriteLine(eventText);
         }
     }
 }
