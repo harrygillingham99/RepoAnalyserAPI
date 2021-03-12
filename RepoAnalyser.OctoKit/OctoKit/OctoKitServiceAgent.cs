@@ -79,7 +79,7 @@ namespace RepoAnalyser.Services.OctoKit
             return _cache.GetOrAddAsync($"{token}-stats", GetUserStats, CacheConstants.DefaultCacheExpiry);
         }
 
-        public Task<Dictionary<string,string>> GetFileCodeOwners(string token, IEnumerable<string> filePaths, long repoId, DateTime repoLastUpdated)
+        public Task<IDictionary<string,string>> GetFileCodeOwners(string token, IEnumerable<string> filePaths, long repoId, DateTime repoLastUpdated)
         {
             _client.Connection.Credentials = GetCredentials(token);
 
@@ -91,7 +91,7 @@ namespace RepoAnalyser.Services.OctoKit
                     Path = path,
                 });
 
-            async Task<Dictionary<string, string>> GetCodeOwners()
+            async Task<IDictionary<string, string>> GetCodeOwners()
             {
                 var commitsForFiles = new Dictionary<string, IReadOnlyList<GitHubCommit>>();
                 foreach (var path in filePathsList)

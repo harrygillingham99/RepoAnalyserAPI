@@ -44,7 +44,7 @@ namespace RepoAnalyser.Logic
             return _octoKitGraphQlServiceAgent.GetRepositories(token, filterOption);
         }
 
-        public async Task<Dictionary<string,string>> GetRepositoryCodeOwners(long repoId, string token)
+        public async Task<IDictionary<string,string>> GetRepositoryCodeOwners(long repoId, string token)
         {
             var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);

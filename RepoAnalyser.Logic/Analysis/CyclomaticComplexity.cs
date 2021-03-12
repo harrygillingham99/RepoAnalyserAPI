@@ -134,7 +134,7 @@ namespace RepoAnalyser.Logic.Analysis
             return OpCodeEngine.GetBitmask(method).Get(Code.Switch) ? GetSwitchCyclomaticComplexity(method) : GetFastCyclomaticComplexity(method);
         }
 
-        public static Dictionary<string, int> GetCyclomaticComplexities(this IEnumerable<MethodDefinition> methods)
+        public static IDictionary<string, int> GetCyclomaticComplexities(this IEnumerable<MethodDefinition> methods)
         {
             var results = new Dictionary<string, int>();
             foreach (var method in methods)

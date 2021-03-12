@@ -12,7 +12,7 @@ namespace RepoAnalyser.Services.OctoKit.Interfaces
         Task<RepoStatistics> GetStatisticsForRepository(long repoId, DateTime repoLastUpdated, string token);
         Task<UserActivity> GetDetailedUserActivity(string token);
 
-        Task<Dictionary<string, string>> GetFileCodeOwners(string token, IEnumerable<string> filePaths, long repoId,
+        Task<IDictionary<string, string>> GetFileCodeOwners(string token, IEnumerable<string> filePaths, long repoId,
             DateTime repoLastUpdated);
     }
 }

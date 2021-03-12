@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Logic.Analysis.Interfaces;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.Constants;
 
 namespace RepoAnalyser.Logic.Analysis
 {
@@ -24,7 +25,7 @@ namespace RepoAnalyser.Logic.Analysis
 
             var repoDir = Path.Combine(_workDir, repoName);
 
-            outputDir ??= Path.Combine(repoDir, "build");
+            outputDir ??= Path.Combine(repoDir, AnalysisConstants.DefaultBuildPath);
 
             var slnPaths = Directory.GetFiles(repoDir, "*.sln", SearchOption.AllDirectories);
 
