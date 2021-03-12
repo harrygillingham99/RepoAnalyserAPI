@@ -15,7 +15,7 @@ namespace RepoAnalyser.API
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
                 .WriteTo.File(
-                    new JsonFormatter(renderMessage: true, closingDelimiter: "!"),
+                    new JsonFormatter(renderMessage: true),
                     Path.Combine(AppContext.BaseDirectory, "logs//Serilog.json"),
                     shared: true,
                     fileSizeLimitBytes: 20_971_520,
@@ -43,6 +43,6 @@ namespace RepoAnalyser.API
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                }).UseSerilog();
+                }).UseSerilog(Log.Logger);
     }
 }
