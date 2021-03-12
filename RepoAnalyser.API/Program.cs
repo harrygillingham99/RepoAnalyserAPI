@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using Serilog.Events;
 using Serilog.Formatting.Json;
 
 namespace RepoAnalyser.API
@@ -14,13 +15,24 @@ namespace RepoAnalyser.API
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Information()
                 .Enrich.FromLogContext()
-                .WriteTo.File(
-                    new JsonFormatter(renderMessage: true),
-                    Path.Combine(AppContext.BaseDirectory, "logs//Serilog.json"),
-                    shared: true,
-                    fileSizeLimitBytes: 20_971_520,
-                    rollOnFileSizeLimit: true,
-                    retainedFileCountLimit: 10)
+                .WriteTo.Logger(lc => lc
+                    .Filter.ByIncludingOnly(ev => ev.Level == LogEventLevel.Error || ev.Level == LogEventLevel.Fatal)
+                    .WriteTo.File(
+                        new JsonFormatter(renderMessage: true),
+                        Path.Combine(AppContext.BaseDirectory, "logs//Serilog.json"),
+                        shared: true,
+                        fileSizeLimitBytes: 20_971_520, // roughly 20 MB
+                        rollOnFileSizeLimit: true,
+                        retainedFileCountLimit: 10))
+                .WriteTo.Logger(lc => lc
+                    .Filter.ByIncludingOnly(ev => ev.Level == LogEventLevel.Information || ev.Level == LogEventLevel.Warning)
+                    .WriteTo.File(
+                        new JsonFormatter(renderMessage: true),
+                        Path.Combine(AppContext.BaseDirectory, "logs//Info.json"),
+                        shared: true,
+                        fileSizeLimitBytes: 20_971_520, // roughly 20 MB
+                        rollOnFileSizeLimit: true,
+                        retainedFileCountLimit: 10))
                 .CreateLogger();
 
             try
