@@ -150,7 +150,7 @@ namespace RepoAnalyser.API.Controllers
         //Doing some performance/debug request logging when deployed on home server, handy to know when react is spamming the backend
         private void RequestAudit(RequestAudit audit)
         {
-            var eventText = $"****Requested {audit.RequestedEndpoint}, It took {audit.ExecutionTime}ms to respond.****"
+            var eventText = $"****Requested {audit.RequestedEndpoint}, It took {audit.ExecutionTime}ms to respond.****";
             if (audit.Metadata != null && _requestLogging)
                 _backgroundTaskQueue.QueueBackgroundWorkItem(token =>
                     _auditRepository.InsertRequestAudit(audit));
