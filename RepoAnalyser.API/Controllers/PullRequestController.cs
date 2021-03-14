@@ -38,5 +38,19 @@ namespace RepoAnalyser.API.Controllers
                 return _pullRequestFacade.GetPullRequests(token, pullFilterOption);
             });
         }
+
+        [HttpGet("detailed/{repoId}/{pullNumber}")]
+        [SwaggerResponse(HttpStatusCode.OK, typeof(DetailedPullRequest), Description = "Success getting pull requests")]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
+        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "not found")]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting pull requests")]
+        public Task<IActionResult> GetDetailedPullRequest([FromRoute] long repoId, [FromRoute] int pullNumber)
+        {
+            return ExecuteAndMapToActionResultAsync(() =>
+            {
+                var token = HttpContext.Request.GetAuthorizationToken();
+                return _pullRequestFacade.GetDetailedPullRequest(token, repoId, pullNumber);
+            });
+        }
     }
 }

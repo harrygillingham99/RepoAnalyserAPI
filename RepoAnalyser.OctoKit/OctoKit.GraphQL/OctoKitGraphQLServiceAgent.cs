@@ -57,9 +57,15 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
                 .Select(pull => new UserPullRequestResult
                 {
                     RepositoryId = pull.Repository.DatabaseId.Value,
+                    RepositoryName = pull.Repository.Name,
+                    PullRequestNumber = pull.Number,
                     ClosedAt = pull.ClosedAt,
                     Closed = pull.Closed,
                     Title = pull.Title,
+                    UpdatedAt = pull.UpdatedAt,
+                    Additions = pull.Additions,
+                    Deletions = pull.Deletions,
+                    ChangedFiles = pull.ChangedFiles,
                     Description = pull.BodyText,
                     State = pull.State,
                     Collaborators = pull.Participants(100, null, null, null).Nodes

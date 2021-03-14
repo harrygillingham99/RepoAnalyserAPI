@@ -17,7 +17,8 @@ namespace RepoAnalyser.SqlServer.DAL
 
         public Task InsertRequestAudit(RequestAudit audit)
         {
-            return Invoke(connection => connection.ExecuteAsync(Sql.InsertAuditItemSql,
+            return Invoke(connection => 
+                connection.ExecuteAsync(Sql.InsertAuditItemSql,
                  new
                  {
                      audit.Metadata!.BrowserEngine,
