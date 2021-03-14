@@ -21,7 +21,7 @@ namespace RepoAnalyser.Logic
             return _octoKitGraphQlServiceAgent.GetPullRequests(token, filterOption);
         }
 
-        public Task<DetailedPullRequest> GetDetailedPullRequest(string token, in long repoId, in int pullNumber)
+        public Task<DetailedPullRequest> GetDetailedPullRequest(string token, long repoId, int pullNumber)
         {
             throw new System.NotImplementedException();
         }
