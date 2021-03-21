@@ -1,4 +1,4 @@
-﻿namespace RepoAnalyser.Logic.Interfaces
+﻿namespace RepoAnalyser.Objects.API.Responses
 {
     public class DetailedPullRequest
     {

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using RepoAnalyser.Objects.API.Requests;
+using RepoAnalyser.Objects.API.Responses;
 
 namespace RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces
 {
@@ -7,7 +8,12 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces
     {
         string CloneOrPullLatestRepository(GitActionRequest request);
 
-        IEnumerable<string> GetRelativeFilePathsForRepository(string repoDirectory, string repoName, bool ignoreGitFiles = true);
+        IEnumerable<string> GetRelativeFilePathsForRepository(string repoName, string branchName = null,
+            bool ignoreGitFiles = true);
+
+        RepoDirectoryResult BuildRepoDirectories(string repoName);
+
+        RepoDirectoryResult.RepoDirectory BuildRepoDirectory(string repoName, string branchName = null);
 
         bool IsDotNetProject(string repoName);
 

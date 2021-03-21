@@ -48,10 +48,16 @@ namespace RepoAnalyser.Logic
         {
             var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
-            var repositoryDirectory =
-                _gitAdapter.CloneOrPullLatestRepository(new GitActionRequest(repository.PullUrl, token, user.Login,
-                    user.Email ?? "unknown", repository.Name));
-            var filesInRepo = _gitAdapter.GetRelativeFilePathsForRepository(repositoryDirectory, repository.Name);
+            _ = _gitAdapter.CloneOrPullLatestRepository(new GitActionRequest
+            {
+                BranchName = null,
+                Email = user.Email ?? "unknown@RepoAnalyser.test",
+                RepoName = repository.Name,
+                RepoUrl = repository.PullUrl,
+                Token = token,
+                Username = user.Login
+            });
+            var filesInRepo = _gitAdapter.GetRelativeFilePathsForRepository(repository.Name);
 
             return await _octoKitServiceAgent.GetFileCodeOwners(token, filesInRepo, repository.Id, repository.LastUpdated);
         }
