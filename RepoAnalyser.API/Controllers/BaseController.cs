@@ -50,39 +50,9 @@ namespace RepoAnalyser.API.Controllers
                     _ => Ok(response)
                 };
             }
-            catch (NullReferenceException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return NotFound(new NotFoundResponse
-                {
-                    Message = ex.Message,
-                    Title = ex.GetType().Name,
-                    BadProperties = new Dictionary<string, string>()
-                });
-            }
-            catch (UnauthorizedRequestException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return Unauthorized(new UnauthorizedResponse
-                {
-                    Message = ex.Message,
-                    Title = ex.GetType().Name
-                });
-            }
-            catch (BadRequestException ex)
-            {
-                Log.Error(ex, $"Bad Request: {ex.Message}");
-                return BadRequest(new ValidationResponse
-                {
-                    Message = ex.Message,
-                    Title = ex.GetType().Name,
-                    ValidationErrors = new Dictionary<string, string>()
-                });
-            }
             catch (Exception ex)
             {
-                Log.Error(ex, ex.Message);
-                return Problem(ex.Message, statusCode: (int)HttpStatusCode.InternalServerError, title: ex.GetType().Name, type: ex.GetType().FullName);
+                return HandleErrorResponse(ex);
             }
             finally
             {
@@ -107,46 +77,50 @@ namespace RepoAnalyser.API.Controllers
                     _ => Ok(response)
                 };
             }
-            catch (NullReferenceException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return NotFound(new NotFoundResponse
-                {
-                    Message = ex.Message,
-                    Title = ex.GetType().Name,
-                    BadProperties = new Dictionary<string, string>()
-                });
-            }
-            catch (UnauthorizedRequestException ex)
-            {
-                Log.Error(ex, ex.Message);
-                return Unauthorized(new UnauthorizedResponse
-                {
-                    Message = ex.Message,
-                    Title = ex.GetType().Name
-                });
-            }
-            catch (BadRequestException ex)
-            {
-                Log.Error(ex, $"Bad Request: {ex.Message}");
-                return BadRequest(new ValidationResponse
-                {
-                    Message = ex.Message,
-                    Title = ex.GetType().Name,
-                    ValidationErrors = new Dictionary<string, string>()
-                });
-            }
             catch (Exception ex)
             {
-                Log.Error(ex, ex.Message);
-                return Problem(ex.Message, statusCode: (int) HttpStatusCode.InternalServerError,
-                    title: ex.GetType().Name, type: ex.GetType().FullName);
+                return HandleErrorResponse(ex);
             }
             finally
             {
                 _stopwatch.Stop();
                 RequestAudit(new RequestAudit(HttpContext.Request.GetMetadataFromRequestHeaders(),
                     _stopwatch.ElapsedMilliseconds, HttpContext.Request.Path.Value ?? "unknown"));
+            }
+        }
+
+        //Handle any more error responses with extra data/custom responses here
+        private IActionResult HandleErrorResponse(Exception ex)
+        {
+            switch(ex)
+            {
+                 case NullReferenceException notFound:
+                    Log.Error(notFound, notFound.Message);
+                    return NotFound(new NotFoundResponse
+                    {
+                        Message = notFound.Message,
+                        Title = notFound.GetType().Name,
+                        BadProperties = new Dictionary<string, string>()
+                    });
+                case UnauthorizedRequestException unauthorizedRequest:
+                    Log.Error(unauthorizedRequest, unauthorizedRequest.Message);
+                    return Unauthorized(new UnauthorizedResponse
+                    {
+                        Message = unauthorizedRequest.Message,
+                        Title = unauthorizedRequest.GetType().Name
+                    });
+                case BadRequestException badRequest:
+                    Log.Error(badRequest, $"Bad Request: {badRequest.Message}");
+                    return BadRequest(new ValidationResponse
+                    {
+                        Message = badRequest.Message,
+                        Title = badRequest.GetType().Name,
+                        ValidationErrors = new Dictionary<string, string>()
+                    });
+                default:
+                    Log.Error(ex, ex.Message);
+                    return Problem(ex.Message, statusCode: (int)HttpStatusCode.InternalServerError,
+                        title: ex.GetType().Name, type: ex.GetType().FullName);
             }
         }
 
