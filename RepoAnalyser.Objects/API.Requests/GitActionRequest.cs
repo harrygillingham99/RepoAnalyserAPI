@@ -1,6 +1,4 @@
-﻿using Octokit;
-
-namespace RepoAnalyser.Objects.API.Requests
+﻿namespace RepoAnalyser.Objects.API.Requests
 {
     public class GitActionRequest
     {
