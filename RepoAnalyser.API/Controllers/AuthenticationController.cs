@@ -25,11 +25,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("token/{code}/{state}")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(TokenUserResponse), Description = "Success getting auth token")]
-        [SwaggerResponse(HttpStatusCode.BadRequest, typeof(ValidationResponse), Description = "Bad request getting auth token")]
-        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided when getting user info")]
-        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Error getting auth token, code provided not found")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting auth token")]
+        [ProducesResponseType(typeof(TokenUserResponse), (int)HttpStatusCode.OK)]
         public Task<IActionResult> GetOAuthTokenWithUserInfo([FromRoute]string code, [FromRoute]string state)
         {
             return ExecuteAndMapToActionResultAsync(() =>
@@ -38,10 +34,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("login-redirect")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(string), Description = "Success getting github redirect url")]
-        [SwaggerResponse(HttpStatusCode.BadRequest, typeof(ValidationResponse), Description = "Bad request getting redirect url")]
-        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Error getting redirect url")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting redirect url")]
+        [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         public IActionResult GetLoginRedirectUrl()
         {
             return ExecuteAndMapToActionResult(() =>
@@ -49,10 +42,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("user-info")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(UserInfoResult), Description = "Success getting user info")]
-        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
-        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "User not found")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting user")]
+        [ProducesResponseType(typeof(UserInfoResult), (int)HttpStatusCode.OK)]
         public Task<IActionResult> GetUserInformationForToken()
         {
             return ExecuteAndMapToActionResultAsync(() =>

@@ -15,6 +15,10 @@ using Serilog;
 
 namespace RepoAnalyser.API.Controllers
 {
+    [ProducesResponseType(typeof(NotFoundResponse), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(UnauthorizedResponse), (int)HttpStatusCode.Unauthorized)]
+    [ProducesResponseType(typeof(ValidationResponse), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.InternalServerError)]
     public class BaseController : ControllerBase
     {
         private readonly IRepoAnalyserAuditRepository _auditRepository;

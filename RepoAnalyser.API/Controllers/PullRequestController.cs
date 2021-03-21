@@ -25,10 +25,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("{pullFilterOption}")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(IEnumerable<UserPullRequestResult>), Description = "Success getting pull requests")]
-        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
-        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "not found")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting pull requests")]
+        [ProducesResponseType(typeof(IEnumerable<UserPullRequestResult>), (int)HttpStatusCode.OK)]
         public Task<IActionResult> GetPullRequests(
             [FromRoute] PullRequestFilterOption pullFilterOption =  PullRequestFilterOption.All)
         {
@@ -40,10 +37,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("detailed/{repoId}/{pullNumber}")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(DetailedPullRequest), Description = "Success getting pull requests")]
-        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
-        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "not found")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting pull requests")]
+        [ProducesResponseType(typeof(DetailedPullRequest), (int)HttpStatusCode.OK)]
         public Task<IActionResult> GetDetailedPullRequest([FromRoute] long repoId, [FromRoute] int pullNumber)
         {
             return ExecuteAndMapToActionResultAsync(() =>

@@ -8,6 +8,10 @@ using RepoAnalyser.Objects.Attributes;
 
 namespace RepoAnalyser.API.NSwag
 {
+    /*
+     * NSwag Schema Post-Processor to add any classes with the [NSwagInclude] attribute
+     * to the schema
+     */
     [ScrutorIgnore]
     public class SchemaExtenderDocumentProcessor : IDocumentProcessor
     {
@@ -21,7 +25,7 @@ namespace RepoAnalyser.API.NSwag
 
             //Merge the lists of assemblies and check for any types with the [NSwagInclude] attribute
             var types = assemblies.SelectMany(x => x.ExportedTypes).Where(type =>
-                type.FullName != null && type.FullName.StartsWith(NamespaceIdentifier) &&
+                !string.IsNullOrWhiteSpace(type.FullName) && type.FullName.StartsWith(NamespaceIdentifier) &&
                 type.GetTypeInfo().CustomAttributes.Any(x => x.AttributeType == typeof(NSwagIncludeAttribute)));
 
             //Add the types to the schema

@@ -3,7 +3,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using NSwag.Annotations;
 using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic.Analysis.Interfaces;
@@ -30,10 +29,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("{filterOption}")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(IEnumerable<UserRepositoryResult>), Description = "Success getting repos")]
-        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
-        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "not found")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting repos")]
+        [ProducesResponseType(typeof(IEnumerable<UserRepositoryResult>), (int)HttpStatusCode.OK)]
         public Task<IActionResult> Repositories([FromRoute] RepoFilterOptions filterOption = RepoFilterOptions.All )
         {
             return ExecuteAndMapToActionResultAsync(() =>
@@ -44,10 +40,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("detailed/{repoId}")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(DetailedRepository), Description = "Success getting detailed repo")]
-        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
-        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Repo not found")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting detailed repo information")]
+        [ProducesResponseType(typeof(DetailedRepository), (int)HttpStatusCode.OK)]
         public Task<IActionResult> GetDetailedRepository([FromRoute] long repoId)
         {
             return ExecuteAndMapToActionResultAsync(() =>
@@ -58,10 +51,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("code-owners/{repoId}")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(Dictionary<string,string>), Description = "Success getting codeowners")]
-        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided")]
-        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Not found")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting code owners")]
+        [ProducesResponseType(typeof(IDictionary<string,string>), (int)HttpStatusCode.OK)]
         public Task<IActionResult> GetCodeOwnersForRepo([FromRoute] long repoId)
         {
             return ExecuteAndMapToActionResultAsync(() =>

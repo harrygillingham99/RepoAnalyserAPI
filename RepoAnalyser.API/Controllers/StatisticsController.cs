@@ -26,11 +26,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("user")]
-        [SwaggerResponse(HttpStatusCode.OK, typeof(UserActivity), Description = "Success getting user stats")]
-        [SwaggerResponse(HttpStatusCode.BadRequest, typeof(ValidationResponse), Description = "Bad request getting user stats")]
-        [SwaggerResponse(HttpStatusCode.Unauthorized, typeof(UnauthorizedResponse), Description = "No token provided when getting user stats")]
-        [SwaggerResponse(HttpStatusCode.NotFound, typeof(NotFoundResponse), Description = "Error getting user stats, user not found")]
-        [SwaggerResponse(HttpStatusCode.InternalServerError, typeof(ProblemDetails), Description = "Error getting user stats")]
+        [ProducesResponseType(typeof(UserActivity), (int)HttpStatusCode.OK)]
         public Task<IActionResult> GetUserStatistics()
         {
             return ExecuteAndMapToActionResultAsync(() =>
