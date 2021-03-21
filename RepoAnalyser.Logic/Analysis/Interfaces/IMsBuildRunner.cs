@@ -1,7 +1,7 @@
 ﻿namespace RepoAnalyser.Logic.Analysis.Interfaces
 {
     public interface IMsBuildRunner
-    {
-        string Build(string repoName, string outputDir = null);
+    { 
+        string Build(string repoDirectory, string outputDir);
     }
 }

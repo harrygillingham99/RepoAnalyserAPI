@@ -59,6 +59,10 @@ namespace RepoAnalyser.Logic
             });
             var filesInRepo = _gitAdapter.GetRelativeFilePathsForRepository(repository.Name);
 
+            /* example of invoking a build for a .NET project
+             var repoDir = _gitAdapter.GetRepoDirectory(repository.Name);
+            _buildRunner.Build(repoDir.Directory, repoDir.DotNetBuildDirectory);*/
+
             return await _octoKitServiceAgent.GetFileCodeOwners(token, filesInRepo, repository.Id, repository.LastUpdated);
         }
     }

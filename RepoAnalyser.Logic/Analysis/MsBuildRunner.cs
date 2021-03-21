@@ -6,7 +6,6 @@ using System.Linq;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Logic.Analysis.Interfaces;
 using RepoAnalyser.Objects;
-using RepoAnalyser.Objects.Constants;
 
 namespace RepoAnalyser.Logic.Analysis
 {
@@ -19,13 +18,11 @@ namespace RepoAnalyser.Logic.Analysis
             _workDir = options.Value.WorkingDirectory;
         }
 
-        public string Build(string repoName, string outputDir = null)
+        public string Build(string repoDirectory, string outputDir)
         {
             var slnFilesLastWritten = new Dictionary<string, DateTime>();
 
-            var repoDir = Path.Combine(_workDir, repoName);
-
-            outputDir ??= Path.Combine(repoDir, AnalysisConstants.DefaultBuildPath);
+            var repoDir = repoDirectory;
 
             var slnPaths = Directory.GetFiles(repoDir, "*.sln", SearchOption.AllDirectories);
 
@@ -48,6 +45,11 @@ namespace RepoAnalyser.Logic.Analysis
             process.Start();
 
             process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                throw new Exception($"Build failed attempting to compile {pathToProjectFile}");
+            }
 
             return outputDir;
         }

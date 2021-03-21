@@ -12,15 +12,17 @@ using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
 
 namespace RepoAnalyser.Services.libgit2sharp.Adapter
 {
+    /*
+     * A class to handle interfacing with libgit2sharp in order interact with native git
+     * functions and manage repo directories
+     */
     public class GitAdapter : IGitAdapter
     {
-        private readonly string _defaultBuildPathTemplate;
         private readonly string _workDir;
 
         public GitAdapter(IOptions<AppSettings> options)
         {
             _workDir = options.Value.WorkingDirectory;
-            _defaultBuildPathTemplate = Path.Combine(_workDir, "{0}", AnalysisConstants.DefaultBuildPath);
         }
 
         public string CloneOrPullLatestRepository(GitActionRequest request)
@@ -68,11 +70,11 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
 
         public bool IsDotNetProject(string repoName)
         {
-            return Directory.GetFiles(BuildRepoDirectories(repoName).DefaultRemoteDir.Directory, "*.sln",
+            return Directory.GetFiles(GetRepoBranchDirectory(repoName), "*.sln",
                 SearchOption.AllDirectories).Any();
         }
 
-        public RepoDirectoryResult BuildRepoDirectories(string repoName)
+        public RepoDirectoryResult GetAllDirectoriesForRepo(string repoName)
         {
             var branches = Directory.EnumerateFiles(GetRepoRootDirectory(repoName)).ToList();
             var defaultBranchDir = branches.FirstOrDefault(dir => dir.Contains($"{repoName}-DefaultRemote"));
@@ -99,7 +101,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
             };
         }
 
-        public RepoDirectoryResult.RepoDirectory BuildRepoDirectory(string repoName, string branchName = null)
+        public RepoDirectoryResult.RepoDirectory GetRepoDirectory(string repoName, string branchName = null)
         {
             var directory = GetRepoBranchDirectory(repoName, branchName);
             return new RepoDirectoryResult.RepoDirectory
@@ -131,7 +133,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
 
         private string GetRepoBuildPath(string repoName, string branchName = null)
         {
-            return string.Format(_defaultBuildPathTemplate, GetRepoBranchDirectory(repoName, branchName));
+            return Path.Combine(GetRepoBranchDirectory(repoName, branchName), AnalysisConstants.DefaultBuildPath);
         }
     }
 }

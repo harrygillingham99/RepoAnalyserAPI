@@ -11,9 +11,9 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces
         IEnumerable<string> GetRelativeFilePathsForRepository(string repoName, string branchName = null,
             bool ignoreGitFiles = true);
 
-        RepoDirectoryResult BuildRepoDirectories(string repoName);
+        RepoDirectoryResult GetAllDirectoriesForRepo(string repoName);
 
-        RepoDirectoryResult.RepoDirectory BuildRepoDirectory(string repoName, string branchName = null);
+        RepoDirectoryResult.RepoDirectory GetRepoDirectory(string repoName, string branchName = null);
 
         bool IsDotNetProject(string repoName);
 
