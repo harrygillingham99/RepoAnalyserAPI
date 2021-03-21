@@ -154,11 +154,12 @@ namespace RepoAnalyser.API.Controllers
         private void RequestAudit(RequestAudit audit)
         {
             var eventText = $"****Requested {audit.RequestedEndpoint}, It took {audit.ExecutionTime}ms to respond.****";
+            Log.Information(eventText);
             if (audit.Metadata != null && _requestLogging)
+            {
                 _backgroundTaskQueue.QueueBackgroundWorkItem(token =>
                     _auditRepository.InsertRequestAudit(audit));
-            if(_requestLogging && audit.Metadata == null)
-                Log.Information(eventText);
+            }
             else
                 Debug.WriteLine(eventText);
         }
