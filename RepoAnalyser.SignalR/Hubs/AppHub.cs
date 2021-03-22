@@ -12,7 +12,6 @@ namespace RepoAnalyser.SignalR.Hubs
         //private readonly IHubContext<AppHub, IAppHub> _hub;
         //await _hub.Clients.Clients(connectionId).DirectNotification(connectionId, "About to calculate code owners",
         //    SignalRNotificationType.RepoAnalysisProgressUpdate);
-
         public Task DirectNotification(string user, string message, SignalRNotificationType type)
         {
             return Clients.User(user).DirectNotification( user, message, type);
