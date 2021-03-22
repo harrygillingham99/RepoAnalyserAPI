@@ -30,7 +30,7 @@ namespace RepoAnalyser.API.Controllers
 
         [HttpGet("{filterOption}")]
         [ProducesResponseType(typeof(IEnumerable<UserRepositoryResult>), (int)HttpStatusCode.OK)]
-        public Task<IActionResult> Repositories([FromRoute] RepoFilterOptions filterOption = RepoFilterOptions.All )
+        public Task<IActionResult> Repositories([FromRoute] RepoFilterOptions filterOption = RepoFilterOptions.All)
         {
             return ExecuteAndMapToActionResultAsync(() =>
             {

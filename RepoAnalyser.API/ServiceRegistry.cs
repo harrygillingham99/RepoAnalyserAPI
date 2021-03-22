@@ -6,6 +6,7 @@ using RepoAnalyser.Logic;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.Attributes;
 using RepoAnalyser.Services.OctoKit;
+using RepoAnalyser.SignalR.Hubs;
 using RepoAnalyser.SqlServer.DAL;
 using Scrutor;
 
@@ -16,7 +17,7 @@ namespace RepoAnalyser.API
         public static void ScanForAllRemainingRegistrations(IServiceCollection services)
         {
             services.Scan(scan => scan
-                .FromAssembliesOf(typeof(Startup), typeof(OctoKitAuthServiceAgent), typeof(RepoAnalyserAuditRepository), typeof(AuthenticationFacade))
+                .FromAssembliesOf(typeof(Startup), typeof(OctoKitAuthServiceAgent), typeof(AppHub), typeof(RepoAnalyserAuditRepository), typeof(AuthenticationFacade))
                 .AddClasses(x => x.WithoutAttribute(typeof(GeneratedCodeAttribute)).WithoutAttribute(typeof(ScrutorIgnoreAttribute)))
                 .UsingRegistrationStrategy(RegistrationStrategy.Skip)
                 .AsImplementedInterfaces()

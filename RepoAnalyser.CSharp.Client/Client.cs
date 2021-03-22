@@ -3283,6 +3283,15 @@ namespace NetCore31ApiTemplate.Client
         }
     
     }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.3.9.0 (Newtonsoft.Json v12.0.0.0)")]
+    public enum SignalRNotificationType
+    {
+        RepoAnalysisProgressUpdate = 1,
+    
+        PullRequestAnalysisProgressUpdate = 2,
+    
+    }
 
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.10.7.0 (NJsonSchema v10.3.9.0 (Newtonsoft.Json v12.0.0.0))")]
     public partial class SwaggerException : System.Exception

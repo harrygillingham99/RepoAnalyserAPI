@@ -5,6 +5,7 @@ using NSwag.Generation.Processors;
 using NSwag.Generation.Processors.Contexts;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.Attributes;
+using RepoAnalyser.SignalR.Hubs;
 
 namespace RepoAnalyser.API.NSwag
 {
@@ -16,7 +17,7 @@ namespace RepoAnalyser.API.NSwag
     public class SchemaExtenderDocumentProcessor : IDocumentProcessor
     {
         private const string NamespaceIdentifier = "RepoAnalyser.";
-        private readonly Type[] _typesToLoadAssembliesOf = {typeof(AppSettings)};
+        private readonly Type[] _typesToLoadAssembliesOf = {typeof(AppSettings), typeof(AppHub)};
 
         public void Process(DocumentProcessorContext context)
         {

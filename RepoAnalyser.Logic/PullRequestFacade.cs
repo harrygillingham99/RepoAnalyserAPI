@@ -12,17 +12,14 @@ namespace RepoAnalyser.Logic
     public class PullRequestFacade : IPullRequestFacade
     {
         private readonly IOctoKitGraphQlServiceAgent _octoKitGraphQlServiceAgent;
-        private readonly IHubContext<AppHub, IAppHub> _appHub;
 
-        public PullRequestFacade(IOctoKitGraphQlServiceAgent octoKitGraphQlServiceAgent, IHubContext<AppHub, IAppHub> appHub)
+        public PullRequestFacade(IOctoKitGraphQlServiceAgent octoKitGraphQlServiceAgent)
         {
             _octoKitGraphQlServiceAgent = octoKitGraphQlServiceAgent;
-            _appHub = appHub;
         }
 
         public Task<IEnumerable<UserPullRequestResult>> GetPullRequests(string token, PullRequestFilterOption filterOption)
         {
-            _appHub.Clients.All.Test("this is from signalR");
             return _octoKitGraphQlServiceAgent.GetPullRequests(token, filterOption);
         }
 
