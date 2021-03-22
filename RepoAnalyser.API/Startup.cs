@@ -7,13 +7,14 @@ using Microsoft.Extensions.Hosting;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using RepoAnalyser.API.NSwag;
+using RepoAnalyser.SignalR.Hubs;
 
 namespace RepoAnalyser.API
 {
     public class Startup
     {
         private const string CorsKey = "_policy";
-        private static readonly string[] AllowedOrigins =  { "https://192.168.0.69:4433", "http://localhost:3000", "https://server.local:4433"};
+        private static readonly string[] AllowedOrigins =  { "https://192.168.0.69:4433", "http://localhost:3000", "https://server.local:4433", "https://localhost:3000"};
         private readonly IConfiguration _configuration;
 
         public Startup(IConfiguration configuration)
@@ -60,6 +61,8 @@ namespace RepoAnalyser.API
 
             services.AddLazyCache();
 
+            services.AddSignalR();
+
             ServiceRegistry.AddConfigs(services, _configuration);
 
             ServiceRegistry.AddBackgroundTaskQueue(services);
@@ -101,6 +104,7 @@ namespace RepoAnalyser.API
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<AppHub>("/app-hub");
             });
         }
     }

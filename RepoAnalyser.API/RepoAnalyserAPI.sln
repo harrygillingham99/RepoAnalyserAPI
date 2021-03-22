@@ -9,13 +9,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.CSharp.Client"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.TypeScript.Client", "..\RepoAnalyser.TypeScript.Client\RepoAnalyser.TypeScript.Client.csproj", "{2FF6D9F2-3ECB-4557-94DB-6595E7CA7EC7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepoAnalyser.Services", "..\RepoAnalyser.OctoKit\RepoAnalyser.Services.csproj", "{A094D9CC-E91B-406D-B32C-393DF1B3750D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.Services", "..\RepoAnalyser.OctoKit\RepoAnalyser.Services.csproj", "{A094D9CC-E91B-406D-B32C-393DF1B3750D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepoAnalyser.Objects", "..\RepoAnalyser.Objects\RepoAnalyser.Objects.csproj", "{086CB05D-E782-41BB-AFAC-4C42F2807D78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.Objects", "..\RepoAnalyser.Objects\RepoAnalyser.Objects.csproj", "{086CB05D-E782-41BB-AFAC-4C42F2807D78}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepoAnalyser.SqlServer.DAL", "..\RepoAnalyser.SqlServer.DAL\RepoAnalyser.SqlServer.DAL.csproj", "{51D6F921-CFB3-4776-84BF-1FFA16AFB59F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.SqlServer.DAL", "..\RepoAnalyser.SqlServer.DAL\RepoAnalyser.SqlServer.DAL.csproj", "{51D6F921-CFB3-4776-84BF-1FFA16AFB59F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepoAnalyser.Logic", "..\RepoAnalyser.Logic\RepoAnalyser.Logic.csproj", "{C7C1033C-DEEE-4FE5-8BC2-ECEC3F619103}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.Logic", "..\RepoAnalyser.Logic\RepoAnalyser.Logic.csproj", "{C7C1033C-DEEE-4FE5-8BC2-ECEC3F619103}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepoAnalyser.SignalR", "..\RepoAnalyser.SignalR\RepoAnalyser.SignalR.csproj", "{926D6ADA-FE91-4402-9BED-D7D32ED6606C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{C7C1033C-DEEE-4FE5-8BC2-ECEC3F619103}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7C1033C-DEEE-4FE5-8BC2-ECEC3F619103}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7C1033C-DEEE-4FE5-8BC2-ECEC3F619103}.Release|Any CPU.Build.0 = Release|Any CPU
+		{926D6ADA-FE91-4402-9BED-D7D32ED6606C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{926D6ADA-FE91-4402-9BED-D7D32ED6606C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{926D6ADA-FE91-4402-9BED-D7D32ED6606C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{926D6ADA-FE91-4402-9BED-D7D32ED6606C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

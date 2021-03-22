@@ -34,6 +34,7 @@
     <ProjectReference Include="..\RepoAnalyser.Logic\RepoAnalyser.Logic.csproj" />
     <ProjectReference Include="..\RepoAnalyser.Objects\RepoAnalyser.Objects.csproj" />
     <ProjectReference Include="..\RepoAnalyser.OctoKit\RepoAnalyser.Services.csproj" />
+    <ProjectReference Include="..\RepoAnalyser.SignalR\RepoAnalyser.SignalR.csproj" />
     <ProjectReference Include="..\RepoAnalyser.SqlServer.DAL\RepoAnalyser.SqlServer.DAL.csproj" />
   </ItemGroup>
 
