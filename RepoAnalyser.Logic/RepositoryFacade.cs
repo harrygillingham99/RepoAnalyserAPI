@@ -8,8 +8,9 @@ using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
 using RepoAnalyser.Services.OctoKit.Interfaces;
+using RepoAnalyser.SignalR.Helpers;
 using RepoAnalyser.SignalR.Hubs;
-using RepoAnalyser.SignalR.Objects;
+using static RepoAnalyser.SignalR.Objects.SignalRNotificationType;
 
 namespace RepoAnalyser.Logic
 {
@@ -56,8 +57,9 @@ namespace RepoAnalyser.Logic
         {
             var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
 
-            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken =>
-                _hub.Clients.Client(connectionId).DirectNotification(connectionId, $"Started calculating code owners for {repository.Name}", SignalRNotificationType.RepoAnalysisProgressUpdate));
+            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _hub.DirectNotify(connectionId,
+                $"Started calculating code owners for {repository.Name}",
+                RepoAnalysisProgressUpdate));
 
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
             var filesInRepo = _gitAdapter.GetRelativeFilePathsForRepository(new GitActionRequest
@@ -71,7 +73,8 @@ namespace RepoAnalyser.Logic
             });
 
             _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken =>
-                _hub.Clients.Client(connectionId).DirectNotification(connectionId, $"Started building code-owner dictionary", SignalRNotificationType.RepoAnalysisProgressUpdate));
+                _hub.DirectNotify(connectionId, "Started building code-owner dictionary",
+                    RepoAnalysisProgressUpdate));
 
             /* example of invoking a build for a .NET project
              var repoDir = _gitAdapter.GetRepoDirectory(repository.Name);
@@ -79,7 +82,8 @@ namespace RepoAnalyser.Logic
 
             var result = await _octoKitServiceAgent.GetFileCodeOwners(token, filesInRepo, repository.Id, repository.LastUpdated);
             
-            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _hub.Clients.Client(connectionId).DirectNotification(connectionId, "Finished calculating code-owner dictionary", SignalRNotificationType.RepoAnalysisDone));
+            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken =>
+                _hub.DirectNotify(connectionId,"Finished calculating code-owner dictionary", RepoAnalysisDone));
 
             return result;
         }
