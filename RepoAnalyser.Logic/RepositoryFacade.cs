@@ -63,6 +63,7 @@ namespace RepoAnalyser.Logic
                 RepoAnalysisProgressUpdate));
 
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
+
             var filesInRepo = _gitAdapter.GetRelativeFilePathsForRepository(new GitActionRequest
             {
                 BranchName = null,

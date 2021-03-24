@@ -961,11 +961,13 @@ namespace NetCore31ApiTemplate.Client
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<DetailedRepository> GetDetailedRepositoryAsync(long repoId, object metadata, System.Threading.CancellationToken cancellationToken);
     
+        /// <param name="connectionId">ConnectionId</param>
         /// <param name="metadata">ClientMetadata</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.Dictionary<string, string>> GetCodeOwnersForRepoAsync(long repoId, string connectionId, object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="connectionId">ConnectionId</param>
         /// <param name="metadata">ClientMetadata</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.Dictionary<string, string>> GetCodeOwnersForRepoAsync(long repoId, string connectionId, object metadata, System.Threading.CancellationToken cancellationToken);
@@ -1247,6 +1249,7 @@ namespace NetCore31ApiTemplate.Client
             }
         }
     
+        /// <param name="connectionId">ConnectionId</param>
         /// <param name="metadata">ClientMetadata</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<System.Collections.Generic.Dictionary<string, string>> GetCodeOwnersForRepoAsync(long repoId, string connectionId, object metadata)
@@ -1255,6 +1258,7 @@ namespace NetCore31ApiTemplate.Client
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="connectionId">ConnectionId</param>
         /// <param name="metadata">ClientMetadata</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public async System.Threading.Tasks.Task<System.Collections.Generic.Dictionary<string, string>> GetCodeOwnersForRepoAsync(long repoId, string connectionId, object metadata, System.Threading.CancellationToken cancellationToken)
@@ -1263,9 +1267,8 @@ namespace NetCore31ApiTemplate.Client
                 throw new System.ArgumentNullException("repoId");
     
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/repositories/code-owners/{repoId}/{connectionId}");
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/repositories/code-owners/{repoId}");
             urlBuilder_.Replace("{repoId}", System.Uri.EscapeDataString(ConvertToString(repoId, System.Globalization.CultureInfo.InvariantCulture)));
-            urlBuilder_.Replace("{connectionId}", System.Uri.EscapeDataString(ConvertToString(connectionId, System.Globalization.CultureInfo.InvariantCulture)));
     
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1273,6 +1276,9 @@ namespace NetCore31ApiTemplate.Client
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
+                    if (connectionId == null)
+                        throw new System.ArgumentNullException("connectionId");
+                    request_.Headers.TryAddWithoutValidation("ConnectionId", ConvertToString(connectionId, System.Globalization.CultureInfo.InvariantCulture));
                     if (metadata != null)
                         request_.Headers.TryAddWithoutValidation("Metadata", ConvertToString(metadata, System.Globalization.CultureInfo.InvariantCulture));
                     request_.Method = new System.Net.Http.HttpMethod("GET");

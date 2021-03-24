@@ -562,21 +562,20 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
+     * @param connectionId ConnectionId
      * @param metadata (optional) ClientMetadata
      */
-    repository_GetCodeOwnersForRepo(repoId: number, connectionId: string | null, metadata: any | undefined): Promise<{ [key: string]: string; }> {
-        let url_ = this.baseUrl + "/repositories/code-owners/{repoId}/{connectionId}";
+    repository_GetCodeOwnersForRepo(repoId: number, connectionId: string, metadata: any | undefined): Promise<{ [key: string]: string; }> {
+        let url_ = this.baseUrl + "/repositories/code-owners/{repoId}";
         if (repoId === undefined || repoId === null)
             throw new Error("The parameter 'repoId' must be defined.");
         url_ = url_.replace("{repoId}", encodeURIComponent("" + repoId));
-        if (connectionId === undefined || connectionId === null)
-            throw new Error("The parameter 'connectionId' must be defined.");
-        url_ = url_.replace("{connectionId}", encodeURIComponent("" + connectionId));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
             method: "GET",
             headers: {
+                "ConnectionId": connectionId !== undefined && connectionId !== null ? "" + connectionId : "",
                 "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
                 "Accept": "application/json"
             }

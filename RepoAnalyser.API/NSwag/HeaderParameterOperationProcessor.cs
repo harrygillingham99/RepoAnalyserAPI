@@ -16,8 +16,22 @@ namespace RepoAnalyser.API.NSwag
     public class HeaderParameterOperationProcessor : IOperationProcessor
     {
         private const string ClientMetadataKey = "Metadata";
+        private const string ConnectionIdKey = "ConnectionId";
         public bool Process(OperationProcessorContext context)
         {
+            if (context.MethodInfo.CustomAttributes.Any(attr => attr.AttributeType == typeof(RequireConnectionIdAttribute)))
+            {
+                context.OperationDescription.Operation.Parameters.Add(new OpenApiParameter
+                {
+                    Name = ConnectionIdKey,
+                    Kind = OpenApiParameterKind.Header,
+                    Type = JsonObjectType.String,
+                    IsRequired = true,
+                    Description = "ConnectionId",
+                    Default = null
+                });
+            }
+
             if (context.OperationDescription.Operation.Parameters.All(param => param.Name != ClientMetadataKey))
             {
                 context.OperationDescription.Operation.Parameters.Add(

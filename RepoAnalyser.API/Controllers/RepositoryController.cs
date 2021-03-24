@@ -10,6 +10,7 @@ using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
+using RepoAnalyser.Objects.Attributes;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 
 namespace RepoAnalyser.API.Controllers
@@ -50,13 +51,15 @@ namespace RepoAnalyser.API.Controllers
             });
         }
 
-        [HttpGet("code-owners/{repoId}/{connectionId}")]
+        [RequireConnectionId]
+        [HttpGet("code-owners/{repoId}")]
         [ProducesResponseType(typeof(IDictionary<string,string>), (int)HttpStatusCode.OK)]
-        public Task<IActionResult> GetCodeOwnersForRepo([FromRoute] long repoId, [FromRoute] string connectionId)
+        public Task<IActionResult> GetCodeOwnersForRepo([FromRoute] long repoId)
         {
             return ExecuteAndMapToActionResultAsync(() =>
             {
                 var token = HttpContext.Request.GetAuthorizationToken();
+                var connectionId = HttpContext.Request.GetConnectionId();
                 return _repositoryFacade.GetRepositoryCodeOwners(repoId, connectionId, token);
             });
         }

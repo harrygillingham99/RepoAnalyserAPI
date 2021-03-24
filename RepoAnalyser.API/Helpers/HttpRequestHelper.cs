@@ -11,6 +11,7 @@ namespace RepoAnalyser.API.Helpers
     {
         private const string MetadataKey = "metadata";
         private const string AuthorizationKey = "Authorization";
+        private const string ConnectionIdKey = "ConnectionId";
 
         public static ClientMetadata GetMetadataFromRequestHeaders(this HttpRequest request)
         {
@@ -21,6 +22,14 @@ namespace RepoAnalyser.API.Helpers
         public static string GetAuthorizationToken(this HttpRequest request)
         {
             var header = request.GetHeaderValueOrDefault<string>(AuthorizationKey);
+            return string.IsNullOrWhiteSpace(header)
+                ? throw new UnauthorizedRequestException("No Authorization token provided.")
+                : header;
+        }
+
+        public static string GetConnectionId(this HttpRequest request)
+        {
+            var header = request.GetHeaderValueOrDefault<string>(ConnectionIdKey);
             return string.IsNullOrWhiteSpace(header)
                 ? throw new UnauthorizedRequestException("No Authorization token provided.")
                 : header;
