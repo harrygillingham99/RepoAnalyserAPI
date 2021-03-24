@@ -1,6 +1,11 @@
-﻿namespace RepoAnalyser.Objects.API.Responses
+﻿using System.Collections.Generic;
+using Octokit;
+
+namespace RepoAnalyser.Objects.API.Responses
 {
     public class DetailedPullRequest
     {
+        public UserPullRequestResult PullRequest { get; set; }
+        public IEnumerable<PullRequestCommit> Commits { get; set; }
     }
 }

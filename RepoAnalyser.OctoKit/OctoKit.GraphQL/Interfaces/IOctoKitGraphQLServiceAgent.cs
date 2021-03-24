@@ -11,5 +11,6 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL.Interfaces
         Task<UserRepositoryResult> GetRepository(string token, long repoId);
 
         Task<IEnumerable<UserPullRequestResult>> GetPullRequests(string token, PullRequestFilterOption option);
+        Task<UserPullRequestResult> GetPullRequest(string token, long repoId, int pullNumber);
     }
 }

@@ -39,7 +39,19 @@ namespace RepoAnalyser.Services.OctoKit
                 return await Task.WhenAll(commits);
             }
 
-            return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-commits", GetCommits);
+            return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-commits", GetCommits, CacheConstants.DefaultSlidingCacheExpiry);
+        }
+
+        public Task<IEnumerable<PullRequestCommit>> GetCommitsForPullRequest(long repoId, int pullNumber, string token, DateTime pullLastUpdated)
+        {
+            _client.Connection.Credentials = GetCredentials(token);
+
+            async Task<IEnumerable<PullRequestCommit>> GetCommits()
+            {
+                return (await _client.PullRequest.Commits(repoId, pullNumber)).ToList();
+            }
+
+            return _cache.GetOrAddAsync($"{repoId}-{pullNumber}-{pullLastUpdated}-pullCommits", GetCommits, CacheConstants.DefaultSlidingCacheExpiry);
         }
 
         public Task<RepoStatistics> GetStatisticsForRepository(long repoId, DateTime repoLastUpdated, string token)
@@ -60,7 +72,7 @@ namespace RepoAnalyser.Services.OctoKit
                 };
             }
 
-            return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-stats", GetStatistics);
+            return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-stats", GetStatistics, CacheConstants.DefaultSlidingCacheExpiry);
         }
 
         public Task<UserActivity> GetDetailedUserActivity(string token)
@@ -76,7 +88,7 @@ namespace RepoAnalyser.Services.OctoKit
                 return new UserActivity {Notifications = await notifications, Events = await events};
             }
 
-            return _cache.GetOrAddAsync($"{token}-stats", GetUserStats, CacheConstants.DefaultCacheExpiry);
+            return _cache.GetOrAddAsync($"{token}-stats", GetUserStats, CacheConstants.DefaultSlidingCacheExpiry);
         }
 
         public Task<IDictionary<string,string>> GetFileCodeOwners(string token, IEnumerable<string> filePaths, long repoId, DateTime repoLastUpdated)
@@ -95,7 +107,7 @@ namespace RepoAnalyser.Services.OctoKit
             {
                 var commitsForFiles = new Dictionary<string, IReadOnlyList<GitHubCommit>>();
                 foreach (var path in filePathsList)
-                    commitsForFiles.Add(path, await _cache.GetOrAddAsync($"{repoId}-{path}-{repoLastUpdated}-fileCommits", () => GetCommitsForFile(path)));
+                    commitsForFiles.Add(path, await _cache.GetOrAddAsync($"{repoId}-{path}-{repoLastUpdated}-fileCommits", () => GetCommitsForFile(path), CacheConstants.DefaultSlidingCacheExpiry));
 
                 return commitsForFiles.ToDictionary(key => key.Key,
                     value => value.Value.GroupBy(x => x.Author.Login)

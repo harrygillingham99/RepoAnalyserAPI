@@ -48,7 +48,7 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
                 }).Compile();
 
             return _cache.GetOrAddAsync($"{token}-{option}-repos", () => BuildConnectionExecuteQuery(token, query),
-                CacheConstants.DefaultCacheExpiry);
+                CacheConstants.DefaultSlidingCacheExpiry);
         }
 
         public Task<IEnumerable<UserPullRequestResult>> GetPullRequests(string token, PullRequestFilterOption option)
@@ -73,7 +73,13 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
                 }).Compile();
 
             return _cache.GetOrAddAsync($"{token}-{option}-pulls", () => BuildConnectionExecuteQuery(token, query),
-                CacheConstants.DefaultCacheExpiry);
+                CacheConstants.DefaultSlidingCacheExpiry);
+        }
+
+        public async Task<UserPullRequestResult> GetPullRequest(string token, long repoId, int pullNumber)
+        {
+            return (await GetPullRequests(token, PullRequestFilterOption.All)).FirstOrDefault(x =>
+                x.PullRequestNumber == pullNumber && x.RepositoryId == repoId);
         }
 
         private Task<T> BuildConnectionExecuteQuery<T>(string token, ICompiledQuery<T> query,
