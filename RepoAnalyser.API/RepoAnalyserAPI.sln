@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.SqlServer.DAL"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.Logic", "..\RepoAnalyser.Logic\RepoAnalyser.Logic.csproj", "{C7C1033C-DEEE-4FE5-8BC2-ECEC3F619103}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepoAnalyser.SignalR", "..\RepoAnalyser.SignalR\RepoAnalyser.SignalR.csproj", "{926D6ADA-FE91-4402-9BED-D7D32ED6606C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoAnalyser.SignalR", "..\RepoAnalyser.SignalR\RepoAnalyser.SignalR.csproj", "{926D6ADA-FE91-4402-9BED-D7D32ED6606C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
