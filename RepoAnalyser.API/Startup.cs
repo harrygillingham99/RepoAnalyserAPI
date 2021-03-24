@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -61,7 +62,11 @@ namespace RepoAnalyser.API
 
             services.AddLazyCache();
 
-            services.AddSignalR();
+            services.AddSignalR(config =>
+            {
+                config.ClientTimeoutInterval = TimeSpan.FromSeconds(120);
+                config.EnableDetailedErrors = true;
+            });
 
             ServiceRegistry.AddConfigs(services, _configuration);
 

@@ -18,30 +18,30 @@ namespace NetCore31ApiTemplate.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.10.7.0 (NJsonSchema v10.3.9.0 (Newtonsoft.Json v12.0.0.0))")]
     public partial interface IAuthenticationClient
     {
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state, object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state, object metadata, System.Threading.CancellationToken cancellationToken);
     
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<string> GetLoginRedirectUrlAsync(object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<string> GetLoginRedirectUrlAsync(object metadata, System.Threading.CancellationToken cancellationToken);
     
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync(object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync(object metadata, System.Threading.CancellationToken cancellationToken);
     
@@ -82,7 +82,7 @@ namespace NetCore31ApiTemplate.Client
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, string url);
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state, object metadata)
         {
@@ -90,7 +90,7 @@ namespace NetCore31ApiTemplate.Client
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public async System.Threading.Tasks.Task<TokenUserResponse> GetOAuthTokenWithUserInfoAsync(string code, string state, object metadata, System.Threading.CancellationToken cancellationToken)
         {
@@ -200,7 +200,7 @@ namespace NetCore31ApiTemplate.Client
             }
         }
     
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<string> GetLoginRedirectUrlAsync(object metadata)
         {
@@ -208,7 +208,7 @@ namespace NetCore31ApiTemplate.Client
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public async System.Threading.Tasks.Task<string> GetLoginRedirectUrlAsync(object metadata, System.Threading.CancellationToken cancellationToken)
         {
@@ -316,7 +316,7 @@ namespace NetCore31ApiTemplate.Client
             }
         }
     
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync(object metadata)
         {
@@ -324,7 +324,7 @@ namespace NetCore31ApiTemplate.Client
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public async System.Threading.Tasks.Task<UserInfoResult> GetUserInformationForTokenAsync(object metadata, System.Threading.CancellationToken cancellationToken)
         {
@@ -538,21 +538,21 @@ namespace NetCore31ApiTemplate.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.10.7.0 (NJsonSchema v10.3.9.0 (Newtonsoft.Json v12.0.0.0))")]
     public partial interface IPullRequestClient
     {
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<UserPullRequestResult>> GetPullRequestsAsync(PullRequestFilterOption pullFilterOption, object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<UserPullRequestResult>> GetPullRequestsAsync(PullRequestFilterOption pullFilterOption, object metadata, System.Threading.CancellationToken cancellationToken);
     
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<DetailedPullRequest> GetDetailedPullRequestAsync(long repoId, int pullNumber, object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<DetailedPullRequest> GetDetailedPullRequestAsync(long repoId, int pullNumber, object metadata, System.Threading.CancellationToken cancellationToken);
     
@@ -593,7 +593,7 @@ namespace NetCore31ApiTemplate.Client
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, string url);
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<UserPullRequestResult>> GetPullRequestsAsync(PullRequestFilterOption pullFilterOption, object metadata)
         {
@@ -601,7 +601,7 @@ namespace NetCore31ApiTemplate.Client
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public async System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<UserPullRequestResult>> GetPullRequestsAsync(PullRequestFilterOption pullFilterOption, object metadata, System.Threading.CancellationToken cancellationToken)
         {
@@ -713,7 +713,7 @@ namespace NetCore31ApiTemplate.Client
             }
         }
     
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<DetailedPullRequest> GetDetailedPullRequestAsync(long repoId, int pullNumber, object metadata)
         {
@@ -721,7 +721,7 @@ namespace NetCore31ApiTemplate.Client
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public async System.Threading.Tasks.Task<DetailedPullRequest> GetDetailedPullRequestAsync(long repoId, int pullNumber, object metadata, System.Threading.CancellationToken cancellationToken)
         {
@@ -943,32 +943,32 @@ namespace NetCore31ApiTemplate.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.10.7.0 (NJsonSchema v10.3.9.0 (Newtonsoft.Json v12.0.0.0))")]
     public partial interface IRepositoryClient
     {
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<UserRepositoryResult>> RepositoriesAsync(RepoFilterOptions filterOption, object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<UserRepositoryResult>> RepositoriesAsync(RepoFilterOptions filterOption, object metadata, System.Threading.CancellationToken cancellationToken);
     
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<DetailedRepository> GetDetailedRepositoryAsync(long repoId, object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<DetailedRepository> GetDetailedRepositoryAsync(long repoId, object metadata, System.Threading.CancellationToken cancellationToken);
     
-        /// <param name="connectionId">ConnectionId</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="connectionId">SignalR Client Connection ID</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.Dictionary<string, string>> GetCodeOwnersForRepoAsync(long repoId, string connectionId, object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="connectionId">ConnectionId</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="connectionId">SignalR Client Connection ID</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.Generic.Dictionary<string, string>> GetCodeOwnersForRepoAsync(long repoId, string connectionId, object metadata, System.Threading.CancellationToken cancellationToken);
     
@@ -1009,7 +1009,7 @@ namespace NetCore31ApiTemplate.Client
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, string url);
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<UserRepositoryResult>> RepositoriesAsync(RepoFilterOptions filterOption, object metadata)
         {
@@ -1017,7 +1017,7 @@ namespace NetCore31ApiTemplate.Client
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public async System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<UserRepositoryResult>> RepositoriesAsync(RepoFilterOptions filterOption, object metadata, System.Threading.CancellationToken cancellationToken)
         {
@@ -1129,7 +1129,7 @@ namespace NetCore31ApiTemplate.Client
             }
         }
     
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<DetailedRepository> GetDetailedRepositoryAsync(long repoId, object metadata)
         {
@@ -1137,7 +1137,7 @@ namespace NetCore31ApiTemplate.Client
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public async System.Threading.Tasks.Task<DetailedRepository> GetDetailedRepositoryAsync(long repoId, object metadata, System.Threading.CancellationToken cancellationToken)
         {
@@ -1249,8 +1249,8 @@ namespace NetCore31ApiTemplate.Client
             }
         }
     
-        /// <param name="connectionId">ConnectionId</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="connectionId">SignalR Client Connection ID</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<System.Collections.Generic.Dictionary<string, string>> GetCodeOwnersForRepoAsync(long repoId, string connectionId, object metadata)
         {
@@ -1258,8 +1258,8 @@ namespace NetCore31ApiTemplate.Client
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="connectionId">ConnectionId</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="connectionId">SignalR Client Connection ID</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public async System.Threading.Tasks.Task<System.Collections.Generic.Dictionary<string, string>> GetCodeOwnersForRepoAsync(long repoId, string connectionId, object metadata, System.Threading.CancellationToken cancellationToken)
         {
@@ -1480,12 +1480,12 @@ namespace NetCore31ApiTemplate.Client
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.10.7.0 (NJsonSchema v10.3.9.0 (Newtonsoft.Json v12.0.0.0))")]
     public partial interface IStatisticsClient
     {
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<UserActivity> GetUserStatisticsAsync(object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<UserActivity> GetUserStatisticsAsync(object metadata, System.Threading.CancellationToken cancellationToken);
     
@@ -1526,7 +1526,7 @@ namespace NetCore31ApiTemplate.Client
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, string url);
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<UserActivity> GetUserStatisticsAsync(object metadata)
         {
@@ -1534,7 +1534,7 @@ namespace NetCore31ApiTemplate.Client
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <param name="metadata">ClientMetadata</param>
+        /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         public async System.Threading.Tasks.Task<UserActivity> GetUserStatisticsAsync(object metadata, System.Threading.CancellationToken cancellationToken)
         {

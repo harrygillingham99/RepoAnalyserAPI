@@ -57,7 +57,7 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param metadata (optional) ClientMetadata
+     * @param metadata (optional) Client Metadata JSON
      */
     authentication_GetOAuthTokenWithUserInfo(code: string | null, state: string | null, metadata: any | undefined): Promise<TokenUserResponse> {
         let url_ = this.baseUrl + "/auth/token/{code}/{state}";
@@ -131,7 +131,7 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param metadata (optional) ClientMetadata
+     * @param metadata (optional) Client Metadata JSON
      */
     authentication_GetLoginRedirectUrl(metadata: any | undefined): Promise<string> {
         let url_ = this.baseUrl + "/auth/login-redirect";
@@ -199,7 +199,7 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param metadata (optional) ClientMetadata
+     * @param metadata (optional) Client Metadata JSON
      */
     authentication_GetUserInformationForToken(metadata: any | undefined): Promise<UserInfoResult> {
         let url_ = this.baseUrl + "/auth/user-info";
@@ -267,7 +267,7 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param metadata (optional) ClientMetadata
+     * @param metadata (optional) Client Metadata JSON
      */
     pullRequest_GetPullRequests(pullFilterOption: PullRequestFilterOption, metadata: any | undefined): Promise<UserPullRequestResult[]> {
         let url_ = this.baseUrl + "/pull-requests/{pullFilterOption}";
@@ -342,7 +342,7 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param metadata (optional) ClientMetadata
+     * @param metadata (optional) Client Metadata JSON
      */
     pullRequest_GetDetailedPullRequest(repoId: number, pullNumber: number, metadata: any | undefined): Promise<DetailedPullRequest> {
         let url_ = this.baseUrl + "/pull-requests/detailed/{repoId}/{pullNumber}";
@@ -416,7 +416,7 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param metadata (optional) ClientMetadata
+     * @param metadata (optional) Client Metadata JSON
      */
     repository_Repositories(filterOption: RepoFilterOptions, metadata: any | undefined): Promise<UserRepositoryResult[]> {
         let url_ = this.baseUrl + "/repositories/{filterOption}";
@@ -491,7 +491,7 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param metadata (optional) ClientMetadata
+     * @param metadata (optional) Client Metadata JSON
      */
     repository_GetDetailedRepository(repoId: number, metadata: any | undefined): Promise<DetailedRepository> {
         let url_ = this.baseUrl + "/repositories/detailed/{repoId}";
@@ -562,8 +562,8 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param connectionId ConnectionId
-     * @param metadata (optional) ClientMetadata
+     * @param connectionId SignalR Client Connection ID
+     * @param metadata (optional) Client Metadata JSON
      */
     repository_GetCodeOwnersForRepo(repoId: number, connectionId: string, metadata: any | undefined): Promise<{ [key: string]: string; }> {
         let url_ = this.baseUrl + "/repositories/code-owners/{repoId}";
@@ -641,7 +641,7 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
-     * @param metadata (optional) ClientMetadata
+     * @param metadata (optional) Client Metadata JSON
      */
     statistics_GetUserStatistics(metadata: any | undefined): Promise<UserActivity> {
         let url_ = this.baseUrl + "/statistics/user";

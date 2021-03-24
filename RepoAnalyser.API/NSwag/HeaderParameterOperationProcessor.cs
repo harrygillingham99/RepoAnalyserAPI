@@ -27,8 +27,8 @@ namespace RepoAnalyser.API.NSwag
                     Kind = OpenApiParameterKind.Header,
                     Type = JsonObjectType.String,
                     IsRequired = true,
-                    Description = "ConnectionId",
-                    Default = null
+                    Description = "SignalR Client Connection ID",
+                    Default = string.Empty
                 });
             }
 
@@ -41,7 +41,7 @@ namespace RepoAnalyser.API.NSwag
                         Kind = OpenApiParameterKind.Header,
                         Type = JsonObjectType.Object,
                         IsRequired = false,
-                        Description = "ClientMetadata",
+                        Description = "Client Metadata JSON",
                         Default = new ClientMetadata()
                     });
             }
