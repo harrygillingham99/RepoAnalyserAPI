@@ -31,7 +31,7 @@ namespace RepoAnalyser.API.Helpers
         {
             var header = request.GetHeaderValueOrDefault<string>(ConnectionIdKey);
             return string.IsNullOrWhiteSpace(header)
-                ? throw new UnauthorizedRequestException("No Authorization token provided.")
+                ? throw new UnauthorizedRequestException("No connection id provided.")
                 : header;
         }
 

@@ -28,10 +28,8 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
         public IEnumerable<string> GetRelativeFilePathsForRepository(GitActionRequest request,
             bool ignoreGitFiles = true)
         {
-            return CloneOrPullLatestRepositoryThenInvoke(request, () =>
+            return CloneOrPullLatestRepositoryThenInvoke(request, (repoDirectory) =>
             {
-                var repoDirectory = GetRepoBranchDirectory(request.RepoName, request.BranchName);
-
                 var files = Directory.GetFiles(repoDirectory, "*.*", SearchOption.AllDirectories)
                     .Where(path => !path.Contains(GetRepoBuildPath(request.RepoName, request.BranchName)))
                     .Select(path => path
@@ -51,7 +49,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
 
         public RepoDirectoryResult GetAllDirectoriesForRepo(GitActionRequest request)
         {
-            return CloneOrPullLatestRepositoryThenInvoke(request, () =>
+            return CloneOrPullLatestRepositoryThenInvoke(request, (repoDirectory) =>
             {
                 var branches = Directory.EnumerateFiles(GetRepoRootDirectory(request.RepoName)).ToList();
                 var defaultBranchDir =
@@ -91,7 +89,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
             };
         }
 
-        private T CloneOrPullLatestRepositoryThenInvoke<T>(GitActionRequest request, Func<T> gitActionRequest)
+        private T CloneOrPullLatestRepositoryThenInvoke<T>(GitActionRequest request, Func<string, T> gitActionRequest)
         {
             var repoDirectory = GetRepoBranchDirectory(request.RepoName, request.BranchName);
             if (!Directory.Exists(repoDirectory))
@@ -116,7 +114,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
                         $"Error in {nameof(CloneOrPullLatestRepositoryThenInvoke)}, merge conflicts for {repoDirectory}");
             }
 
-            return gitActionRequest.Invoke();
+            return gitActionRequest.Invoke(repoDirectory);
         }
 
         private Credentials BuildCredentials(string token)
