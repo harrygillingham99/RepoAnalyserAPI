@@ -3,9 +3,9 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using RepoAnalyser.API.BackgroundTaskQueue;
 using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic.Analysis.Interfaces;
+using RepoAnalyser.Logic.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
@@ -50,14 +50,14 @@ namespace RepoAnalyser.API.Controllers
             });
         }
 
-        [HttpGet("code-owners/{repoId}")]
+        [HttpGet("code-owners/{repoId}/{connectionId}")]
         [ProducesResponseType(typeof(IDictionary<string,string>), (int)HttpStatusCode.OK)]
-        public Task<IActionResult> GetCodeOwnersForRepo([FromRoute] long repoId)
+        public Task<IActionResult> GetCodeOwnersForRepo([FromRoute] long repoId, [FromRoute] string connectionId)
         {
             return ExecuteAndMapToActionResultAsync(() =>
             {
                 var token = HttpContext.Request.GetAuthorizationToken();
-                return _repositoryFacade.GetRepositoryCodeOwners(repoId, token);
+                return _repositoryFacade.GetRepositoryCodeOwners(repoId, connectionId, token);
             });
         }
     }

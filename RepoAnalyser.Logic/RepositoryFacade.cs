@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using RepoAnalyser.Logic.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
@@ -18,14 +19,18 @@ namespace RepoAnalyser.Logic
         private readonly IOctoKitServiceAgent _octoKitServiceAgent;
         private readonly IOctoKitAuthServiceAgent _octoKitAuthServiceAgent;
         private readonly IGitAdapter _gitAdapter;
+        private readonly IHubContext<AppHub, IAppHub> _hub;
+        private readonly IBackgroundTaskQueue _backgroundTaskQueue;
 
         public RepositoryFacade(IOctoKitGraphQlServiceAgent octoKitGraphQlServiceAgent,
-            IOctoKitServiceAgent octoKitServiceAgent, IGitAdapter gitAdapter, IOctoKitAuthServiceAgent octoKitAuthServiceAgent)
+            IOctoKitServiceAgent octoKitServiceAgent, IGitAdapter gitAdapter, IOctoKitAuthServiceAgent octoKitAuthServiceAgent, IHubContext<AppHub, IAppHub> hub, IBackgroundTaskQueue backgroundTaskQueue)
         {
             _octoKitGraphQlServiceAgent = octoKitGraphQlServiceAgent;
             _octoKitServiceAgent = octoKitServiceAgent;
             _gitAdapter = gitAdapter;
             _octoKitAuthServiceAgent = octoKitAuthServiceAgent;
+            _hub = hub;
+            _backgroundTaskQueue = backgroundTaskQueue;
         }
 
         public async Task<DetailedRepository> GetDetailedRepository(long repoId, string token)
@@ -47,11 +52,15 @@ namespace RepoAnalyser.Logic
             return _octoKitGraphQlServiceAgent.GetRepositories(token, filterOption);
         }
 
-        public async Task<IDictionary<string,string>> GetRepositoryCodeOwners(long repoId, string token)
+        public async Task<IDictionary<string, string>> GetRepositoryCodeOwners(long repoId, string connectionId, string token)
         {
             var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
+
+            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken =>
+                _hub.Clients.Client(connectionId).DirectNotification(connectionId, $"Started calculating code owners for {repository.Name}", SignalRNotificationType.RepoAnalysisProgressUpdate));
+
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
-            _ = _gitAdapter.CloneOrPullLatestRepository(new GitActionRequest
+            var filesInRepo = _gitAdapter.GetRelativeFilePathsForRepository(new GitActionRequest
             {
                 BranchName = null,
                 Email = user.Email ?? "unknown@RepoAnalyser.test",
@@ -60,13 +69,19 @@ namespace RepoAnalyser.Logic
                 Token = token,
                 Username = user.Login
             });
-            var filesInRepo = _gitAdapter.GetRelativeFilePathsForRepository(repository.Name);
+
+            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken =>
+                _hub.Clients.Client(connectionId).DirectNotification(connectionId, $"Started building code-owner dictionary", SignalRNotificationType.RepoAnalysisProgressUpdate));
 
             /* example of invoking a build for a .NET project
              var repoDir = _gitAdapter.GetRepoDirectory(repository.Name);
             _buildRunner.Build(repoDir.Directory, repoDir.DotNetBuildDirectory);*/
 
-            return await _octoKitServiceAgent.GetFileCodeOwners(token, filesInRepo, repository.Id, repository.LastUpdated);
+            var result = await _octoKitServiceAgent.GetFileCodeOwners(token, filesInRepo, repository.Id, repository.LastUpdated);
+            
+            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _hub.Clients.Client(connectionId).DirectNotification(connectionId, "Finished calculating code-owner dictionary", SignalRNotificationType.RepoAnalysisDone));
+
+            return result;
         }
     }
 }

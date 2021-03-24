@@ -6,6 +6,8 @@ namespace RepoAnalyser.SignalR.Objects
     public enum SignalRNotificationType
     {
         RepoAnalysisProgressUpdate = 1,
-        PullRequestAnalysisProgressUpdate = 2
+        PullRequestAnalysisProgressUpdate = 2,
+        RepoAnalysisDone = 3,
+        PullRequestAnalysisDone = 4
     }
 }

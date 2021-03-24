@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using RepoAnalyser.Objects.Attributes;
 
-namespace RepoAnalyser.API.BackgroundTaskQueue
+namespace RepoAnalyser.Logic.BackgroundTaskQueue
 {
     [ScrutorIgnore]
     public class BackgroundTaskQueue : IBackgroundTaskQueue

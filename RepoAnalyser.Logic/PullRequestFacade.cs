@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
-using RepoAnalyser.SignalR.Hubs;
 
 namespace RepoAnalyser.Logic
 {

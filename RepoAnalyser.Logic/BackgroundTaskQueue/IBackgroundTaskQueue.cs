@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace RepoAnalyser.API.BackgroundTaskQueue
+namespace RepoAnalyser.Logic.BackgroundTaskQueue
 {
     public interface IBackgroundTaskQueue
     {

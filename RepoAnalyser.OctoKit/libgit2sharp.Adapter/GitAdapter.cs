@@ -25,7 +25,73 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
             _workDir = options.Value.WorkingDirectory;
         }
 
-        public string CloneOrPullLatestRepository(GitActionRequest request)
+        public IEnumerable<string> GetRelativeFilePathsForRepository(GitActionRequest request,
+            bool ignoreGitFiles = true)
+        {
+            return CloneOrPullLatestRepositoryThenInvoke(request, () =>
+            {
+                var repoDirectory = GetRepoBranchDirectory(request.RepoName, request.BranchName);
+
+                var files = Directory.GetFiles(repoDirectory, "*.*", SearchOption.AllDirectories)
+                    .Where(path => !path.Contains(GetRepoBuildPath(request.RepoName, request.BranchName)))
+                    .Select(path => path
+                        .Replace(repoDirectory, string.Empty)
+                        .Replace("\\", "/"));
+
+
+                return ignoreGitFiles ? files.Where(x => !x.StartsWith("/.git")) : files;
+            });
+        }
+
+        public bool IsDotNetProject(string repoName)
+        {
+            return Directory.GetFiles(GetRepoBranchDirectory(repoName), "*.sln",
+                SearchOption.AllDirectories).Any();
+        }
+
+        public RepoDirectoryResult GetAllDirectoriesForRepo(GitActionRequest request)
+        {
+            return CloneOrPullLatestRepositoryThenInvoke(request, () =>
+            {
+                var branches = Directory.EnumerateFiles(GetRepoRootDirectory(request.RepoName)).ToList();
+                var defaultBranchDir =
+                    branches.FirstOrDefault(dir => dir.Contains($"{request.RepoName}-DefaultRemote"));
+
+                if (string.IsNullOrWhiteSpace(defaultBranchDir))
+                    throw new NullReferenceException(
+                        "Repository not found");
+
+                return new RepoDirectoryResult
+                {
+                    DefaultRemoteDir = new RepoDirectoryResult.RepoDirectory
+                    {
+                        Directory = defaultBranchDir,
+                        DotNetBuildDirectory = GetRepoBuildPath(defaultBranchDir)
+                    },
+                    BranchNameDirMap = branches.Where(dir => dir != defaultBranchDir)
+                        .ToDictionary(key => key.Replace($"{request.RepoName}-", string.Empty), value =>
+                            new RepoDirectoryResult.RepoDirectory
+                            {
+                                Directory = value,
+                                DotNetBuildDirectory =
+                                    GetRepoBuildPath(request.RepoName,
+                                        value.Replace($"{request.RepoName}-", string.Empty))
+                            })
+                };
+            });
+        }
+
+        public RepoDirectoryResult.RepoDirectory GetRepoDirectory(string repoName, string branchName = null)
+        {
+            var directory = GetRepoBranchDirectory(repoName, branchName);
+            return new RepoDirectoryResult.RepoDirectory
+            {
+                Directory = directory,
+                DotNetBuildDirectory = GetRepoBuildPath(repoName, branchName)
+            };
+        }
+
+        private T CloneOrPullLatestRepositoryThenInvoke<T>(GitActionRequest request, Func<T> gitActionRequest)
         {
             var repoDirectory = GetRepoBranchDirectory(request.RepoName, request.BranchName);
             if (!Directory.Exists(repoDirectory))
@@ -47,68 +113,10 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
                     new PullOptions {FetchOptions = options});
                 if (result.Status == MergeStatus.Conflicts)
                     throw new Exception(
-                        $"Error in {nameof(CloneOrPullLatestRepository)}, merge conflicts for {repoDirectory}");
+                        $"Error in {nameof(CloneOrPullLatestRepositoryThenInvoke)}, merge conflicts for {repoDirectory}");
             }
 
-            return repoDirectory;
-        }
-
-        public IEnumerable<string> GetRelativeFilePathsForRepository(string repoName, string branchName = null,
-            bool ignoreGitFiles = true)
-        {
-            var repoDirectory = GetRepoBranchDirectory(repoName, branchName);
-
-            var files = Directory.GetFiles(repoDirectory, "*.*", SearchOption.AllDirectories)
-                .Where(path => !path.Contains(GetRepoBuildPath(repoName, branchName)))
-                .Select(path => path
-                    .Replace(GetRepoBranchDirectory(repoName, branchName), string.Empty)
-                    .Replace("\\", "/"));
-
-
-            return ignoreGitFiles ? files.Where(x => !x.StartsWith("/.git")) : files;
-        }
-
-        public bool IsDotNetProject(string repoName)
-        {
-            return Directory.GetFiles(GetRepoBranchDirectory(repoName), "*.sln",
-                SearchOption.AllDirectories).Any();
-        }
-
-        public RepoDirectoryResult GetAllDirectoriesForRepo(string repoName)
-        {
-            var branches = Directory.EnumerateFiles(GetRepoRootDirectory(repoName)).ToList();
-            var defaultBranchDir = branches.FirstOrDefault(dir => dir.Contains($"{repoName}-DefaultRemote"));
-
-            if (string.IsNullOrWhiteSpace(defaultBranchDir))
-                throw new NullReferenceException(
-                    $"Repository not found, call {nameof(CloneOrPullLatestRepository)} first");
-
-            return new RepoDirectoryResult
-            {
-                DefaultRemoteDir = new RepoDirectoryResult.RepoDirectory
-                {
-                    Directory = defaultBranchDir,
-                    DotNetBuildDirectory = GetRepoBuildPath(defaultBranchDir)
-                },
-                BranchNameDirMap = branches.Where(dir => dir != defaultBranchDir)
-                    .ToDictionary(key => key.Replace($"{repoName}-", string.Empty), value =>
-                        new RepoDirectoryResult.RepoDirectory
-                        {
-                            Directory = value,
-                            DotNetBuildDirectory =
-                                GetRepoBuildPath(repoName, value.Replace($"{repoName}-", string.Empty))
-                        })
-            };
-        }
-
-        public RepoDirectoryResult.RepoDirectory GetRepoDirectory(string repoName, string branchName = null)
-        {
-            var directory = GetRepoBranchDirectory(repoName, branchName);
-            return new RepoDirectoryResult.RepoDirectory
-            {
-                Directory = directory,
-                DotNetBuildDirectory = GetRepoBuildPath(repoName, branchName)
-            };
+            return gitActionRequest.Invoke();
         }
 
         private Credentials BuildCredentials(string token)

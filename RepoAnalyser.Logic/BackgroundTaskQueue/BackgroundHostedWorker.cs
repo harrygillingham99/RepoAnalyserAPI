@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 using RepoAnalyser.Objects.Attributes;
 using Serilog;
 
-namespace RepoAnalyser.API.BackgroundTaskQueue
+namespace RepoAnalyser.Logic.BackgroundTaskQueue
 {
     [ScrutorIgnore]
     public class BackgroundHostedWorker : BackgroundService

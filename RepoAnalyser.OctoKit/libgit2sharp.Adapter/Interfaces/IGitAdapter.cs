@@ -6,12 +6,10 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces
 {
     public interface IGitAdapter
     {
-        string CloneOrPullLatestRepository(GitActionRequest request);
-
-        IEnumerable<string> GetRelativeFilePathsForRepository(string repoName, string branchName = null,
+        IEnumerable<string> GetRelativeFilePathsForRepository(GitActionRequest request,
             bool ignoreGitFiles = true);
 
-        RepoDirectoryResult GetAllDirectoriesForRepo(string repoName);
+        RepoDirectoryResult GetAllDirectoriesForRepo(GitActionRequest request);
 
         RepoDirectoryResult.RepoDirectory GetRepoDirectory(string repoName, string branchName = null);
 

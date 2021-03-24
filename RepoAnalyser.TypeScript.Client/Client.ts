@@ -564,11 +564,14 @@ export class Client extends AuthorizedApiBase {
     /**
      * @param metadata (optional) ClientMetadata
      */
-    repository_GetCodeOwnersForRepo(repoId: number, metadata: any | undefined): Promise<{ [key: string]: string; }> {
-        let url_ = this.baseUrl + "/repositories/code-owners/{repoId}";
+    repository_GetCodeOwnersForRepo(repoId: number, connectionId: string | null, metadata: any | undefined): Promise<{ [key: string]: string; }> {
+        let url_ = this.baseUrl + "/repositories/code-owners/{repoId}/{connectionId}";
         if (repoId === undefined || repoId === null)
             throw new Error("The parameter 'repoId' must be defined.");
         url_ = url_.replace("{repoId}", encodeURIComponent("" + repoId));
+        if (connectionId === undefined || connectionId === null)
+            throw new Error("The parameter 'connectionId' must be defined.");
+        url_ = url_.replace("{connectionId}", encodeURIComponent("" + connectionId));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{
@@ -3314,6 +3317,8 @@ export interface IClientMetadata {
 export enum SignalRNotificationType {
     RepoAnalysisProgressUpdate = 1,
     PullRequestAnalysisProgressUpdate = 2,
+    RepoAnalysisDone = 3,
+    PullRequestAnalysisDone = 4,
 }
 
 export class ApiException extends Error {
