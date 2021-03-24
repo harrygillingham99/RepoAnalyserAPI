@@ -24,7 +24,8 @@ namespace RepoAnalyser.Logic
         private readonly IBackgroundTaskQueue _backgroundTaskQueue;
 
         public RepositoryFacade(IOctoKitGraphQlServiceAgent octoKitGraphQlServiceAgent,
-            IOctoKitServiceAgent octoKitServiceAgent, IGitAdapter gitAdapter, IOctoKitAuthServiceAgent octoKitAuthServiceAgent, IHubContext<AppHub, IAppHub> hub, IBackgroundTaskQueue backgroundTaskQueue)
+            IOctoKitServiceAgent octoKitServiceAgent, IGitAdapter gitAdapter, IOctoKitAuthServiceAgent octoKitAuthServiceAgent, 
+            IHubContext<AppHub, IAppHub> hub, IBackgroundTaskQueue backgroundTaskQueue)
         {
             _octoKitGraphQlServiceAgent = octoKitGraphQlServiceAgent;
             _octoKitServiceAgent = octoKitServiceAgent;
