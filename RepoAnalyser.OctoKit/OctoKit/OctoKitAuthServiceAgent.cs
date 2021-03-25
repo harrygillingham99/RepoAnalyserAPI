@@ -4,6 +4,7 @@ using LazyCache;
 using Microsoft.Extensions.Options;
 using Octokit;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.Constants;
 using RepoAnalyser.Objects.Exceptions;
 using RepoAnalyser.Services.OctoKit.Interfaces;
 using OauthLoginRequest = Octokit.OauthLoginRequest;
@@ -55,7 +56,7 @@ namespace RepoAnalyser.Services.OctoKit
 
             _client.Connection.Credentials = GetCredentials(token);
 
-            return _cache.GetOrAddAsync($"{token}-user", () => _client.User.Current());
+            return _cache.GetOrAddAsync($"{token}-user", () => _client.User.Current(), CacheConstants.DefaultSlidingCacheExpiry);
         }
     }
 }
