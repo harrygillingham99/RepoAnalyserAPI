@@ -18,7 +18,6 @@ namespace RepoAnalyser.API.Helpers
             return request.GetHeaderValueOrDefault<ClientMetadata>(MetadataKey, true);
         }
 
-
         public static string GetAuthorizationToken(this HttpRequest request)
         {
             var header = request.GetHeaderValueOrDefault<string>(AuthorizationKey);
@@ -31,7 +30,7 @@ namespace RepoAnalyser.API.Helpers
         {
             var header = request.GetHeaderValueOrDefault<string>(ConnectionIdKey);
             return string.IsNullOrWhiteSpace(header)
-                ? throw new UnauthorizedRequestException("No connection id provided.")
+                ? throw new BadRequestException("No connectionId provided.")
                 : header;
         }
 

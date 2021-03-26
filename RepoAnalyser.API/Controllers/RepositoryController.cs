@@ -58,8 +58,8 @@ namespace RepoAnalyser.API.Controllers
         {
             return ExecuteAndMapToActionResultAsync(() =>
             {
-                var token = HttpContext.Request.GetAuthorizationToken();
-                var connectionId = HttpContext.Request.GetConnectionId();
+                var (connectionId, token) = (HttpContext.Request.GetConnectionId(),
+                    HttpContext.Request.GetAuthorizationToken());
                 return _repositoryFacade.GetRepositoryCodeOwners(repoId, connectionId, token);
             });
         }
