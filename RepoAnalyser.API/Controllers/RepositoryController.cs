@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.API.Helpers;
-using RepoAnalyser.Logic.Analysis.Interfaces;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
@@ -20,13 +19,11 @@ namespace RepoAnalyser.API.Controllers
     public class RepositoryController : BaseController
     {
         private readonly IRepositoryFacade _repositoryFacade;
-        private readonly IMsBuildRunner _msBuildRunner;
         public RepositoryController(IRepoAnalyserAuditRepository auditRepository,
             IBackgroundTaskQueue backgroundTaskQueue, IOptions<AppSettings> options,
-            IRepositoryFacade repositoryFacade, IMsBuildRunner msBuildRunner) : base(auditRepository, backgroundTaskQueue, options)
+            IRepositoryFacade repositoryFacade) : base(auditRepository, backgroundTaskQueue, options)
         {
             _repositoryFacade = repositoryFacade;
-            _msBuildRunner = msBuildRunner;
         }
 
         [HttpGet("{filterOption}")]
@@ -58,8 +55,7 @@ namespace RepoAnalyser.API.Controllers
         {
             return ExecuteAndMapToActionResultAsync(() =>
             {
-                var (connectionId, token) = (HttpContext.Request.GetConnectionId(),
-                    HttpContext.Request.GetAuthorizationToken());
+                var (connectionId, token) = (HttpContext.Request.GetConnectionId(), HttpContext.Request.GetAuthorizationToken());
                 return _repositoryFacade.GetRepositoryCodeOwners(repoId, connectionId, token);
             });
         }
