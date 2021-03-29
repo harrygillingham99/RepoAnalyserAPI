@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using LazyCache;
 using Microsoft.Extensions.Options;
@@ -37,6 +38,7 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
                 {
                     Id = repository.DatabaseId.Value,
                     Description = repository.Description,
+                    DescriptionHtml = repository.DescriptionHTML,
                     Name = repository.Name,
                     PullUrl = repository.Url,
                     Private = repository.IsPrivate,
@@ -67,6 +69,7 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
                     Deletions = pull.Deletions,
                     ChangedFiles = pull.ChangedFiles,
                     Description = pull.BodyText,
+                    DescriptionMarkdown = pull.Body,
                     State = pull.State,
                     Collaborators = pull.Participants(100, null, null, null).Nodes
                         .Select(x => x.Login).ToList()
@@ -78,8 +81,12 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
 
         public async Task<UserPullRequestResult> GetPullRequest(string token, long repoId, int pullNumber)
         {
-            return (await GetPullRequests(token, PullRequestFilterOption.All)).FirstOrDefault(x =>
-                x.PullRequestNumber == pullNumber && x.RepositoryId == repoId);
+            bool MatchingPullRequest(UserPullRequestResult pull)
+            {
+                return pull.PullRequestNumber == pullNumber && pull.RepositoryId == repoId;
+            }
+
+            return (await GetPullRequests(token, PullRequestFilterOption.All)).FirstOrDefault(MatchingPullRequest);
         }
 
         private Task<T> BuildConnectionExecuteQuery<T>(string token, ICompiledQuery<T> query,

@@ -22,5 +22,6 @@ namespace RepoAnalyser.Objects.API.Responses
         public IEnumerable<string> Collaborators { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public string DescriptionMarkdown { get; set; }
     }
 }
