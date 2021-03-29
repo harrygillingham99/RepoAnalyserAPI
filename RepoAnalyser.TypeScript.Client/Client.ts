@@ -1311,6 +1311,7 @@ export class UserPullRequestResult implements IUserPullRequestResult {
     collaborators?: string[] | undefined;
     title?: string | undefined;
     description?: string | undefined;
+    descriptionMarkdown?: string | undefined;
 
     constructor(data?: IUserPullRequestResult) {
         if (data) {
@@ -1340,6 +1341,7 @@ export class UserPullRequestResult implements IUserPullRequestResult {
             }
             this.title = _data["title"];
             this.description = _data["description"];
+            this.descriptionMarkdown = _data["descriptionMarkdown"];
         }
     }
 
@@ -1369,6 +1371,7 @@ export class UserPullRequestResult implements IUserPullRequestResult {
         }
         data["title"] = this.title;
         data["description"] = this.description;
+        data["descriptionMarkdown"] = this.descriptionMarkdown;
         return data; 
     }
 }
@@ -1387,6 +1390,7 @@ export interface IUserPullRequestResult {
     collaborators?: string[] | undefined;
     title?: string | undefined;
     description?: string | undefined;
+    descriptionMarkdown?: string | undefined;
 }
 
 export enum PullRequestState {
@@ -2069,6 +2073,7 @@ export class UserRepositoryResult implements IUserRepositoryResult {
     id?: number;
     name?: string | undefined;
     description?: string | undefined;
+    descriptionHtml?: string | undefined;
     pullUrl?: string | undefined;
     private?: boolean;
     template?: boolean;
@@ -2089,6 +2094,7 @@ export class UserRepositoryResult implements IUserRepositoryResult {
             this.id = _data["id"];
             this.name = _data["name"];
             this.description = _data["description"];
+            this.descriptionHtml = _data["descriptionHtml"];
             this.pullUrl = _data["pullUrl"];
             this.private = _data["private"];
             this.template = _data["template"];
@@ -2113,6 +2119,7 @@ export class UserRepositoryResult implements IUserRepositoryResult {
         data["id"] = this.id;
         data["name"] = this.name;
         data["description"] = this.description;
+        data["descriptionHtml"] = this.descriptionHtml;
         data["pullUrl"] = this.pullUrl;
         data["private"] = this.private;
         data["template"] = this.template;
@@ -2130,6 +2137,7 @@ export interface IUserRepositoryResult {
     id?: number;
     name?: string | undefined;
     description?: string | undefined;
+    descriptionHtml?: string | undefined;
     pullUrl?: string | undefined;
     private?: boolean;
     template?: boolean;
