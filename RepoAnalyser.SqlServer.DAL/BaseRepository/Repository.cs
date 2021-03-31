@@ -40,28 +40,24 @@ namespace RepoAnalyser.SqlServer.DAL.BaseRepository
             }
         }
 
-        protected async Task InvokeWithTransaction<T>(Func<IDbConnection, Task<T>> dbOperation, bool rollbackOnFault = true)
+        protected async Task<T> InvokeWithTransaction<T>(Func<IDbConnection, Task<T>> dbOperation)
         {
             _stopwatch.Start();
-            using var connection = new SqlConnection(_connectionString);
-            await connection.OpenAsync();
-            using var tran = connection.BeginTransaction();
+            var tranName = $"RepoAnalyser-Transaction-{Guid.NewGuid()}";
             try
             {
-                await dbOperation(connection);
+                using var connection = new SqlConnection(_connectionString);
+                using var tran = connection.BeginTransaction(tranName);
+                await connection.OpenAsync();
+                var result = await dbOperation(tran.Connection);
                 tran.Commit();
+                return result;
             }
             catch (Exception ex)
             {
-                if (rollbackOnFault)
-                {
-                    tran.Rollback();
-                }
-                else
-                {
-                    Log.Information(ex, $"Rollback skipped after exception for {dbOperation.GetType()}");
-                }
-                var exceptionMsg = $"{GetType().FullName}.InvokeWithTransaction experienced a {ex.GetType()}";
+                Log.Information(ex, $"Rollback skipped after exception for {dbOperation.GetType()}");
+                var exceptionMsg =
+                    $"{GetType().FullName}.InvokeWithTransaction experienced a {ex.GetType()} with transaction: {tranName}";
                 Log.Error(ex, exceptionMsg);
                 throw new Exception(exceptionMsg, ex);
             }
