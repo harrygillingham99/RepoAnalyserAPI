@@ -6,6 +6,7 @@ using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 
@@ -24,14 +25,18 @@ namespace RepoAnalyser.API.Controllers
             _userFacade = userFacade;
         }
 
-        [HttpGet("user")]
+        [HttpGet("user/{page}/{pageSize}")]
         [ProducesResponseType(typeof(UserActivity), (int)HttpStatusCode.OK)]
-        public Task<IActionResult> GetUserStatistics()
+        public Task<IActionResult> GetUserStatistics([FromRoute] int page, [FromRoute] int pageSize)
         {
             return ExecuteAndMapToActionResultAsync(() =>
             {
                 var token = HttpContext.Request.GetAuthorizationToken();
-                return _userFacade.GetUserStatistics(token);
+                return _userFacade.GetUserStatistics(token, new PaginationOptions
+                {
+                    PageSize = pageSize,
+                    Page = page
+                });
             });
         }
     }

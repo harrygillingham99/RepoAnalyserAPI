@@ -643,8 +643,14 @@ export class Client extends AuthorizedApiBase {
     /**
      * @param metadata (optional) Client Metadata JSON
      */
-    statistics_GetUserStatistics(metadata: any | undefined): Promise<UserActivity> {
-        let url_ = this.baseUrl + "/statistics/user";
+    statistics_GetUserStatistics(page: number, pageSize: number, metadata: any | undefined): Promise<UserActivity> {
+        let url_ = this.baseUrl + "/statistics/user/{page}/{pageSize}";
+        if (page === undefined || page === null)
+            throw new Error("The parameter 'page' must be defined.");
+        url_ = url_.replace("{page}", encodeURIComponent("" + page));
+        if (pageSize === undefined || pageSize === null)
+            throw new Error("The parameter 'pageSize' must be defined.");
+        url_ = url_.replace("{pageSize}", encodeURIComponent("" + pageSize));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ = <RequestInit>{

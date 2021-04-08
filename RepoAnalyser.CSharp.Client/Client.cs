@@ -1482,12 +1482,12 @@ namespace NetCore31ApiTemplate.Client
     {
         /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<UserActivity> GetUserStatisticsAsync(object metadata);
+        System.Threading.Tasks.Task<UserActivity> GetUserStatisticsAsync(int page, int pageSize, object metadata);
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<UserActivity> GetUserStatisticsAsync(object metadata, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<UserActivity> GetUserStatisticsAsync(int page, int pageSize, object metadata, System.Threading.CancellationToken cancellationToken);
     
     }
     
@@ -1528,18 +1528,26 @@ namespace NetCore31ApiTemplate.Client
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
         /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<UserActivity> GetUserStatisticsAsync(object metadata)
+        public System.Threading.Tasks.Task<UserActivity> GetUserStatisticsAsync(int page, int pageSize, object metadata)
         {
-            return GetUserStatisticsAsync(metadata, System.Threading.CancellationToken.None);
+            return GetUserStatisticsAsync(page, pageSize, metadata, System.Threading.CancellationToken.None);
         }
     
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
-        public async System.Threading.Tasks.Task<UserActivity> GetUserStatisticsAsync(object metadata, System.Threading.CancellationToken cancellationToken)
+        public async System.Threading.Tasks.Task<UserActivity> GetUserStatisticsAsync(int page, int pageSize, object metadata, System.Threading.CancellationToken cancellationToken)
         {
+            if (page == null)
+                throw new System.ArgumentNullException("page");
+    
+            if (pageSize == null)
+                throw new System.ArgumentNullException("pageSize");
+    
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/statistics/user");
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/statistics/user/{page}/{pageSize}");
+            urlBuilder_.Replace("{page}", System.Uri.EscapeDataString(ConvertToString(page, System.Globalization.CultureInfo.InvariantCulture)));
+            urlBuilder_.Replace("{pageSize}", System.Uri.EscapeDataString(ConvertToString(pageSize, System.Globalization.CultureInfo.InvariantCulture)));
     
             var client_ = _httpClient;
             var disposeClient_ = false;

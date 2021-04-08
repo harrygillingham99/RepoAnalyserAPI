@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using RepoAnalyser.Logic.Interfaces;
+using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Services.OctoKit.Interfaces;
 
@@ -14,9 +15,9 @@ namespace RepoAnalyser.Logic
             _octoKitServiceAgent = octoKitServiceAgent;
         }
 
-        public Task<UserActivity> GetUserStatistics(string token)
+        public Task<UserActivity> GetUserStatistics(string token, PaginationOptions pageOptions)
         {
-            return _octoKitServiceAgent.GetDetailedUserActivity(token);
+            return _octoKitServiceAgent.GetDetailedUserActivity(token, pageOptions);
         }
     }
 }

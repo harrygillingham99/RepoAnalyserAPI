@@ -6,6 +6,7 @@ using LazyCache;
 using Microsoft.Extensions.Options;
 using Octokit;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Constants;
 using RepoAnalyser.Services.OctoKit.Interfaces;
@@ -75,7 +76,7 @@ namespace RepoAnalyser.Services.OctoKit
             return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-stats", GetStatistics, CacheConstants.DefaultSlidingCacheExpiry);
         }
 
-        public Task<UserActivity> GetDetailedUserActivity(string token)
+        public Task<UserActivity> GetDetailedUserActivity(string token, PaginationOptions pageOptions)
         {
             _client.Connection.Credentials = GetCredentials(token);
 
@@ -83,12 +84,17 @@ namespace RepoAnalyser.Services.OctoKit
             {
                 var userAccount = await _client.User.Current();
                 var notifications = _client.Activity.Notifications.GetAllForCurrent();
-                var events = _client.Activity.Events.GetAllUserPerformed(userAccount.Login);
+                var events = _client.Activity.Events.GetAllUserPerformed(userAccount.Login, new ApiOptions
+                {
+                    PageCount = 1,
+                    PageSize = pageOptions.PageSize,
+                    StartPage = pageOptions.Page
+                });
 
                 return new UserActivity {Notifications = await notifications, Events = await events};
             }
 
-            return _cache.GetOrAddAsync($"{token}-stats", GetUserStats, CacheConstants.DefaultSlidingCacheExpiry);
+            return _cache.GetOrAddAsync($"{token}-{pageOptions.Page}-{pageOptions.PageSize}-stats", GetUserStats, CacheConstants.DefaultSlidingCacheExpiry);
         }
 
         public Task<IDictionary<string,string>> GetFileCodeOwners(string token, IEnumerable<string> filePaths, long repoId, DateTime repoLastUpdated)
