@@ -3,21 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Options;
 using RepoAnalyser.Logic.Analysis.Interfaces;
-using RepoAnalyser.Objects;
 
 namespace RepoAnalyser.Logic.Analysis
 {
     public class MsBuildRunner : IMsBuildRunner
     {
-        private readonly string _workDir;
-
-        public MsBuildRunner(IOptions<AppSettings> options)
-        {
-            _workDir = options.Value.WorkingDirectory;
-        }
-
         public string Build(string repoDirectory, string outputDir)
         {
             var slnFilesLastWritten = new Dictionary<string, DateTime>();
