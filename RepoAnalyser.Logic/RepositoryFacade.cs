@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
@@ -10,6 +11,7 @@ using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
 using RepoAnalyser.Services.OctoKit.Interfaces;
 using RepoAnalyser.SignalR.Helpers;
 using RepoAnalyser.SignalR.Hubs;
+using RepoAnalyser.SqlServer.DAL;
 using static RepoAnalyser.SignalR.Objects.SignalRNotificationType;
 
 namespace RepoAnalyser.Logic
@@ -22,10 +24,11 @@ namespace RepoAnalyser.Logic
         private readonly IGitAdapter _gitAdapter;
         private readonly IHubContext<AppHub, IAppHub> _hub;
         private readonly IBackgroundTaskQueue _backgroundTaskQueue;
+        private readonly IAnalysisRepository _analysisRepository;
 
         public RepositoryFacade(IOctoKitGraphQlServiceAgent octoKitGraphQlServiceAgent,
             IOctoKitServiceAgent octoKitServiceAgent, IGitAdapter gitAdapter, IOctoKitAuthServiceAgent octoKitAuthServiceAgent, 
-            IHubContext<AppHub, IAppHub> hub, IBackgroundTaskQueue backgroundTaskQueue)
+            IHubContext<AppHub, IAppHub> hub, IBackgroundTaskQueue backgroundTaskQueue, IAnalysisRepository analysisRepository)
         {
             _octoKitGraphQlServiceAgent = octoKitGraphQlServiceAgent;
             _octoKitServiceAgent = octoKitServiceAgent;
@@ -33,6 +36,7 @@ namespace RepoAnalyser.Logic
             _octoKitAuthServiceAgent = octoKitAuthServiceAgent;
             _hub = hub;
             _backgroundTaskQueue = backgroundTaskQueue;
+            _analysisRepository = analysisRepository;
         }
 
         public async Task<DetailedRepository> GetDetailedRepository(long repoId, string token)
@@ -40,12 +44,15 @@ namespace RepoAnalyser.Logic
             var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
             var commits = _octoKitServiceAgent.GetCommitsForRepo(repoId,repository.LastUpdated, token);
             var repoStats = _octoKitServiceAgent.GetStatisticsForRepository(repoId,repository.LastUpdated ,token);
+            var (results, codeOwners) = await _analysisRepository.GetAnalysisResult(repoId);
 
             return new DetailedRepository
             {
                 Repository = repository,
                 Commits = await commits,
-                Statistics = await repoStats
+                Statistics = await repoStats,
+                CodeOwners = codeOwners,
+                CodeOwnersLastUpdated = results.CodeOwnersLastRunDate
             };
         }
 
@@ -86,6 +93,13 @@ namespace RepoAnalyser.Logic
             
             _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken =>
                 _hub.DirectNotify(connectionId,"Finished calculating code-owner dictionary", RepoAnalysisDone));
+
+            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _analysisRepository.UpsertAnalysisResults(new AnalysisResults
+            {
+                CodeOwnersLastRunDate = DateTime.Now,
+                RepoId = repository.Id,
+                RepoName = repository.Name
+            }, result));
 
             return result;
         }

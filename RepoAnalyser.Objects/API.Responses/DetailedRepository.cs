@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Octokit;
 
 namespace RepoAnalyser.Objects.API.Responses
@@ -8,5 +9,7 @@ namespace RepoAnalyser.Objects.API.Responses
         public UserRepositoryResult Repository { get; set; }
         public IEnumerable<GitHubCommit> Commits { get; set; }
         public RepoStatistics Statistics { get; set; }
+        public IDictionary<string, string> CodeOwners { get; set; }
+        public DateTime? CodeOwnersLastUpdated { get; set; }
     }
 }

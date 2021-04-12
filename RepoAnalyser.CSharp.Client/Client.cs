@@ -2963,6 +2963,12 @@ namespace NetCore31ApiTemplate.Client
         [Newtonsoft.Json.JsonProperty("statistics", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public RepoStatistics Statistics { get; set; }
     
+        [Newtonsoft.Json.JsonProperty("codeOwners", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.Dictionary<string, string> CodeOwners { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("codeOwnersLastUpdated", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime? CodeOwnersLastUpdated { get; set; }
+    
         public string ToJson()
         {
             return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());

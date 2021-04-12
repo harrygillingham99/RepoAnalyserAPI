@@ -2269,6 +2269,8 @@ export class DetailedRepository implements IDetailedRepository {
     repository?: UserRepositoryResult | undefined;
     commits?: GitHubCommit[] | undefined;
     statistics?: RepoStatistics | undefined;
+    codeOwners?: { [key: string]: string; } | undefined;
+    codeOwnersLastUpdated?: Date | undefined;
 
     constructor(data?: IDetailedRepository) {
         if (data) {
@@ -2288,6 +2290,14 @@ export class DetailedRepository implements IDetailedRepository {
                     this.commits!.push(GitHubCommit.fromJS(item));
             }
             this.statistics = _data["statistics"] ? RepoStatistics.fromJS(_data["statistics"]) : <any>undefined;
+            if (_data["codeOwners"]) {
+                this.codeOwners = {} as any;
+                for (let key in _data["codeOwners"]) {
+                    if (_data["codeOwners"].hasOwnProperty(key))
+                        this.codeOwners![key] = _data["codeOwners"][key];
+                }
+            }
+            this.codeOwnersLastUpdated = _data["codeOwnersLastUpdated"] ? new Date(_data["codeOwnersLastUpdated"].toString()) : <any>undefined;
         }
     }
 
@@ -2307,6 +2317,14 @@ export class DetailedRepository implements IDetailedRepository {
                 data["commits"].push(item.toJSON());
         }
         data["statistics"] = this.statistics ? this.statistics.toJSON() : <any>undefined;
+        if (this.codeOwners) {
+            data["codeOwners"] = {};
+            for (let key in this.codeOwners) {
+                if (this.codeOwners.hasOwnProperty(key))
+                    data["codeOwners"][key] = this.codeOwners[key];
+            }
+        }
+        data["codeOwnersLastUpdated"] = this.codeOwnersLastUpdated ? this.codeOwnersLastUpdated.toISOString() : <any>undefined;
         return data; 
     }
 }
@@ -2315,6 +2333,8 @@ export interface IDetailedRepository {
     repository?: UserRepositoryResult | undefined;
     commits?: GitHubCommit[] | undefined;
     statistics?: RepoStatistics | undefined;
+    codeOwners?: { [key: string]: string; } | undefined;
+    codeOwnersLastUpdated?: Date | undefined;
 }
 
 export class GitHubCommit extends GitReference implements IGitHubCommit {
