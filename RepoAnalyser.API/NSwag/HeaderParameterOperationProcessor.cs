@@ -10,7 +10,7 @@ namespace RepoAnalyser.API.NSwag
 {
     /*
      * NSwag Operation Post-Processor to add a ClientMetadata header param to every endpoint
-     * for detailed request logging.
+     * for detailed request logging, also adds connection Id header param for methods with [RequireConnectionId]
      */
     [ScrutorIgnore]
     public class HeaderParameterOperationProcessor : IOperationProcessor
