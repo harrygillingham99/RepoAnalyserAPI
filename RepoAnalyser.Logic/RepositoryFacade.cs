@@ -12,6 +12,7 @@ using RepoAnalyser.Services.OctoKit.Interfaces;
 using RepoAnalyser.SignalR.Helpers;
 using RepoAnalyser.SignalR.Hubs;
 using RepoAnalyser.SqlServer.DAL;
+using RepoAnalyser.SqlServer.DAL.Interfaces;
 using static RepoAnalyser.SignalR.Objects.SignalRNotificationType;
 
 namespace RepoAnalyser.Logic

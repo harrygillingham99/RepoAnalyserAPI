@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.SqlServer.DAL.BaseRepository;
+using RepoAnalyser.SqlServer.DAL.Interfaces;
 using RepoAnalyser.SqlServer.DAL.SQL;
 
 namespace RepoAnalyser.SqlServer.DAL
@@ -31,31 +32,14 @@ namespace RepoAnalyser.SqlServer.DAL
 
         public Task<(AnalysisResults, IDictionary<string, string>)> GetAnalysisResult(long repoId)
         {
-            return Invoke(async connection =>
+            return InvokeMultiQuery(async (connection, multiReader) =>
             {
-                using var multiReader = await connection.QueryMultipleAsync(Sql.GetRepoAnalysisRunInfo, new {repoId});
+                var analysisResults = multiReader.ReadSingleOrDefaultAsync<AnalysisResults>();
+                var codeOwners = multiReader.ReadSingleOrDefaultAsync<string>();
 
-                var analysisResults = await multiReader.ReadSingleOrDefaultAsync<AnalysisResults>();
-                var codeOwners = await multiReader.ReadSingleOrDefaultAsync<string>();
-
-                return (analysisResults ?? new AnalysisResults(),
-                    codeOwners != null
-                        ? JsonConvert.DeserializeObject<IDictionary<string, string>>(codeOwners)
-                        : new Dictionary<string, string>());
-            });
+                return (await analysisResults,
+                    JsonConvert.DeserializeObject<IDictionary<string, string>>(await codeOwners));
+            }, Sql.GetRepoAnalysisRunInfo, new {repoId});
         }
-    }
-
-    public class AnalysisResults
-    {
-        public long RepoId { get; set; }
-        public string RepoName { get; set; }
-        public DateTime? CodeOwnersLastRunDate { get; set; }
-    }
-
-    public interface IAnalysisRepository
-    {
-        Task<(AnalysisResults, IDictionary<string, string>)> GetAnalysisResult(long repoId);
-        Task UpsertAnalysisResults(AnalysisResults results, IDictionary<string, string> codeOwners = null);
     }
 }

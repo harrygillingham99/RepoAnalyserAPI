@@ -3,12 +3,15 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Dapper;
 using Serilog;
 
 namespace RepoAnalyser.SqlServer.DAL.BaseRepository
 {
     public abstract class Repository
     {
+        private const string InfoMessageTemplate = "SQL Info: operation completed in {0}";
+        private const string ErrorMessageTemplate = "SQL Error: {0}.Invoke experienced a {1}";
         private readonly string _connectionString;
         private readonly Stopwatch _stopwatch;
 
@@ -29,43 +32,50 @@ namespace RepoAnalyser.SqlServer.DAL.BaseRepository
             }
             catch (Exception ex)
             {
-                var exceptionMsg = $"{GetType().FullName}.Invoke experienced a {ex.GetType()}";
-                Log.Error(ex, exceptionMsg);
-                throw new Exception(exceptionMsg, ex);
+                LogError(GetType().FullName, ex);
+                throw;
             }
             finally
             {
                 _stopwatch.Stop();
-                Debug.WriteLine($"SQL Operation completed in {_stopwatch.ElapsedMilliseconds}");
+                LogInfo(_stopwatch.ElapsedMilliseconds);
             }
         }
 
-        protected async Task<T> InvokeWithTransaction<T>(Func<IDbConnection, Task<T>> dbOperation)
+        protected async Task<T> InvokeMultiQuery<T>(Func<IDbConnection, SqlMapper.GridReader, Task<T>> getData,
+            string sql, object sqlParams)
         {
             _stopwatch.Start();
-            var tranName = $"RepoAnalyser-Transaction-{Guid.NewGuid()}";
             try
             {
                 using var connection = new SqlConnection(_connectionString);
-                using var tran = connection.BeginTransaction(tranName);
                 await connection.OpenAsync();
-                var result = await dbOperation(tran.Connection);
-                tran.Commit();
-                return result;
+                using var multiReader = connection.QueryMultipleAsync(sql, sqlParams);
+                return await getData(connection, await multiReader);
             }
             catch (Exception ex)
             {
-                Log.Information(ex, $"Rollback skipped after exception for {dbOperation.GetType()}");
-                var exceptionMsg =
-                    $"{GetType().FullName}.InvokeWithTransaction experienced a {ex.GetType()} with transaction: {tranName}";
-                Log.Error(ex, exceptionMsg);
-                throw new Exception(exceptionMsg, ex);
+                LogError(GetType().FullName, ex);
+                throw;
             }
             finally
             {
                 _stopwatch.Stop();
-                Debug.WriteLine($"SQL Transaction Operation completed in {_stopwatch.ElapsedMilliseconds}");
+                LogInfo(_stopwatch.ElapsedMilliseconds);
             }
+        }
+
+        private static void LogInfo(long milliseconds)
+        {
+            var messageText = string.Format(InfoMessageTemplate, milliseconds);
+            Debug.WriteLine(messageText);
+            Log.Information(messageText);
+        }
+
+        private static void LogError(string method, Exception exception)
+        {
+            var exceptionMsg = string.Format(ErrorMessageTemplate, method, exception.GetType());
+            Log.Error(exception, exceptionMsg);
         }
     }
 }
