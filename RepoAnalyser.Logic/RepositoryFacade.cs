@@ -53,7 +53,7 @@ namespace RepoAnalyser.Logic
                 Commits = await commits,
                 Statistics = await repoStats,
                 CodeOwners = codeOwners,
-                CodeOwnersLastUpdated = results.CodeOwnersLastRunDate
+                CodeOwnersLastUpdated = results?.CodeOwnersLastRunDate
             };
         }
 
