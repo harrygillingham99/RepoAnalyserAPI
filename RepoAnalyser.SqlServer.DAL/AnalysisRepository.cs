@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Security;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.Options;
@@ -35,10 +36,17 @@ namespace RepoAnalyser.SqlServer.DAL
             return InvokeMultiQuery(async (connection, multiReader) =>
             {
                 var analysisResults = multiReader.ReadSingleOrDefaultAsync<AnalysisResults>();
-                var codeOwners = multiReader.ReadSingleOrDefaultAsync<string>();
+                var codeOwnersJson = await multiReader.ReadSingleOrDefaultAsync<string>();
 
-                return (await analysisResults,
-                    JsonConvert.DeserializeObject<IDictionary<string, string>>(await codeOwners));
+                IDictionary<string, string> GetCodeOwners()
+                {
+                    return codeOwnersJson != null
+                        ? JsonConvert.DeserializeObject<IDictionary<string, string>>(codeOwnersJson)
+                        : new Dictionary<string, string>();
+
+                }
+
+                return (await analysisResults, GetCodeOwners());
             }, Sql.GetRepoAnalysisRunInfo, new {repoId});
         }
     }
