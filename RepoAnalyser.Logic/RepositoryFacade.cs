@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Octokit;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Requests;
@@ -11,7 +13,6 @@ using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
 using RepoAnalyser.Services.OctoKit.Interfaces;
 using RepoAnalyser.SignalR.Helpers;
 using RepoAnalyser.SignalR.Hubs;
-using RepoAnalyser.SqlServer.DAL;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 using static RepoAnalyser.SignalR.Objects.SignalRNotificationType;
 
@@ -103,6 +104,22 @@ namespace RepoAnalyser.Logic
             }, result));
 
             return result;
+        }
+
+        public async Task<IEnumerable<GitHubCommit>> GetFileInformation(long repoId, string token, string filePath)
+        {
+            var repository = await  _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
+            var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
+            var repoFiles = _gitAdapter.GetRelativeFilePathsForRepository(new GitActionRequest
+            {
+                RepoUrl = repository.PullUrl,
+                RepoName = repository.Name,
+                Token = token,
+                Username = user.Login,
+                Email = user.Email ?? "unknown@RepoAnalyser.test"
+            });
+
+            return await _octoKitServiceAgent.GetFileCommits(repoId, token, repoFiles.FirstOrDefault(file => file.Contains(filePath)), (repository).LastUpdated);
         }
     }
 }

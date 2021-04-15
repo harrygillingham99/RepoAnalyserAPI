@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Octokit;
 using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
@@ -57,6 +59,17 @@ namespace RepoAnalyser.API.Controllers
             {
                 var (connectionId, token) = (HttpContext.Request.GetConnectionId(), HttpContext.Request.GetAuthorizationToken());
                 return _repositoryFacade.GetRepositoryCodeOwners(repoId, connectionId, token);
+            });
+        }
+
+        [HttpGet("file-info/{repoId}/{fileName}/{extension}")]
+        [ProducesResponseType(typeof(IEnumerable<GitHubCommit>), (int) HttpStatusCode.OK)]
+        public Task<IActionResult> GetFileInformation([FromRoute] long repoId, [FromRoute] string fileName, [FromRoute] string extension)
+        {
+            return ExecuteAndMapToActionResultAsync(() =>
+            {
+                var token = HttpContext.Request.GetAuthorizationToken();
+                return _repositoryFacade.GetFileInformation(repoId, token, $"{fileName}.{extension}");
             });
         }
     }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace RepoAnalyser.SqlServer.DAL.SQL
+﻿namespace RepoAnalyser.SqlServer.DAL.SQL
 {
     public static partial class Sql
     {
