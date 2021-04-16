@@ -109,24 +109,17 @@ namespace RepoAnalyser.Services.OctoKit
 
             var filePathsList = filePaths.ToList();
 
-            async Task<IReadOnlyList<GitHubCommit>> GetCommitsForFile(string path)
-            {
-                return await _client.Repository.Commit.GetAll(repoId, new CommitRequest
-                {
-                    Path = path
-                });
-            }
-
             async Task<IDictionary<string, string>> GetCodeOwners()
             {
                 var commitsForFiles = new Dictionary<string, IReadOnlyList<GitHubCommit>>();
+
                 foreach (var path in filePathsList)
                     commitsForFiles.Add(path,
-                        await _cache.GetOrAddAsync($"{repoId}-{path}-{repoLastUpdated}-fileCommits",
-                            () => GetCommitsForFile(path), CacheConstants.DefaultSlidingCacheExpiry));
+                        (await _cache.GetOrAddAsync($"{repoId}-{path}-{repoLastUpdated}-fileCommits",
+                            () => GetCommitsForFile(repoId, path), CacheConstants.DefaultSlidingCacheExpiry)).ToList());
 
                 return commitsForFiles.ToDictionary(key => key.Key,
-                    value => value.Value.GroupBy(x => x.Author.Login)
+                    value => value.Value.GroupBy(x => x?.Author?.Login ?? "Unknown")
                         .Select(x => new {x.Key, Count = x.Count()})
                         .OrderByDescending(x => x.Count)
                         .FirstOrDefault()
@@ -141,22 +134,23 @@ namespace RepoAnalyser.Services.OctoKit
         {
             _client.Connection.Credentials = GetCredentials(token);
 
-            async Task<IEnumerable<GitHubCommit>> GetFileCommits()
-            {
-                var commits = new List<Task<GitHubCommit>>();
-
-                var result = _client.Repository.Commit.GetAll(repoId, new CommitRequest
-                {
-                    Path = filePath
-                });
-
-                foreach (var commit in await result) commits.Add(_client.Repository.Commit.Get(repoId, commit.Sha));
-
-                return await Task.WhenAll(commits);
-            }
-
-            return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-{filePath}-commits", GetFileCommits,
+            return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-{filePath}-commits",
+                () => GetCommitsForFile(repoId, filePath),
                 CacheConstants.DefaultSlidingCacheExpiry);
+        }
+
+        private async Task<IEnumerable<GitHubCommit>> GetCommitsForFile(long repoId, string filePath)
+        {
+            var commits = new List<Task<GitHubCommit>>();
+
+            var result = _client.Repository.Commit.GetAll(repoId, new CommitRequest
+            {
+                Path = filePath
+            });
+
+            foreach (var commit in await result) commits.Add(_client.Repository.Commit.Get(repoId, commit.Sha));
+
+            return await Task.WhenAll(commits);
         }
     }
 }
