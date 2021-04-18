@@ -44,6 +44,18 @@ namespace RepoAnalyser.Services.OctoKit
                 CacheConstants.DefaultSlidingCacheExpiry);
         }
 
+        public Task<GitHubCommit> GetDetailedCommit(string token, long repoId, string sha)
+        {
+            _client.Connection.Credentials = GetCredentials(token);
+
+            Task<GitHubCommit> DetailedCommit() =>
+                _client.Repository.Commit.Get(repoId, sha);
+
+            return _cache.GetOrAddAsync($"commit-{sha}-{repoId}", DetailedCommit,
+                CacheConstants.DefaultSlidingCacheExpiry);
+
+        }
+
         public Task<IEnumerable<PullRequestCommit>> GetCommitsForPullRequest(long repoId, int pullNumber, string token,
             DateTime pullLastUpdated)
         {

@@ -2588,7 +2588,10 @@ namespace NetCore31ApiTemplate.Client
         public UserPullRequestResult PullRequest { get; set; }
     
         [Newtonsoft.Json.JsonProperty("commits", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.ObjectModel.ObservableCollection<PullRequestCommit> Commits { get; set; }
+        public System.Collections.ObjectModel.ObservableCollection<GitHubCommit> Commits { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("modifiedFilePaths", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.ObjectModel.ObservableCollection<string> ModifiedFilePaths { get; set; }
     
         public string ToJson()
         {
@@ -2603,13 +2606,10 @@ namespace NetCore31ApiTemplate.Client
     }
     
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
-    public partial class PullRequestCommit 
+    public partial class GitHubCommit : GitReference
     {
-        [Newtonsoft.Json.JsonProperty("nodeId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string NodeId { get; set; }
-    
         [Newtonsoft.Json.JsonProperty("author", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public User Author { get; set; }
+        public Author Author { get; set; }
     
         [Newtonsoft.Json.JsonProperty("commentsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string CommentsUrl { get; set; }
@@ -2618,28 +2618,94 @@ namespace NetCore31ApiTemplate.Client
         public Commit Commit { get; set; }
     
         [Newtonsoft.Json.JsonProperty("committer", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public User Committer { get; set; }
+        public Author Committer { get; set; }
     
         [Newtonsoft.Json.JsonProperty("htmlUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string HtmlUrl { get; set; }
     
+        [Newtonsoft.Json.JsonProperty("stats", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public GitHubCommitStats Stats { get; set; }
+    
         [Newtonsoft.Json.JsonProperty("parents", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.ObjectModel.ObservableCollection<GitReference> Parents { get; set; }
     
-        [Newtonsoft.Json.JsonProperty("sha", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Sha { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Url { get; set; }
+        [Newtonsoft.Json.JsonProperty("files", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.ObjectModel.ObservableCollection<GitHubCommitFile> Files { get; set; }
     
         public string ToJson()
         {
             return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
         }
     
-        public static PullRequestCommit FromJson(string data)
+        public static GitHubCommit FromJson(string data)
         {
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<PullRequestCommit>(data, new Newtonsoft.Json.JsonSerializerSettings());
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<GitHubCommit>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class Author 
+    {
+        [Newtonsoft.Json.JsonProperty("login", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Login { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Id { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("nodeId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string NodeId { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("avatarUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string AvatarUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Url { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("htmlUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string HtmlUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("followersUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string FollowersUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("followingUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string FollowingUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("gistsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string GistsUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("starredUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string StarredUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("subscriptionsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string SubscriptionsUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("organizationsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string OrganizationsUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("reposUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string ReposUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("eventsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string EventsUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("receivedEventsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string ReceivedEventsUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("type", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Type { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("siteAdmin", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool SiteAdmin { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static Author FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<Author>(data, new Newtonsoft.Json.JsonSerializerSettings());
         }
     
     }
@@ -3009,6 +3075,78 @@ namespace NetCore31ApiTemplate.Client
     }
     
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class GitHubCommitStats 
+    {
+        [Newtonsoft.Json.JsonProperty("additions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Additions { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("deletions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Deletions { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("total", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Total { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static GitHubCommitStats FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<GitHubCommitStats>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class GitHubCommitFile 
+    {
+        [Newtonsoft.Json.JsonProperty("filename", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Filename { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("additions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Additions { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("deletions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Deletions { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("changes", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Changes { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("status", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Status { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("blobUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string BlobUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("contentsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string ContentsUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("rawUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string RawUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("sha", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Sha { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("patch", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Patch { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("previousFileName", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string PreviousFileName { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static GitHubCommitFile FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<GitHubCommitFile>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
     public partial class UserRepositoryResult 
     {
         [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -3108,183 +3246,6 @@ namespace NetCore31ApiTemplate.Client
         public static DetailedRepository FromJson(string data)
         {
             return Newtonsoft.Json.JsonConvert.DeserializeObject<DetailedRepository>(data, new Newtonsoft.Json.JsonSerializerSettings());
-        }
-    
-    }
-    
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
-    public partial class GitHubCommit : GitReference
-    {
-        [Newtonsoft.Json.JsonProperty("author", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public Author Author { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("commentsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string CommentsUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("commit", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public Commit Commit { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("committer", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public Author Committer { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("htmlUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string HtmlUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("stats", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public GitHubCommitStats Stats { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("parents", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.ObjectModel.ObservableCollection<GitReference> Parents { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("files", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.Collections.ObjectModel.ObservableCollection<GitHubCommitFile> Files { get; set; }
-    
-        public string ToJson()
-        {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
-        }
-    
-        public static GitHubCommit FromJson(string data)
-        {
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<GitHubCommit>(data, new Newtonsoft.Json.JsonSerializerSettings());
-        }
-    
-    }
-    
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
-    public partial class Author 
-    {
-        [Newtonsoft.Json.JsonProperty("login", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Login { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public int Id { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("nodeId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string NodeId { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("avatarUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string AvatarUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Url { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("htmlUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string HtmlUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("followersUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string FollowersUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("followingUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string FollowingUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("gistsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string GistsUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("starredUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string StarredUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("subscriptionsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string SubscriptionsUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("organizationsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string OrganizationsUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("reposUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string ReposUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("eventsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string EventsUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("receivedEventsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string ReceivedEventsUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("type", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Type { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("siteAdmin", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public bool SiteAdmin { get; set; }
-    
-        public string ToJson()
-        {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
-        }
-    
-        public static Author FromJson(string data)
-        {
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<Author>(data, new Newtonsoft.Json.JsonSerializerSettings());
-        }
-    
-    }
-    
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
-    public partial class GitHubCommitStats 
-    {
-        [Newtonsoft.Json.JsonProperty("additions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public int Additions { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("deletions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public int Deletions { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("total", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public int Total { get; set; }
-    
-        public string ToJson()
-        {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
-        }
-    
-        public static GitHubCommitStats FromJson(string data)
-        {
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<GitHubCommitStats>(data, new Newtonsoft.Json.JsonSerializerSettings());
-        }
-    
-    }
-    
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
-    public partial class GitHubCommitFile 
-    {
-        [Newtonsoft.Json.JsonProperty("filename", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Filename { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("additions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public int Additions { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("deletions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public int Deletions { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("changes", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public int Changes { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("status", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Status { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("blobUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string BlobUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("contentsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string ContentsUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("rawUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string RawUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("sha", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Sha { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("patch", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Patch { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("previousFileName", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string PreviousFileName { get; set; }
-    
-        public string ToJson()
-        {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
-        }
-    
-        public static GitHubCommitFile FromJson(string data)
-        {
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<GitHubCommitFile>(data, new Newtonsoft.Json.JsonSerializerSettings());
         }
     
     }

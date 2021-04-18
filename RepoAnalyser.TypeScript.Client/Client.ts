@@ -1563,7 +1563,8 @@ export enum PullRequestFilterOption {
 
 export class DetailedPullRequest implements IDetailedPullRequest {
     pullRequest?: UserPullRequestResult | undefined;
-    commits?: PullRequestCommit[] | undefined;
+    commits?: GitHubCommit[] | undefined;
+    modifiedFilePaths?: string[] | undefined;
 
     constructor(data?: IDetailedPullRequest) {
         if (data) {
@@ -1580,7 +1581,12 @@ export class DetailedPullRequest implements IDetailedPullRequest {
             if (Array.isArray(_data["commits"])) {
                 this.commits = [] as any;
                 for (let item of _data["commits"])
-                    this.commits!.push(PullRequestCommit.fromJS(item));
+                    this.commits!.push(GitHubCommit.fromJS(item));
+            }
+            if (Array.isArray(_data["modifiedFilePaths"])) {
+                this.modifiedFilePaths = [] as any;
+                for (let item of _data["modifiedFilePaths"])
+                    this.modifiedFilePaths!.push(item);
             }
         }
     }
@@ -1600,89 +1606,19 @@ export class DetailedPullRequest implements IDetailedPullRequest {
             for (let item of this.commits)
                 data["commits"].push(item.toJSON());
         }
+        if (Array.isArray(this.modifiedFilePaths)) {
+            data["modifiedFilePaths"] = [];
+            for (let item of this.modifiedFilePaths)
+                data["modifiedFilePaths"].push(item);
+        }
         return data; 
     }
 }
 
 export interface IDetailedPullRequest {
     pullRequest?: UserPullRequestResult | undefined;
-    commits?: PullRequestCommit[] | undefined;
-}
-
-export class PullRequestCommit implements IPullRequestCommit {
-    nodeId?: string | undefined;
-    author?: User | undefined;
-    commentsUrl?: string | undefined;
-    commit?: Commit | undefined;
-    committer?: User | undefined;
-    htmlUrl?: string | undefined;
-    parents?: GitReference[] | undefined;
-    sha?: string | undefined;
-    url?: string | undefined;
-
-    constructor(data?: IPullRequestCommit) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.nodeId = _data["nodeId"];
-            this.author = _data["author"] ? User.fromJS(_data["author"]) : <any>undefined;
-            this.commentsUrl = _data["commentsUrl"];
-            this.commit = _data["commit"] ? Commit.fromJS(_data["commit"]) : <any>undefined;
-            this.committer = _data["committer"] ? User.fromJS(_data["committer"]) : <any>undefined;
-            this.htmlUrl = _data["htmlUrl"];
-            if (Array.isArray(_data["parents"])) {
-                this.parents = [] as any;
-                for (let item of _data["parents"])
-                    this.parents!.push(GitReference.fromJS(item));
-            }
-            this.sha = _data["sha"];
-            this.url = _data["url"];
-        }
-    }
-
-    static fromJS(data: any): PullRequestCommit {
-        data = typeof data === 'object' ? data : {};
-        let result = new PullRequestCommit();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["nodeId"] = this.nodeId;
-        data["author"] = this.author ? this.author.toJSON() : <any>undefined;
-        data["commentsUrl"] = this.commentsUrl;
-        data["commit"] = this.commit ? this.commit.toJSON() : <any>undefined;
-        data["committer"] = this.committer ? this.committer.toJSON() : <any>undefined;
-        data["htmlUrl"] = this.htmlUrl;
-        if (Array.isArray(this.parents)) {
-            data["parents"] = [];
-            for (let item of this.parents)
-                data["parents"].push(item.toJSON());
-        }
-        data["sha"] = this.sha;
-        data["url"] = this.url;
-        return data; 
-    }
-}
-
-export interface IPullRequestCommit {
-    nodeId?: string | undefined;
-    author?: User | undefined;
-    commentsUrl?: string | undefined;
-    commit?: Commit | undefined;
-    committer?: User | undefined;
-    htmlUrl?: string | undefined;
-    parents?: GitReference[] | undefined;
-    sha?: string | undefined;
-    url?: string | undefined;
+    commits?: GitHubCommit[] | undefined;
+    modifiedFilePaths?: string[] | undefined;
 }
 
 export class GitReference implements IGitReference {
@@ -1743,6 +1679,183 @@ export interface IGitReference {
     sha?: string | undefined;
     user?: User | undefined;
     repository?: Repository | undefined;
+}
+
+export class GitHubCommit extends GitReference implements IGitHubCommit {
+    author?: Author | undefined;
+    commentsUrl?: string | undefined;
+    commit?: Commit | undefined;
+    committer?: Author | undefined;
+    htmlUrl?: string | undefined;
+    stats?: GitHubCommitStats | undefined;
+    parents?: GitReference[] | undefined;
+    files?: GitHubCommitFile[] | undefined;
+
+    constructor(data?: IGitHubCommit) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.author = _data["author"] ? Author.fromJS(_data["author"]) : <any>undefined;
+            this.commentsUrl = _data["commentsUrl"];
+            this.commit = _data["commit"] ? Commit.fromJS(_data["commit"]) : <any>undefined;
+            this.committer = _data["committer"] ? Author.fromJS(_data["committer"]) : <any>undefined;
+            this.htmlUrl = _data["htmlUrl"];
+            this.stats = _data["stats"] ? GitHubCommitStats.fromJS(_data["stats"]) : <any>undefined;
+            if (Array.isArray(_data["parents"])) {
+                this.parents = [] as any;
+                for (let item of _data["parents"])
+                    this.parents!.push(GitReference.fromJS(item));
+            }
+            if (Array.isArray(_data["files"])) {
+                this.files = [] as any;
+                for (let item of _data["files"])
+                    this.files!.push(GitHubCommitFile.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): GitHubCommit {
+        data = typeof data === 'object' ? data : {};
+        let result = new GitHubCommit();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["author"] = this.author ? this.author.toJSON() : <any>undefined;
+        data["commentsUrl"] = this.commentsUrl;
+        data["commit"] = this.commit ? this.commit.toJSON() : <any>undefined;
+        data["committer"] = this.committer ? this.committer.toJSON() : <any>undefined;
+        data["htmlUrl"] = this.htmlUrl;
+        data["stats"] = this.stats ? this.stats.toJSON() : <any>undefined;
+        if (Array.isArray(this.parents)) {
+            data["parents"] = [];
+            for (let item of this.parents)
+                data["parents"].push(item.toJSON());
+        }
+        if (Array.isArray(this.files)) {
+            data["files"] = [];
+            for (let item of this.files)
+                data["files"].push(item.toJSON());
+        }
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IGitHubCommit extends IGitReference {
+    author?: Author | undefined;
+    commentsUrl?: string | undefined;
+    commit?: Commit | undefined;
+    committer?: Author | undefined;
+    htmlUrl?: string | undefined;
+    stats?: GitHubCommitStats | undefined;
+    parents?: GitReference[] | undefined;
+    files?: GitHubCommitFile[] | undefined;
+}
+
+export class Author implements IAuthor {
+    login?: string | undefined;
+    id?: number;
+    nodeId?: string | undefined;
+    avatarUrl?: string | undefined;
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    followersUrl?: string | undefined;
+    followingUrl?: string | undefined;
+    gistsUrl?: string | undefined;
+    starredUrl?: string | undefined;
+    subscriptionsUrl?: string | undefined;
+    organizationsUrl?: string | undefined;
+    reposUrl?: string | undefined;
+    eventsUrl?: string | undefined;
+    receivedEventsUrl?: string | undefined;
+    type?: string | undefined;
+    siteAdmin?: boolean;
+
+    constructor(data?: IAuthor) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.login = _data["login"];
+            this.id = _data["id"];
+            this.nodeId = _data["nodeId"];
+            this.avatarUrl = _data["avatarUrl"];
+            this.url = _data["url"];
+            this.htmlUrl = _data["htmlUrl"];
+            this.followersUrl = _data["followersUrl"];
+            this.followingUrl = _data["followingUrl"];
+            this.gistsUrl = _data["gistsUrl"];
+            this.starredUrl = _data["starredUrl"];
+            this.subscriptionsUrl = _data["subscriptionsUrl"];
+            this.organizationsUrl = _data["organizationsUrl"];
+            this.reposUrl = _data["reposUrl"];
+            this.eventsUrl = _data["eventsUrl"];
+            this.receivedEventsUrl = _data["receivedEventsUrl"];
+            this.type = _data["type"];
+            this.siteAdmin = _data["siteAdmin"];
+        }
+    }
+
+    static fromJS(data: any): Author {
+        data = typeof data === 'object' ? data : {};
+        let result = new Author();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["login"] = this.login;
+        data["id"] = this.id;
+        data["nodeId"] = this.nodeId;
+        data["avatarUrl"] = this.avatarUrl;
+        data["url"] = this.url;
+        data["htmlUrl"] = this.htmlUrl;
+        data["followersUrl"] = this.followersUrl;
+        data["followingUrl"] = this.followingUrl;
+        data["gistsUrl"] = this.gistsUrl;
+        data["starredUrl"] = this.starredUrl;
+        data["subscriptionsUrl"] = this.subscriptionsUrl;
+        data["organizationsUrl"] = this.organizationsUrl;
+        data["reposUrl"] = this.reposUrl;
+        data["eventsUrl"] = this.eventsUrl;
+        data["receivedEventsUrl"] = this.receivedEventsUrl;
+        data["type"] = this.type;
+        data["siteAdmin"] = this.siteAdmin;
+        return data; 
+    }
+}
+
+export interface IAuthor {
+    login?: string | undefined;
+    id?: number;
+    nodeId?: string | undefined;
+    avatarUrl?: string | undefined;
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    followersUrl?: string | undefined;
+    followingUrl?: string | undefined;
+    gistsUrl?: string | undefined;
+    starredUrl?: string | undefined;
+    subscriptionsUrl?: string | undefined;
+    organizationsUrl?: string | undefined;
+    reposUrl?: string | undefined;
+    eventsUrl?: string | undefined;
+    receivedEventsUrl?: string | undefined;
+    type?: string | undefined;
+    siteAdmin?: boolean;
 }
 
 export class Commit extends GitReference implements ICommit {
@@ -2224,6 +2337,126 @@ export enum VerificationReason {
     Valid = 12,
 }
 
+export class GitHubCommitStats implements IGitHubCommitStats {
+    additions?: number;
+    deletions?: number;
+    total?: number;
+
+    constructor(data?: IGitHubCommitStats) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.additions = _data["additions"];
+            this.deletions = _data["deletions"];
+            this.total = _data["total"];
+        }
+    }
+
+    static fromJS(data: any): GitHubCommitStats {
+        data = typeof data === 'object' ? data : {};
+        let result = new GitHubCommitStats();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["additions"] = this.additions;
+        data["deletions"] = this.deletions;
+        data["total"] = this.total;
+        return data; 
+    }
+}
+
+export interface IGitHubCommitStats {
+    additions?: number;
+    deletions?: number;
+    total?: number;
+}
+
+export class GitHubCommitFile implements IGitHubCommitFile {
+    filename?: string | undefined;
+    additions?: number;
+    deletions?: number;
+    changes?: number;
+    status?: string | undefined;
+    blobUrl?: string | undefined;
+    contentsUrl?: string | undefined;
+    rawUrl?: string | undefined;
+    sha?: string | undefined;
+    patch?: string | undefined;
+    previousFileName?: string | undefined;
+
+    constructor(data?: IGitHubCommitFile) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.filename = _data["filename"];
+            this.additions = _data["additions"];
+            this.deletions = _data["deletions"];
+            this.changes = _data["changes"];
+            this.status = _data["status"];
+            this.blobUrl = _data["blobUrl"];
+            this.contentsUrl = _data["contentsUrl"];
+            this.rawUrl = _data["rawUrl"];
+            this.sha = _data["sha"];
+            this.patch = _data["patch"];
+            this.previousFileName = _data["previousFileName"];
+        }
+    }
+
+    static fromJS(data: any): GitHubCommitFile {
+        data = typeof data === 'object' ? data : {};
+        let result = new GitHubCommitFile();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["filename"] = this.filename;
+        data["additions"] = this.additions;
+        data["deletions"] = this.deletions;
+        data["changes"] = this.changes;
+        data["status"] = this.status;
+        data["blobUrl"] = this.blobUrl;
+        data["contentsUrl"] = this.contentsUrl;
+        data["rawUrl"] = this.rawUrl;
+        data["sha"] = this.sha;
+        data["patch"] = this.patch;
+        data["previousFileName"] = this.previousFileName;
+        return data; 
+    }
+}
+
+export interface IGitHubCommitFile {
+    filename?: string | undefined;
+    additions?: number;
+    deletions?: number;
+    changes?: number;
+    status?: string | undefined;
+    blobUrl?: string | undefined;
+    contentsUrl?: string | undefined;
+    rawUrl?: string | undefined;
+    sha?: string | undefined;
+    patch?: string | undefined;
+    previousFileName?: string | undefined;
+}
+
 export class UserRepositoryResult implements IUserRepositoryResult {
     id?: number;
     name?: string | undefined;
@@ -2416,303 +2649,6 @@ export interface IDetailedRepository {
     statistics?: RepoStatistics | undefined;
     codeOwners?: { [key: string]: string; } | undefined;
     codeOwnersLastUpdated?: Date | undefined;
-}
-
-export class GitHubCommit extends GitReference implements IGitHubCommit {
-    author?: Author | undefined;
-    commentsUrl?: string | undefined;
-    commit?: Commit | undefined;
-    committer?: Author | undefined;
-    htmlUrl?: string | undefined;
-    stats?: GitHubCommitStats | undefined;
-    parents?: GitReference[] | undefined;
-    files?: GitHubCommitFile[] | undefined;
-
-    constructor(data?: IGitHubCommit) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.author = _data["author"] ? Author.fromJS(_data["author"]) : <any>undefined;
-            this.commentsUrl = _data["commentsUrl"];
-            this.commit = _data["commit"] ? Commit.fromJS(_data["commit"]) : <any>undefined;
-            this.committer = _data["committer"] ? Author.fromJS(_data["committer"]) : <any>undefined;
-            this.htmlUrl = _data["htmlUrl"];
-            this.stats = _data["stats"] ? GitHubCommitStats.fromJS(_data["stats"]) : <any>undefined;
-            if (Array.isArray(_data["parents"])) {
-                this.parents = [] as any;
-                for (let item of _data["parents"])
-                    this.parents!.push(GitReference.fromJS(item));
-            }
-            if (Array.isArray(_data["files"])) {
-                this.files = [] as any;
-                for (let item of _data["files"])
-                    this.files!.push(GitHubCommitFile.fromJS(item));
-            }
-        }
-    }
-
-    static fromJS(data: any): GitHubCommit {
-        data = typeof data === 'object' ? data : {};
-        let result = new GitHubCommit();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["author"] = this.author ? this.author.toJSON() : <any>undefined;
-        data["commentsUrl"] = this.commentsUrl;
-        data["commit"] = this.commit ? this.commit.toJSON() : <any>undefined;
-        data["committer"] = this.committer ? this.committer.toJSON() : <any>undefined;
-        data["htmlUrl"] = this.htmlUrl;
-        data["stats"] = this.stats ? this.stats.toJSON() : <any>undefined;
-        if (Array.isArray(this.parents)) {
-            data["parents"] = [];
-            for (let item of this.parents)
-                data["parents"].push(item.toJSON());
-        }
-        if (Array.isArray(this.files)) {
-            data["files"] = [];
-            for (let item of this.files)
-                data["files"].push(item.toJSON());
-        }
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IGitHubCommit extends IGitReference {
-    author?: Author | undefined;
-    commentsUrl?: string | undefined;
-    commit?: Commit | undefined;
-    committer?: Author | undefined;
-    htmlUrl?: string | undefined;
-    stats?: GitHubCommitStats | undefined;
-    parents?: GitReference[] | undefined;
-    files?: GitHubCommitFile[] | undefined;
-}
-
-export class Author implements IAuthor {
-    login?: string | undefined;
-    id?: number;
-    nodeId?: string | undefined;
-    avatarUrl?: string | undefined;
-    url?: string | undefined;
-    htmlUrl?: string | undefined;
-    followersUrl?: string | undefined;
-    followingUrl?: string | undefined;
-    gistsUrl?: string | undefined;
-    starredUrl?: string | undefined;
-    subscriptionsUrl?: string | undefined;
-    organizationsUrl?: string | undefined;
-    reposUrl?: string | undefined;
-    eventsUrl?: string | undefined;
-    receivedEventsUrl?: string | undefined;
-    type?: string | undefined;
-    siteAdmin?: boolean;
-
-    constructor(data?: IAuthor) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.login = _data["login"];
-            this.id = _data["id"];
-            this.nodeId = _data["nodeId"];
-            this.avatarUrl = _data["avatarUrl"];
-            this.url = _data["url"];
-            this.htmlUrl = _data["htmlUrl"];
-            this.followersUrl = _data["followersUrl"];
-            this.followingUrl = _data["followingUrl"];
-            this.gistsUrl = _data["gistsUrl"];
-            this.starredUrl = _data["starredUrl"];
-            this.subscriptionsUrl = _data["subscriptionsUrl"];
-            this.organizationsUrl = _data["organizationsUrl"];
-            this.reposUrl = _data["reposUrl"];
-            this.eventsUrl = _data["eventsUrl"];
-            this.receivedEventsUrl = _data["receivedEventsUrl"];
-            this.type = _data["type"];
-            this.siteAdmin = _data["siteAdmin"];
-        }
-    }
-
-    static fromJS(data: any): Author {
-        data = typeof data === 'object' ? data : {};
-        let result = new Author();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["login"] = this.login;
-        data["id"] = this.id;
-        data["nodeId"] = this.nodeId;
-        data["avatarUrl"] = this.avatarUrl;
-        data["url"] = this.url;
-        data["htmlUrl"] = this.htmlUrl;
-        data["followersUrl"] = this.followersUrl;
-        data["followingUrl"] = this.followingUrl;
-        data["gistsUrl"] = this.gistsUrl;
-        data["starredUrl"] = this.starredUrl;
-        data["subscriptionsUrl"] = this.subscriptionsUrl;
-        data["organizationsUrl"] = this.organizationsUrl;
-        data["reposUrl"] = this.reposUrl;
-        data["eventsUrl"] = this.eventsUrl;
-        data["receivedEventsUrl"] = this.receivedEventsUrl;
-        data["type"] = this.type;
-        data["siteAdmin"] = this.siteAdmin;
-        return data; 
-    }
-}
-
-export interface IAuthor {
-    login?: string | undefined;
-    id?: number;
-    nodeId?: string | undefined;
-    avatarUrl?: string | undefined;
-    url?: string | undefined;
-    htmlUrl?: string | undefined;
-    followersUrl?: string | undefined;
-    followingUrl?: string | undefined;
-    gistsUrl?: string | undefined;
-    starredUrl?: string | undefined;
-    subscriptionsUrl?: string | undefined;
-    organizationsUrl?: string | undefined;
-    reposUrl?: string | undefined;
-    eventsUrl?: string | undefined;
-    receivedEventsUrl?: string | undefined;
-    type?: string | undefined;
-    siteAdmin?: boolean;
-}
-
-export class GitHubCommitStats implements IGitHubCommitStats {
-    additions?: number;
-    deletions?: number;
-    total?: number;
-
-    constructor(data?: IGitHubCommitStats) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.additions = _data["additions"];
-            this.deletions = _data["deletions"];
-            this.total = _data["total"];
-        }
-    }
-
-    static fromJS(data: any): GitHubCommitStats {
-        data = typeof data === 'object' ? data : {};
-        let result = new GitHubCommitStats();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["additions"] = this.additions;
-        data["deletions"] = this.deletions;
-        data["total"] = this.total;
-        return data; 
-    }
-}
-
-export interface IGitHubCommitStats {
-    additions?: number;
-    deletions?: number;
-    total?: number;
-}
-
-export class GitHubCommitFile implements IGitHubCommitFile {
-    filename?: string | undefined;
-    additions?: number;
-    deletions?: number;
-    changes?: number;
-    status?: string | undefined;
-    blobUrl?: string | undefined;
-    contentsUrl?: string | undefined;
-    rawUrl?: string | undefined;
-    sha?: string | undefined;
-    patch?: string | undefined;
-    previousFileName?: string | undefined;
-
-    constructor(data?: IGitHubCommitFile) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.filename = _data["filename"];
-            this.additions = _data["additions"];
-            this.deletions = _data["deletions"];
-            this.changes = _data["changes"];
-            this.status = _data["status"];
-            this.blobUrl = _data["blobUrl"];
-            this.contentsUrl = _data["contentsUrl"];
-            this.rawUrl = _data["rawUrl"];
-            this.sha = _data["sha"];
-            this.patch = _data["patch"];
-            this.previousFileName = _data["previousFileName"];
-        }
-    }
-
-    static fromJS(data: any): GitHubCommitFile {
-        data = typeof data === 'object' ? data : {};
-        let result = new GitHubCommitFile();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["filename"] = this.filename;
-        data["additions"] = this.additions;
-        data["deletions"] = this.deletions;
-        data["changes"] = this.changes;
-        data["status"] = this.status;
-        data["blobUrl"] = this.blobUrl;
-        data["contentsUrl"] = this.contentsUrl;
-        data["rawUrl"] = this.rawUrl;
-        data["sha"] = this.sha;
-        data["patch"] = this.patch;
-        data["previousFileName"] = this.previousFileName;
-        return data; 
-    }
-}
-
-export interface IGitHubCommitFile {
-    filename?: string | undefined;
-    additions?: number;
-    deletions?: number;
-    changes?: number;
-    status?: string | undefined;
-    blobUrl?: string | undefined;
-    contentsUrl?: string | undefined;
-    rawUrl?: string | undefined;
-    sha?: string | undefined;
-    patch?: string | undefined;
-    previousFileName?: string | undefined;
 }
 
 export class RepoStatistics implements IRepoStatistics {

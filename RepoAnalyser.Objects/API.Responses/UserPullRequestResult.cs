@@ -17,6 +17,7 @@ namespace RepoAnalyser.Objects.API.Responses
 
         public bool Closed { get; set; }
 
+
         public PullRequestState State { get; set; }
 
         public IEnumerable<string> Collaborators { get; set; }
