@@ -55,7 +55,8 @@ namespace RepoAnalyser.Logic
             foreach (var commit in commits)
                 detailedCommits.Add(await _octoKitServiceAgent.GetDetailedCommit(token, repoId, commit.Sha));
 
-            var filesModifiedInPull = (detailedCommits).SelectMany(commit => commit?.Files ?? new List<GitHubCommitFile>())
+            var filesModifiedInPull = detailedCommits
+                .SelectMany(commit => commit?.Files ?? new List<GitHubCommitFile>())
                 .Select(file => file.Filename ?? "Untracked File").Distinct();
 
             return new DetailedPullRequest
@@ -63,7 +64,7 @@ namespace RepoAnalyser.Logic
                 PullRequest = pullRequest,
                 Commits = detailedCommits,
                 ModifiedFilePaths = repoRelativePaths.Where(path => filesModifiedInPull.Any(path.Contains))
-        };
+            };
         }
     }
 }
