@@ -19,5 +19,10 @@ namespace RepoAnalyser.Logic
         {
             return _octoKitServiceAgent.GetDetailedUserActivity(token, pageOptions);
         }
+
+        public Task<UserLandingPageStatistics> GetLandingPageStatistics(string token)
+        {
+            return _octoKitServiceAgent.GetLandingPageStatistics(token);
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Octokit;
+using RepoAnalyser.Objects.API.Responses;
 
 namespace RepoAnalyser.Services.OctoKit.Interfaces
 {
@@ -10,6 +11,5 @@ namespace RepoAnalyser.Services.OctoKit.Interfaces
         Task<OauthToken> GetOAuthToken(string code, string state);
 
         Task<User> GetUserInformation(string token);
-
     }
 }

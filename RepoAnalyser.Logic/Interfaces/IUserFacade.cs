@@ -7,5 +7,6 @@ namespace RepoAnalyser.Logic.Interfaces
     public interface IUserFacade
     {
         Task<UserActivity> GetUserStatistics(string token, PaginationOptions pageOptions);
+        Task<UserLandingPageStatistics> GetLandingPageStatistics(string token);
     }
 }

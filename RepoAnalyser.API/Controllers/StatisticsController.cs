@@ -39,5 +39,16 @@ namespace RepoAnalyser.API.Controllers
                 });
             });
         }
+
+        [HttpGet("landing")]
+        [ProducesResponseType(typeof(UserLandingPageStatistics), (int) HttpStatusCode.OK)]
+        public Task<IActionResult> GetLandingPageStatistics()
+        {
+            return ExecuteAndMapToActionResultAsync(() =>
+            {
+                var token = HttpContext.Request.GetAuthorizationToken();
+                return _userFacade.GetLandingPageStatistics(token);
+            });
+        }
     }
 }

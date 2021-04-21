@@ -44,6 +44,33 @@ namespace RepoAnalyser.Services.OctoKit
                 CacheConstants.DefaultSlidingCacheExpiry);
         }
 
+        public Task<UserLandingPageStatistics> GetLandingPageStatistics(string token)
+        {
+            _client.Connection.Credentials = GetCredentials(token);
+
+            var statsForRepos = new Dictionary<string, CommitActivity>();
+
+            async Task<UserLandingPageStatistics> GetStats()
+            {
+                var user = await _client.User.Current();
+                var events = _client.Activity.Events.GetAllUserPerformed(user.Login);
+                var topThreeLastUpdatedRepos = (await _client.Repository.GetAllForCurrent())
+                    .OrderByDescending(repository => repository.UpdatedAt.DateTime).Take(3);
+                foreach (var repo in topThreeLastUpdatedRepos)
+                {
+                    statsForRepos.Add(repo.Name, await _client.Repository.Statistics.GetCommitActivity(repo.Id));
+                }
+
+                return new UserLandingPageStatistics
+                {
+                    TopRepoActivity = statsForRepos,
+                    Events = await events
+                };
+            }
+
+            return _cache.GetOrAddAsync($"{token}-landingStats", GetStats, CacheConstants.DefaultSlidingCacheExpiry);
+        }
+
         public Task<GitHubCommit> GetDetailedCommit(string token, long repoId, string sha)
         {
             _client.Connection.Credentials = GetCredentials(token);
@@ -95,7 +122,6 @@ namespace RepoAnalyser.Services.OctoKit
         public Task<UserActivity> GetDetailedUserActivity(string token, PaginationOptions pageOptions)
         {
             _client.Connection.Credentials = GetCredentials(token);
-
             async Task<UserActivity> GetUserStats()
             {
                 var userAccount = await _client.User.Current();
