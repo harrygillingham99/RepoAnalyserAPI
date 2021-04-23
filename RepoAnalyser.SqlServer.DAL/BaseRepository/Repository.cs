@@ -11,7 +11,7 @@ namespace RepoAnalyser.SqlServer.DAL.BaseRepository
     public abstract class Repository
     {
         private const string InfoMessageTemplate = "SQL Info: operation completed in {0}";
-        private const string ErrorMessageTemplate = "SQL Error: {0}.Invoke experienced a {1}";
+        private const string ErrorMessageTemplate = "SQL Error: {0} experienced a {1}";
         private readonly string _connectionString;
         private readonly Stopwatch _stopwatch;
 
@@ -32,7 +32,7 @@ namespace RepoAnalyser.SqlServer.DAL.BaseRepository
             }
             catch (Exception ex)
             {
-                LogError(GetType().FullName, ex);
+                LogError($"{GetType().FullName}.Invoke", ex);
                 throw;
             }
             finally
@@ -55,7 +55,7 @@ namespace RepoAnalyser.SqlServer.DAL.BaseRepository
             }
             catch (Exception ex)
             {
-                LogError(GetType().FullName, ex);
+                LogError($"{GetType().FullName}.InvokeMultiQuery", ex);
                 throw;
             }
             finally

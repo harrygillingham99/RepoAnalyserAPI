@@ -29,7 +29,8 @@ namespace RepoAnalyser.Logic.Analysis
                 StartInfo = new ProcessStartInfo("dotnet")
                 {
                     Arguments =
-                        $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo --verbosity minimal"
+                        $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo",
+                    CreateNoWindow = true
                 }
             };
 
@@ -39,7 +40,7 @@ namespace RepoAnalyser.Logic.Analysis
 
             if (process.ExitCode != 0)
             {
-                throw new Exception($"Build failed attempting to compile {pathToProjectFile}");
+                throw new Exception($"Build Failed attempting to compile {pathToProjectFile.Split('\\').Last()}. Received a non 0 exit code.");
             }
 
             return outputDir;

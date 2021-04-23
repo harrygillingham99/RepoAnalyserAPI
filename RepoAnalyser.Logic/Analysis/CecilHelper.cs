@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FuzzySharp;
 using Mono.Cecil;
 using RepoAnalyser.Objects;
 
@@ -8,9 +9,9 @@ namespace RepoAnalyser.Logic.Analysis
 {
     public static class CecilHelper
     {
-        public static TargetAssemblyDefinition ReadAssembly(string buildPath, string projectName)
+        public static List<TargetAssemblyDefinition> ReadAssembly(string buildPath, string projectName)
         {
-            return ReadAssemblies(new List<string> {buildPath}, projectName).FirstOrDefault();
+            return ReadAssemblies(new List<string> {buildPath}, projectName);
         }
 
         public static List<TargetAssemblyDefinition> ReadAssemblies(List<string> buildPaths, string projectName)
@@ -18,7 +19,7 @@ namespace RepoAnalyser.Logic.Analysis
             if (!buildPaths.Any()) return new List<TargetAssemblyDefinition>();
 
             var assemblyDirs = buildPaths.SelectMany(Directory.GetFiles).Where(file =>
-                file.Split('\\').Last().ToLower().Contains(projectName.ToLower()) && file.EndsWith(".dll"));
+                Fuzz.PartialRatio(file.Split('\\').Last().ToLower(), projectName.ToLower()) >= 80 && file.EndsWith(".dll"));
 
             return assemblyDirs.Select(assemblyPath =>
                 new TargetAssemblyDefinition
@@ -44,12 +45,6 @@ namespace RepoAnalyser.Logic.Analysis
                         .SelectMany(type => type.Methods)
                         .ToList());
             return methods;
-        }
-
-        public static List<MethodDefinition> ScanForMethods(this TargetAssemblyDefinition targetAssembly,
-            IEnumerable<string> methodSearchTerms)
-        {
-            return ScanForMethods(new List<TargetAssemblyDefinition> {targetAssembly}, methodSearchTerms);
         }
     }
 }

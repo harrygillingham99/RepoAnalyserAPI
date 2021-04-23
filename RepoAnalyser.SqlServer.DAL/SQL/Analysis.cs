@@ -17,14 +17,14 @@
 				            ,@RepoName)";
 
         public static string GetRepoAnalysisRunInfo = @"
-		SELECT ra.[RepositoryId]
-			,ra.[GitHubRepositoryId]
-			,ra.[RepositoryName]
+		SELECT
+			 ra.[GitHubRepositoryId] AS RepoId
+			,ra.[RepositoryName] AS RepoName
 			,co.LastUpdated AS CodeOwnersLastRunDate
 			,cc.LastUpdated AS CyclomaticComplexitiesLastUpdated
 		FROM [RepoAnalyser].[dbo].[RepositoryAnalysis] AS ra
-		JOIN CodeOwners AS co ON co.GitHubRepositoryId = ra.GitHubRepositoryId
-		JOIN CyclomaticComplexity AS cc ON cc.GitHubRepositoryId = ra.GitHubRepositoryId
+		LEFT JOIN CodeOwners AS co ON co.GitHubRepositoryId = ra.GitHubRepositoryId
+		LEFT JOIN CyclomaticComplexity AS cc ON cc.GitHubRepositoryId = ra.GitHubRepositoryId
 		WHERE ra.GitHubRepositoryId = @RepoId
 
 		SELECT [AnalysisResult]
