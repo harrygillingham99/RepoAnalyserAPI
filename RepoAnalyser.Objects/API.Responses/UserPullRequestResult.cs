@@ -13,6 +13,7 @@ namespace RepoAnalyser.Objects.API.Responses
         public DateTimeOffset? UpdatedAt { get; set; }
         public int Additions { get; set; }
         public int Deletions { get; set; }
+        public string HeadBranchName { get; set; }
         public int ChangedFiles { get; set; }
 
         public bool Closed { get; set; }

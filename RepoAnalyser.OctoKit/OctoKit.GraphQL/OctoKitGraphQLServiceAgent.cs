@@ -68,6 +68,7 @@ namespace RepoAnalyser.Services.OctoKit.GraphQL
                     Deletions = pull.Deletions,
                     ChangedFiles = pull.ChangedFiles,
                     Description = pull.BodyText,
+                    HeadBranchName = pull.HeadRefName,
                     DescriptionMarkdown = pull.Body,
                     State = pull.State,
                     Collaborators = pull.Participants(100, null, null, null).Nodes

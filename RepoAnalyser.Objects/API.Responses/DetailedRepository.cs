@@ -11,5 +11,8 @@ namespace RepoAnalyser.Objects.API.Responses
         public RepoStatistics Statistics { get; set; }
         public IDictionary<string, string> CodeOwners { get; set; }
         public DateTime? CodeOwnersLastUpdated { get; set; }
+
+        public bool IsDotNetProject { get; set; }
+        public IDictionary<string, int> CyclomaticComplexities { get; set; }
     }
 }

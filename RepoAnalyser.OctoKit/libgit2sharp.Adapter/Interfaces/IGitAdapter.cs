@@ -11,9 +11,11 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces
 
         RepoDirectoryResult GetAllDirectoriesForRepo(GitActionRequest request);
 
-        RepoDirectoryResult.RepoDirectory GetRepoDirectory(string repoName, string branchName = null);
+        RepoDirectoryResult.RepoDirectory GetRepoDirectory(GitActionRequest request);
 
-        bool IsDotNetProject(string repoName);
+        bool IsDotNetProject(GitActionRequest request);
+
+        string GetSlnName(string repoName, string branchName = null);
 
     }
 }

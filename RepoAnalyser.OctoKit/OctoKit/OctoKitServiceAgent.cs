@@ -49,22 +49,54 @@ namespace RepoAnalyser.Services.OctoKit
             _client.Connection.Credentials = GetCredentials(token);
 
             var statsForRepos = new Dictionary<string, CommitActivity>();
+            var languages = new List<(string language, long bytes)>();
 
             async Task<UserLandingPageStatistics> GetStats()
             {
-                var user = await _client.User.Current();
-                var events = _client.Activity.Events.GetAllUserPerformed(user.Login);
-                var topThreeLastUpdatedRepos = (await _client.Repository.GetAllForCurrent())
-                    .OrderByDescending(repository => repository.UpdatedAt.DateTime).Take(3);
-                foreach (var repo in topThreeLastUpdatedRepos)
+                var repos = await _client.Repository.GetAllForCurrent();
+
+                var iterator = 0;
+
+                foreach (var repo in repos.OrderByDescending(repository => repository.UpdatedAt.DateTime))
                 {
-                    statsForRepos.Add(repo.Name, await _client.Repository.Statistics.GetCommitActivity(repo.Id));
+                    if (iterator <= 2)
+                        statsForRepos.Add(repo.Name, await _client.Repository.Statistics.GetCommitActivity(repo.Id));
+
+                    var repoLanguages = _client.Repository.GetAllLanguages(repo.Id);
+
+                    foreach (var lang in await repoLanguages)
+                    {
+                        var existingIndex = languages.FindIndex(langStat => langStat.language == lang.Name);
+
+                        if (existingIndex >= 0)
+                        {
+                            var itemToUpdate = languages[existingIndex];
+                            itemToUpdate.bytes += lang.NumberOfBytes;
+                            languages[existingIndex] = itemToUpdate;
+                        }
+                        else
+                        {
+                            languages.Add((lang.Name, lang.NumberOfBytes));
+                        }
+                    }
+
+                    iterator++;
+                }
+
+                var totalBytes = languages.Sum(x => x.bytes);
+
+                long GetPercentageLanguageUsage(long langBytes)
+                {
+                    var result = (long) Math.Round((double) (100 * langBytes) / totalBytes);
+                    if (result == 0) result = 1;
+                    return result;
                 }
 
                 return new UserLandingPageStatistics
                 {
                     TopRepoActivity = statsForRepos,
-                    Events = await events
+                    Languages = languages.ToDictionary(key => key.language,
+                        val => GetPercentageLanguageUsage(val.bytes))
                 };
             }
 

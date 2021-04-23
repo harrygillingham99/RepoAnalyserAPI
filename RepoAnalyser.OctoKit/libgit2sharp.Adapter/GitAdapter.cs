@@ -41,10 +41,17 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
             });
         }
 
-        public bool IsDotNetProject(string repoName)
+        public bool IsDotNetProject(GitActionRequest request)
+        {
+            return CloneOrPullLatestRepositoryThenInvoke(request, repoDirectory => Directory.GetFiles(GetRepoBranchDirectory(request.RepoName, request.BranchName), "*.sln",
+                SearchOption.AllDirectories).Any());
+
+        }
+
+        public string GetSlnName(string repoName, string branchName = null)
         {
             return Directory.GetFiles(GetRepoBranchDirectory(repoName), "*.sln",
-                SearchOption.AllDirectories).Any();
+                SearchOption.AllDirectories).OrderByDescending(File.GetLastWriteTime).First().Replace(".sln", string.Empty).Split('\\').Last();
         }
 
         public RepoDirectoryResult GetAllDirectoriesForRepo(GitActionRequest request)
@@ -79,14 +86,14 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
             });
         }
 
-        public RepoDirectoryResult.RepoDirectory GetRepoDirectory(string repoName, string branchName = null)
+        public RepoDirectoryResult.RepoDirectory GetRepoDirectory(GitActionRequest request)
         {
-            var directory = GetRepoBranchDirectory(repoName, branchName);
-            return new RepoDirectoryResult.RepoDirectory
+            return CloneOrPullLatestRepositoryThenInvoke(request, repoDirectory => new RepoDirectoryResult.RepoDirectory
             {
-                Directory = directory,
-                DotNetBuildDirectory = GetRepoBuildPath(repoName, branchName)
-            };
+                Directory = repoDirectory,
+                DotNetBuildDirectory = GetRepoBuildPath(request.RepoName, request.BranchName)
+            });
+
         }
 
         private T CloneOrPullLatestRepositoryThenInvoke<T>(GitActionRequest request, Func<string, T> gitActionRequest)

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using Octokit;
 
 namespace RepoAnalyser.Objects.API.Responses
@@ -9,6 +7,7 @@ namespace RepoAnalyser.Objects.API.Responses
     {
         public IEnumerable<Activity> Events { get; set; }
         public IDictionary<string, CommitActivity> TopRepoActivity { get; set; }
+        public IDictionary<string, long> Languages { get; set; }
 
     }
 }

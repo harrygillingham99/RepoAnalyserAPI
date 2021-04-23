@@ -565,6 +565,86 @@ export class Client extends AuthorizedApiBase {
      * @param connectionId SignalR Client Connection ID
      * @param metadata (optional) Client Metadata JSON
      */
+    repository_GetCyclomaticComplexities(connectionId: string, metadata: any | undefined, request: CyclomaticComplexityRequest): Promise<{ [key: string]: number; }> {
+        let url_ = this.baseUrl + "/repositories/complexities";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(request);
+
+        let options_ = <RequestInit>{
+            body: content_,
+            method: "POST",
+            headers: {
+                "ConnectionId": connectionId !== undefined && connectionId !== null ? "" + connectionId : "",
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.processRepository_GetCyclomaticComplexities(_response);
+        });
+    }
+
+    protected processRepository_GetCyclomaticComplexities(response: Response): Promise<{ [key: string]: number; }> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = NotFoundResponse.fromJS(resultData404);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result404);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = UnauthorizedResponse.fromJS(resultData401);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result401);
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationResponse.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result500);
+            });
+        } else if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200) {
+                result200 = {} as any;
+                for (let key in resultData200) {
+                    if (resultData200.hasOwnProperty(key))
+                        result200![key] = resultData200[key];
+                }
+            }
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<{ [key: string]: number; }>(<any>null);
+    }
+
+    /**
+     * @param connectionId SignalR Client Connection ID
+     * @param metadata (optional) Client Metadata JSON
+     */
     repository_GetCodeOwnersForRepo(repoId: number, connectionId: string, metadata: any | undefined): Promise<{ [key: string]: string; }> {
         let url_ = this.baseUrl + "/repositories/code-owners/{repoId}";
         if (repoId === undefined || repoId === null)
@@ -1528,6 +1608,7 @@ export class UserPullRequestResult implements IUserPullRequestResult {
     updatedAt?: Date | undefined;
     additions?: number;
     deletions?: number;
+    headBranchName?: string | undefined;
     changedFiles?: number;
     closed?: boolean;
     state?: PullRequestState;
@@ -1554,6 +1635,7 @@ export class UserPullRequestResult implements IUserPullRequestResult {
             this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
             this.additions = _data["additions"];
             this.deletions = _data["deletions"];
+            this.headBranchName = _data["headBranchName"];
             this.changedFiles = _data["changedFiles"];
             this.closed = _data["closed"];
             this.state = _data["state"];
@@ -1584,6 +1666,7 @@ export class UserPullRequestResult implements IUserPullRequestResult {
         data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
         data["additions"] = this.additions;
         data["deletions"] = this.deletions;
+        data["headBranchName"] = this.headBranchName;
         data["changedFiles"] = this.changedFiles;
         data["closed"] = this.closed;
         data["state"] = this.state;
@@ -1607,6 +1690,7 @@ export interface IUserPullRequestResult {
     updatedAt?: Date | undefined;
     additions?: number;
     deletions?: number;
+    headBranchName?: string | undefined;
     changedFiles?: number;
     closed?: boolean;
     state?: PullRequestState;
@@ -2653,6 +2737,8 @@ export class DetailedRepository implements IDetailedRepository {
     statistics?: RepoStatistics | undefined;
     codeOwners?: { [key: string]: string; } | undefined;
     codeOwnersLastUpdated?: Date | undefined;
+    isDotNetProject?: boolean;
+    cyclomaticComplexities?: { [key: string]: number; } | undefined;
 
     constructor(data?: IDetailedRepository) {
         if (data) {
@@ -2680,6 +2766,14 @@ export class DetailedRepository implements IDetailedRepository {
                 }
             }
             this.codeOwnersLastUpdated = _data["codeOwnersLastUpdated"] ? new Date(_data["codeOwnersLastUpdated"].toString()) : <any>undefined;
+            this.isDotNetProject = _data["isDotNetProject"];
+            if (_data["cyclomaticComplexities"]) {
+                this.cyclomaticComplexities = {} as any;
+                for (let key in _data["cyclomaticComplexities"]) {
+                    if (_data["cyclomaticComplexities"].hasOwnProperty(key))
+                        this.cyclomaticComplexities![key] = _data["cyclomaticComplexities"][key];
+                }
+            }
         }
     }
 
@@ -2707,6 +2801,14 @@ export class DetailedRepository implements IDetailedRepository {
             }
         }
         data["codeOwnersLastUpdated"] = this.codeOwnersLastUpdated ? this.codeOwnersLastUpdated.toISOString() : <any>undefined;
+        data["isDotNetProject"] = this.isDotNetProject;
+        if (this.cyclomaticComplexities) {
+            data["cyclomaticComplexities"] = {};
+            for (let key in this.cyclomaticComplexities) {
+                if (this.cyclomaticComplexities.hasOwnProperty(key))
+                    data["cyclomaticComplexities"][key] = this.cyclomaticComplexities[key];
+            }
+        }
         return data; 
     }
 }
@@ -2717,6 +2819,8 @@ export interface IDetailedRepository {
     statistics?: RepoStatistics | undefined;
     codeOwners?: { [key: string]: string; } | undefined;
     codeOwnersLastUpdated?: Date | undefined;
+    isDotNetProject?: boolean;
+    cyclomaticComplexities?: { [key: string]: number; } | undefined;
 }
 
 export class RepoStatistics implements IRepoStatistics {
@@ -3149,6 +3253,58 @@ export enum DayOfWeek {
     Saturday = 6,
 }
 
+export class CyclomaticComplexityRequest implements ICyclomaticComplexityRequest {
+    filesToSearch?: string[] | undefined;
+    repoId?: number;
+    pullRequestNumber?: number | undefined;
+
+    constructor(data?: ICyclomaticComplexityRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["filesToSearch"])) {
+                this.filesToSearch = [] as any;
+                for (let item of _data["filesToSearch"])
+                    this.filesToSearch!.push(item);
+            }
+            this.repoId = _data["repoId"];
+            this.pullRequestNumber = _data["pullRequestNumber"];
+        }
+    }
+
+    static fromJS(data: any): CyclomaticComplexityRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new CyclomaticComplexityRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.filesToSearch)) {
+            data["filesToSearch"] = [];
+            for (let item of this.filesToSearch)
+                data["filesToSearch"].push(item);
+        }
+        data["repoId"] = this.repoId;
+        data["pullRequestNumber"] = this.pullRequestNumber;
+        return data; 
+    }
+}
+
+export interface ICyclomaticComplexityRequest {
+    filesToSearch?: string[] | undefined;
+    repoId?: number;
+    pullRequestNumber?: number | undefined;
+}
+
 export class UserActivity implements IUserActivity {
     notifications?: Notification[] | undefined;
     events?: Activity[] | undefined;
@@ -3541,6 +3697,7 @@ export interface IInstallationId {
 export class UserLandingPageStatistics implements IUserLandingPageStatistics {
     events?: Activity[] | undefined;
     topRepoActivity?: { [key: string]: CommitActivity; } | undefined;
+    languages?: { [key: string]: number; } | undefined;
 
     constructor(data?: IUserLandingPageStatistics) {
         if (data) {
@@ -3563,6 +3720,13 @@ export class UserLandingPageStatistics implements IUserLandingPageStatistics {
                 for (let key in _data["topRepoActivity"]) {
                     if (_data["topRepoActivity"].hasOwnProperty(key))
                         this.topRepoActivity![key] = _data["topRepoActivity"][key] ? CommitActivity.fromJS(_data["topRepoActivity"][key]) : new CommitActivity();
+                }
+            }
+            if (_data["languages"]) {
+                this.languages = {} as any;
+                for (let key in _data["languages"]) {
+                    if (_data["languages"].hasOwnProperty(key))
+                        this.languages![key] = _data["languages"][key];
                 }
             }
         }
@@ -3589,6 +3753,13 @@ export class UserLandingPageStatistics implements IUserLandingPageStatistics {
                     data["topRepoActivity"][key] = this.topRepoActivity[key] ? this.topRepoActivity[key].toJSON() : <any>undefined;
             }
         }
+        if (this.languages) {
+            data["languages"] = {};
+            for (let key in this.languages) {
+                if (this.languages.hasOwnProperty(key))
+                    data["languages"][key] = this.languages[key];
+            }
+        }
         return data; 
     }
 }
@@ -3596,6 +3767,7 @@ export class UserLandingPageStatistics implements IUserLandingPageStatistics {
 export interface IUserLandingPageStatistics {
     events?: Activity[] | undefined;
     topRepoActivity?: { [key: string]: CommitActivity; } | undefined;
+    languages?: { [key: string]: number; } | undefined;
 }
 
 export class ClientMetadata implements IClientMetadata {

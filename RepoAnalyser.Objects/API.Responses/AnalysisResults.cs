@@ -7,5 +7,6 @@ namespace RepoAnalyser.Objects.API.Responses
         public long RepoId { get; set; }
         public string RepoName { get; set; }
         public DateTime? CodeOwnersLastRunDate { get; set; }
+        public DateTime? CyclomaticComplexitiesLastUpdated { get; set; }
     }
 }

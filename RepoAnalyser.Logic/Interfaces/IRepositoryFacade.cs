@@ -12,5 +12,6 @@ namespace RepoAnalyser.Logic.Interfaces
         Task<IEnumerable<UserRepositoryResult>> GetRepositories(string token, RepoFilterOptions filterOption);
         Task<IDictionary<string, string>> GetRepositoryCodeOwners(long repoId, string connectionId, string token);
         Task<IEnumerable<GitHubCommit>> GetFileInformation(long repoId, string token, string fileName);
+        Task<IDictionary<string, int>> GetCyclomaticComplexities(string connectionId, string token, CyclomaticComplexityRequest request);
     }
 }

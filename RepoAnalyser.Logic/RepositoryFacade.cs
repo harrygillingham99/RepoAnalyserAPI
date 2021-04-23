@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Octokit;
+using RepoAnalyser.Logic.Analysis;
+using RepoAnalyser.Logic.Analysis.Interfaces;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Requests;
@@ -27,10 +30,11 @@ namespace RepoAnalyser.Logic
         private readonly IHubContext<AppHub, IAppHub> _hub;
         private readonly IBackgroundTaskQueue _backgroundTaskQueue;
         private readonly IAnalysisRepository _analysisRepository;
+        private readonly IMsBuildRunner _buildRunner;
 
         public RepositoryFacade(IOctoKitGraphQlServiceAgent octoKitGraphQlServiceAgent,
             IOctoKitServiceAgent octoKitServiceAgent, IGitAdapter gitAdapter, IOctoKitAuthServiceAgent octoKitAuthServiceAgent, 
-            IHubContext<AppHub, IAppHub> hub, IBackgroundTaskQueue backgroundTaskQueue, IAnalysisRepository analysisRepository)
+            IHubContext<AppHub, IAppHub> hub, IBackgroundTaskQueue backgroundTaskQueue, IAnalysisRepository analysisRepository, IMsBuildRunner buildRunner)
         {
             _octoKitGraphQlServiceAgent = octoKitGraphQlServiceAgent;
             _octoKitServiceAgent = octoKitServiceAgent;
@@ -39,14 +43,16 @@ namespace RepoAnalyser.Logic
             _hub = hub;
             _backgroundTaskQueue = backgroundTaskQueue;
             _analysisRepository = analysisRepository;
+            _buildRunner = buildRunner;
         }
 
         public async Task<DetailedRepository> GetDetailedRepository(long repoId, string token)
         {
             var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
+            var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
             var commits = _octoKitServiceAgent.GetCommitsForRepo(repoId,repository.LastUpdated, token);
             var repoStats = _octoKitServiceAgent.GetStatisticsForRepository(repoId,repository.LastUpdated ,token);
-            var (results, codeOwners) = await _analysisRepository.GetAnalysisResult(repoId);
+            var (results, codeOwners, cyclomaticComplexity) = await _analysisRepository.GetAnalysisResult(repoId);
 
             return new DetailedRepository
             {
@@ -54,7 +60,16 @@ namespace RepoAnalyser.Logic
                 Commits = await commits,
                 Statistics = await repoStats,
                 CodeOwners = codeOwners,
-                CodeOwnersLastUpdated = results?.CodeOwnersLastRunDate
+                CodeOwnersLastUpdated = results?.CodeOwnersLastRunDate,
+                IsDotNetProject = _gitAdapter.IsDotNetProject(new GitActionRequest
+                {
+                    Email = user.Email ?? "test@RepoAnalyser.com",
+                    RepoName = repository.Name,
+                    RepoUrl = repository.PullUrl, 
+                    Token = token, 
+                    Username = user.Login
+                }),
+                CyclomaticComplexities = cyclomaticComplexity
             };
         }
 
@@ -87,9 +102,7 @@ namespace RepoAnalyser.Logic
                 _hub.DirectNotify(connectionId, "Started building code-owner dictionary",
                     RepoAnalysisProgressUpdate));
 
-            /* example of invoking a build for a .NET project
-             var repoDir = _gitAdapter.GetRepoDirectory(repository.Name);
-            _buildRunner.Build(repoDir.Directory, repoDir.DotNetBuildDirectory);*/
+           
 
             var result = await _octoKitServiceAgent.GetFileCodeOwners(token, filesInRepo, repository.Id, repository.LastUpdated);
             
@@ -120,6 +133,54 @@ namespace RepoAnalyser.Logic
             });
 
             return await _octoKitServiceAgent.GetFileCommits(repoId, token, repoFiles.FirstOrDefault(file => file.Contains(filePath)), (repository).LastUpdated);
+        }
+
+        public async Task<IDictionary<string, int>> GetCyclomaticComplexities(string connectionId, string token, CyclomaticComplexityRequest request)
+        {
+            var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, request.RepoId);
+            var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
+            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _hub.DirectNotify(connectionId,
+                $"Started calculating cyclomatic complexities for methods in {repository.Name}",
+                RepoAnalysisProgressUpdate));
+
+            string pullRequestBranch = null;
+
+            if (request.PullRequestNumber.HasValue)
+            {
+                pullRequestBranch =
+                    (await _octoKitGraphQlServiceAgent.GetPullRequest(token, request.RepoId,
+                        request.PullRequestNumber.Value)).HeadBranchName;
+            }
+
+            var repoDir = _gitAdapter.GetRepoDirectory(new GitActionRequest
+            {
+                BranchName = pullRequestBranch,
+                Email = user.Email ?? "test@RepoAnalyser.com",
+                RepoName = repository.Name, RepoUrl = repository.PullUrl, Token = token, Username = user.Login
+
+            });
+
+            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _hub.DirectNotify(connectionId,
+                "Building solution and analyzing assemblies",
+                RepoAnalysisProgressUpdate));
+
+
+            var result = CecilHelper.ReadAssembly(_buildRunner.Build(repoDir.Directory, repoDir.DotNetBuildDirectory), _gitAdapter.GetSlnName(repository.Name, pullRequestBranch))
+                .ScanForMethods(request.FilesToSearch)
+                .GetCyclomaticComplexities();
+
+            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _hub.DirectNotify(connectionId,
+                $"Finished calculating cyclomatic complexities for methods in {repository.Name}",
+                RepoAnalysisDone));
+
+            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _analysisRepository.UpsertAnalysisResults(new AnalysisResults
+            {
+                RepoId = repository.Id,
+                RepoName = repository.Name,
+                CyclomaticComplexitiesLastUpdated = DateTime.Now
+            }, null, result));
+
+            return result;
         }
     }
 }

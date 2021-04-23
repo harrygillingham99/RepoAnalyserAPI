@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Net;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -47,6 +46,19 @@ namespace RepoAnalyser.API.Controllers
             {
                 var token = HttpContext.Request.GetAuthorizationToken();
                 return _repositoryFacade.GetDetailedRepository(repoId, token);
+            });
+        }
+
+        [RequireConnectionId]
+        [HttpPost("complexities")]
+        [ProducesResponseType(typeof(IDictionary<string, int>), (int) HttpStatusCode.OK)]
+        public Task<IActionResult> GetCyclomaticComplexities([FromBody] CyclomaticComplexityRequest request)
+        {
+            return ExecuteAndMapToActionResultAsync(() =>
+            {
+                var (connectionId, token) = (HttpContext.Request.GetConnectionId(),
+                    HttpContext.Request.GetAuthorizationToken());
+                return _repositoryFacade.GetCyclomaticComplexities(connectionId, token, request);
             });
         }
 
