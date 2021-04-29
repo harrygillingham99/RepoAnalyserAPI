@@ -45,7 +45,7 @@ namespace RepoAnalyser.Logic.Analysis
                         $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo",
                     CreateNoWindow = true,
                     RedirectStandardError = true,
-                    UseShellExecute = false,
+                    UseShellExecute = true,
                     Verb = "runas"
                 }
             };
