@@ -3,14 +3,23 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Gendarme.Framework.Helpers;
+using Microsoft.Extensions.Options;
 using RepoAnalyser.Logic.Analysis.Interfaces;
-using Log = Serilog.Log;
+using RepoAnalyser.Objects;
+using Serilog;
 
 namespace RepoAnalyser.Logic.Analysis
 {
     public class MsBuildRunner : IMsBuildRunner
     {
+        private readonly (string User, string Password) _serverCredentials;
+
+        public MsBuildRunner(IOptions<AppSettings> options)
+        {
+            _serverCredentials.User = options.Value.ServerUser;
+            _serverCredentials.Password = options.Value.ServerPassword;
+        }
+
         public string Build(string repoDirectory, string outputDir)
         {
             var slnFilesLastWritten = new Dictionary<string, DateTime>();
@@ -33,9 +42,12 @@ namespace RepoAnalyser.Logic.Analysis
                     Arguments =
                         $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo",
                     CreateNoWindow = true,
-                    RedirectStandardError = true
+                    RedirectStandardError = true,
+#if !DEBUG                    
+                    UserName = _serverCredentials.User,
+                    PasswordInClearText = _serverCredentials.Password
+#endif
                 }
-
             };
 
             process.Start();
@@ -44,8 +56,10 @@ namespace RepoAnalyser.Logic.Analysis
 
             if (process.ExitCode != 0)
             {
-                Log.Error($"dotnet build error: {process.StandardError.ReadToEnd()}, build dir: {pathToProjectFile}, output dir: {outputDir}");
-                throw new Exception($"Build Failed attempting to compile {pathToProjectFile.Split('\\').Last()}. Received a non 0 exit code.");
+                Log.Error(
+                    $"dotnet build error: {process.StandardError.ReadToEnd()}, build dir: {pathToProjectFile}, output dir: {outputDir}");
+                throw new Exception(
+                    $"Build Failed attempting to compile {pathToProjectFile.Split('\\').Last()}. Received a non 0 exit code.");
             }
 
             process.Kill();
