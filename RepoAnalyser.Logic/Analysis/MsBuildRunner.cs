@@ -42,12 +42,12 @@ namespace RepoAnalyser.Logic.Analysis
                 StartInfo = new ProcessStartInfo
                 {
                     FileName = "dotnet.exe",
-                    WorkingDirectory = "C:\\Program Files\\dotnet",
                     Arguments =
                         $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo",
                     UseShellExecute = false,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
+                    Domain = null,
                     ErrorDialog = false,
 #if !DEBUG
                     UserName = _serverCredentials.User,
