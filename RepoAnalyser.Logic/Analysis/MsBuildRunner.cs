@@ -40,8 +40,10 @@ namespace RepoAnalyser.Logic.Analysis
 
             if (process.ExitCode != 0)
             {
-                throw new Exception($"Build Failed attempting to compile {pathToProjectFile.Split('\\').Last()}. Received a non 0 exit code.");
+                throw new Exception($"Build Failed attempting to compile {pathToProjectFile.Split('\\').Last()}. Received a non 0 exit code. Exit Code: {process.ExitCode} Error:{process.StandardError.ReadToEnd()} ");
             }
+
+            process.Kill();
 
             return outputDir;
         }
