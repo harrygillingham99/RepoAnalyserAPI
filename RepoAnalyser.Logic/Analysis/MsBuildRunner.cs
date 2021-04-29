@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Gendarme.Framework.Helpers;
 using RepoAnalyser.Logic.Analysis.Interfaces;
+using Log = Serilog.Log;
 
 namespace RepoAnalyser.Logic.Analysis
 {
@@ -42,7 +44,8 @@ namespace RepoAnalyser.Logic.Analysis
 
             if (process.ExitCode != 0)
             {
-                throw new Exception($"Build Failed attempting to compile {pathToProjectFile.Split('\\').Last()}. Received a non 0 exit code. Exit Code: {process.ExitCode} Error:{process.StandardError.ReadToEnd()} ");
+                Log.Error($"dotnet build error: {process.StandardError.ReadToEnd()}, build dir: {pathToProjectFile}, output dir: {outputDir}");
+                throw new Exception($"Build Failed attempting to compile {pathToProjectFile.Split('\\').Last()}. Received a non 0 exit code.");
             }
 
             process.Kill();
