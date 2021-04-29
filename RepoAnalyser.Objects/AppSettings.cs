@@ -6,8 +6,6 @@
         public bool RequestLogging { get; set; }
 
         public string WorkingDirectory { get; set; }
-        public string ServerUser { get; set; }
-        public string ServerPassword { get; set; }
     }
     
 }

@@ -14,14 +14,6 @@ namespace RepoAnalyser.Logic.Analysis
 {
     public class MsBuildRunner : IMsBuildRunner
     {
-        private readonly (string User, string Password) _serverCredentials;
-
-        public MsBuildRunner(IOptions<AppSettings> options)
-        {
-            _serverCredentials.User = options.Value.ServerUser;
-            _serverCredentials.Password = options.Value.ServerPassword;
-        }
-
         public string Build(string repoDirectory, string outputDir)
         {
             var slnFilesLastWritten = new Dictionary<string, DateTime>();
