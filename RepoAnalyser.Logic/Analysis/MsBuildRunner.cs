@@ -45,12 +45,9 @@ namespace RepoAnalyser.Logic.Analysis
                     WorkingDirectory = "C:\\Program Files\\dotnet",
                     Arguments =
                         $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo",
-                    RedirectStandardError = true,
+                    UseShellExecute = true,
                     CreateNoWindow = true,
-#if !DEBUG                    
-                    UserName = _serverCredentials.User,
-                    PasswordInClearText = _serverCredentials.Password
-#endif
+                    ErrorDialog = false,
                 }
             };
 
