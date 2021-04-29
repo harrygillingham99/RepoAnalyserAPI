@@ -49,7 +49,7 @@ namespace RepoAnalyser.Logic.Analysis
                     CreateNoWindow = true,
 #if !DEBUG                    
                     UserName = _serverCredentials.User,
-                    Password = GetSecurePassword(_serverCredentials.Password)
+                    PasswordInClearText = _serverCredentials.Password
 #endif
                 }
             };
@@ -69,17 +69,6 @@ namespace RepoAnalyser.Logic.Analysis
             process.Kill();
 
             return outputDir;
-        }
-
-        private SecureString GetSecurePassword(string passString)
-        {
-            var password = new SecureString();
-            foreach (var character in passString.ToCharArray())
-            {
-                password.AppendChar(character);
-            }
-
-            return password;
         }
     }
 }
