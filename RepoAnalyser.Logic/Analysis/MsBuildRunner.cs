@@ -47,7 +47,6 @@ namespace RepoAnalyser.Logic.Analysis
                     UseShellExecute = false,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
-                    Domain = "WORKGROUP",
                     ErrorDialog = false
 
                 }
