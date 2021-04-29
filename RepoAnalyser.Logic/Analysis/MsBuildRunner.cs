@@ -39,11 +39,14 @@ namespace RepoAnalyser.Logic.Analysis
 
             var process = new Process
             {
-                StartInfo = new ProcessStartInfo("dotnet.exe")
+                StartInfo = new ProcessStartInfo
                 {
+                    FileName = "dotnet.exe",
+                    WorkingDirectory = "C:\\Program Files\\dotnet",
                     Arguments =
                         $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo",
                     RedirectStandardError = true,
+                    CreateNoWindow = true,
 #if !DEBUG                    
                     UserName = _serverCredentials.User,
                     Password = GetSecurePassword(_serverCredentials.Password)
