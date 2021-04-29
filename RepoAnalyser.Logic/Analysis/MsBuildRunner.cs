@@ -30,8 +30,10 @@ namespace RepoAnalyser.Logic.Analysis
                 {
                     Arguments =
                         $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo",
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    RedirectStandardError = true
                 }
+
             };
 
             process.Start();
