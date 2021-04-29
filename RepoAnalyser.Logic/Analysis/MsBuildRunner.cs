@@ -3,11 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security;
-using Microsoft.Extensions.Options;
 using RepoAnalyser.Logic.Analysis.Interfaces;
-using System.Runtime;
-using RepoAnalyser.Objects;
 using Serilog;
 
 namespace RepoAnalyser.Logic.Analysis
@@ -39,7 +35,6 @@ namespace RepoAnalyser.Logic.Analysis
                     UseShellExecute = false,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
-                    ErrorDialog = false
 
                 }
             };
@@ -50,8 +45,10 @@ namespace RepoAnalyser.Logic.Analysis
 
             if (process.ExitCode == 0) return outputDir;
 
+            var processError = process.StandardError.ReadToEnd();
+
             Log.Error(
-                $"dotnet build error: {process.StandardError.ReadToEnd()}, build dir: {pathToProjectFile}, output dir: {outputDir}");
+                $"dotnet build error: {processError}, build dir: {pathToProjectFile}, output dir: {outputDir}");
             throw new Exception(
                 $"Build Failed attempting to compile {pathToProjectFile.Split('\\').Last()}. Received a non 0 exit code.");
 

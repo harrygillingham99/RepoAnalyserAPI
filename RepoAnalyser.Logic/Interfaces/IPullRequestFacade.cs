@@ -9,5 +9,7 @@ namespace RepoAnalyser.Logic.Interfaces
     {
         Task<IEnumerable<UserPullRequestResult>> GetPullRequests(string token, PullRequestFilterOption filterOption);
         Task<DetailedPullRequest> GetDetailedPullRequest(string token, long repoId, int pullNumber);
+        Task<PullFileInfo> GetPullFileInformation (long repoId, int pullNumber, string fileName, string token);
+        Task<IDictionary<string, int>> GetPullCyclomaticComplexity (long repoId, int pullNumber, string token, string connectionId);
     }
 }

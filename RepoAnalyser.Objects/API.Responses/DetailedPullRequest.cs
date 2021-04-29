@@ -8,5 +8,6 @@ namespace RepoAnalyser.Objects.API.Responses
         public UserPullRequestResult PullRequest { get; set; }
         public IEnumerable<GitHubCommit> Commits { get; set; }
         public IEnumerable<string> ModifiedFilePaths { get; set; }
+        public bool IsDotNetProject { get; set; }
     }
 }
