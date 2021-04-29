@@ -46,10 +46,6 @@ namespace RepoAnalyser.Logic.Analysis
                     CreateNoWindow = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
-#if !DEBUG                    
-                    UserName = _serverCredentials.User,
-                    Password = GetSecurePassword(_serverCredentials.Password)
-#endif
                 }
             };
 
