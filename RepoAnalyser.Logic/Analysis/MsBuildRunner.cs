@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Logic.Analysis.Interfaces;
+using System.Runtime;
 using RepoAnalyser.Objects;
 using Serilog;
 
@@ -43,9 +45,10 @@ namespace RepoAnalyser.Logic.Analysis
                         $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo",
                     CreateNoWindow = true,
                     RedirectStandardError = true,
+                    UseShellExecute = false,
 #if !DEBUG                    
                     UserName = _serverCredentials.User,
-                    PasswordInClearText = _serverCredentials.Password
+                    Password = GetSecurePassword(_serverCredentials.Password)
 #endif
                 }
             };
@@ -65,6 +68,17 @@ namespace RepoAnalyser.Logic.Analysis
             process.Kill();
 
             return outputDir;
+        }
+
+        private SecureString GetSecurePassword(string passString)
+        {
+            var password = new SecureString();
+            foreach (var character in passString.ToCharArray())
+            {
+                password.AppendChar(character);
+            }
+
+            return password;
         }
     }
 }
