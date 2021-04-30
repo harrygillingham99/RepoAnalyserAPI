@@ -57,17 +57,5 @@ namespace RepoAnalyser.API.Controllers
                 return _pullRequestFacade.GetPullFileInformation(repoId, pullNumber, $"{fileName}.{extension}", token);
             });
         }
-
-        [HttpGet("cyclomatic-complexity/{repoId}/{pullNumber}")]
-        [ProducesResponseType(typeof(IDictionary<string, int>), (int) HttpStatusCode.OK)]
-        public Task<IActionResult> GetCyclomaticComplexitiesForPull([FromRoute] long repoId, [FromRoute] int pullNumber)
-        {
-            return ExecuteAndMapToActionResultAsync(() =>
-            {
-                var (token, connectionId) = (HttpContext.Request.GetAuthorizationToken(),
-                    HttpContext.Request.GetConnectionId());
-                return _pullRequestFacade.GetPullCyclomaticComplexity(repoId, pullNumber, token, connectionId);
-            });
-        }
     }
 }

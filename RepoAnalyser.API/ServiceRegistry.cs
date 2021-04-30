@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RepoAnalyser.Logic;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
+using RepoAnalyser.Logic.ProcessUtility;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.Attributes;
 using RepoAnalyser.Services.OctoKit;
@@ -34,6 +35,11 @@ namespace RepoAnalyser.API
         {
             services.Configure<AppSettings>(option => configuration.GetSection(nameof(AppSettings)).Bind(option));
             services.Configure<GitHubSettings>(option => configuration.GetSection(nameof(GitHubSettings)).Bind(option));
+        }
+
+        public static void AddSingletons(IServiceCollection services)
+        {
+            services.AddSingleton<IWinProcessUtil, WinProcessUtil>();
         }
     }
 }

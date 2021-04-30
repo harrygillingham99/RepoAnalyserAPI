@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using RepoAnalyser.Objects.API.Requests;
+﻿using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RepoAnalyser.Logic.Interfaces
 {

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using RepoAnalyser.API.NSwag;
+using RepoAnalyser.Logic.ProcessUtility;
 using RepoAnalyser.SignalR.Hubs;
 
 namespace RepoAnalyser.API
@@ -73,6 +74,8 @@ namespace RepoAnalyser.API
             ServiceRegistry.AddBackgroundTaskQueue(services);
 
             ServiceRegistry.ScanForAllRemainingRegistrations(services);
+
+            ServiceRegistry.AddSingletons(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -88,7 +91,7 @@ namespace RepoAnalyser.API
                 app.UseDeveloperExceptionPage();
                 //home server specific config here
             }
-
+            
             app.UseOpenApi();
 
             app.UseSwaggerUi3();

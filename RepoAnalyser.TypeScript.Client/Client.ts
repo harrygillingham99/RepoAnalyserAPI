@@ -418,6 +418,86 @@ export class Client extends AuthorizedApiBase {
     /**
      * @param metadata (optional) Client Metadata JSON
      */
+    pullRequest_GetPullFileInformation(repoId: number, pullNumber: number, fileName: string | null, extension: string | null, metadata: any | undefined): Promise<PullFileInfo> {
+        let url_ = this.baseUrl + "/pull-requests/file-info/{repoId}/{pullNumber}/{fileName}/{extension}";
+        if (repoId === undefined || repoId === null)
+            throw new Error("The parameter 'repoId' must be defined.");
+        url_ = url_.replace("{repoId}", encodeURIComponent("" + repoId));
+        if (pullNumber === undefined || pullNumber === null)
+            throw new Error("The parameter 'pullNumber' must be defined.");
+        url_ = url_.replace("{pullNumber}", encodeURIComponent("" + pullNumber));
+        if (fileName === undefined || fileName === null)
+            throw new Error("The parameter 'fileName' must be defined.");
+        url_ = url_.replace("{fileName}", encodeURIComponent("" + fileName));
+        if (extension === undefined || extension === null)
+            throw new Error("The parameter 'extension' must be defined.");
+        url_ = url_.replace("{extension}", encodeURIComponent("" + extension));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            headers: {
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.processPullRequest_GetPullFileInformation(_response);
+        });
+    }
+
+    protected processPullRequest_GetPullFileInformation(response: Response): Promise<PullFileInfo> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = NotFoundResponse.fromJS(resultData404);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result404);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = UnauthorizedResponse.fromJS(resultData401);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result401);
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationResponse.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result500);
+            });
+        } else if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PullFileInfo.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<PullFileInfo>(<any>null);
+    }
+
+    /**
+     * @param metadata (optional) Client Metadata JSON
+     */
     repository_Repositories(filterOption: RepoFilterOptions, metadata: any | undefined): Promise<UserRepositoryResult[]> {
         let url_ = this.baseUrl + "/repositories/{filterOption}";
         if (filterOption === undefined || filterOption === null)
@@ -799,6 +879,221 @@ export class Client extends AuthorizedApiBase {
             });
         }
         return Promise.resolve<GitHubCommit[]>(<any>null);
+    }
+
+    /**
+     * @param metadata (optional) Client Metadata JSON
+     */
+    repository_GetRepoIssues(repoId: number, metadata: any | undefined): Promise<RepoIssuesResponse> {
+        let url_ = this.baseUrl + "/repositories/issues/{repoId}";
+        if (repoId === undefined || repoId === null)
+            throw new Error("The parameter 'repoId' must be defined.");
+        url_ = url_.replace("{repoId}", encodeURIComponent("" + repoId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            headers: {
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.processRepository_GetRepoIssues(_response);
+        });
+    }
+
+    protected processRepository_GetRepoIssues(response: Response): Promise<RepoIssuesResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = NotFoundResponse.fromJS(resultData404);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result404);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = UnauthorizedResponse.fromJS(resultData401);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result401);
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationResponse.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result500);
+            });
+        } else if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RepoIssuesResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<RepoIssuesResponse>(<any>null);
+    }
+
+    /**
+     * @param connectionId SignalR Client Connection ID
+     * @param metadata (optional) Client Metadata JSON
+     */
+    repository_GetRepoContributionVolumes(repoId: number, connectionId: string, metadata: any | undefined): Promise<RepoContributionResponse> {
+        let url_ = this.baseUrl + "/repositories/contribution-volume/{repoId}";
+        if (repoId === undefined || repoId === null)
+            throw new Error("The parameter 'repoId' must be defined.");
+        url_ = url_.replace("{repoId}", encodeURIComponent("" + repoId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            headers: {
+                "ConnectionId": connectionId !== undefined && connectionId !== null ? "" + connectionId : "",
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.processRepository_GetRepoContributionVolumes(_response);
+        });
+    }
+
+    protected processRepository_GetRepoContributionVolumes(response: Response): Promise<RepoContributionResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = NotFoundResponse.fromJS(resultData404);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result404);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = UnauthorizedResponse.fromJS(resultData401);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result401);
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationResponse.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result500);
+            });
+        } else if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RepoContributionResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<RepoContributionResponse>(<any>null);
+    }
+
+    /**
+     * @param metadata (optional) Client Metadata JSON
+     */
+    repository_GetRepoSummary(repoId: number, metadata: any | undefined): Promise<RepoSummaryResponse> {
+        let url_ = this.baseUrl + "/repositories/summary/{repoId}";
+        if (repoId === undefined || repoId === null)
+            throw new Error("The parameter 'repoId' must be defined.");
+        url_ = url_.replace("{repoId}", encodeURIComponent("" + repoId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            headers: {
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.processRepository_GetRepoSummary(_response);
+        });
+    }
+
+    protected processRepository_GetRepoSummary(response: Response): Promise<RepoSummaryResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = NotFoundResponse.fromJS(resultData404);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result404);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = UnauthorizedResponse.fromJS(resultData401);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result401);
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationResponse.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result500);
+            });
+        } else if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = RepoSummaryResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<RepoSummaryResponse>(<any>null);
     }
 
     /**
@@ -1717,6 +2012,7 @@ export class DetailedPullRequest implements IDetailedPullRequest {
     pullRequest?: UserPullRequestResult | undefined;
     commits?: GitHubCommit[] | undefined;
     modifiedFilePaths?: string[] | undefined;
+    isDotNetProject?: boolean;
 
     constructor(data?: IDetailedPullRequest) {
         if (data) {
@@ -1740,6 +2036,7 @@ export class DetailedPullRequest implements IDetailedPullRequest {
                 for (let item of _data["modifiedFilePaths"])
                     this.modifiedFilePaths!.push(item);
             }
+            this.isDotNetProject = _data["isDotNetProject"];
         }
     }
 
@@ -1763,6 +2060,7 @@ export class DetailedPullRequest implements IDetailedPullRequest {
             for (let item of this.modifiedFilePaths)
                 data["modifiedFilePaths"].push(item);
         }
+        data["isDotNetProject"] = this.isDotNetProject;
         return data; 
     }
 }
@@ -1771,6 +2069,7 @@ export interface IDetailedPullRequest {
     pullRequest?: UserPullRequestResult | undefined;
     commits?: GitHubCommit[] | undefined;
     modifiedFilePaths?: string[] | undefined;
+    isDotNetProject?: boolean;
 }
 
 export class GitReference implements IGitReference {
@@ -2609,6 +2908,50 @@ export interface IGitHubCommitFile {
     previousFileName?: string | undefined;
 }
 
+export class PullFileInfo implements IPullFileInfo {
+    additions?: number;
+    deletions?: number;
+    commitsThatIncludeFile?: number;
+
+    constructor(data?: IPullFileInfo) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.additions = _data["additions"];
+            this.deletions = _data["deletions"];
+            this.commitsThatIncludeFile = _data["commitsThatIncludeFile"];
+        }
+    }
+
+    static fromJS(data: any): PullFileInfo {
+        data = typeof data === 'object' ? data : {};
+        let result = new PullFileInfo();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["additions"] = this.additions;
+        data["deletions"] = this.deletions;
+        data["commitsThatIncludeFile"] = this.commitsThatIncludeFile;
+        return data; 
+    }
+}
+
+export interface IPullFileInfo {
+    additions?: number;
+    deletions?: number;
+    commitsThatIncludeFile?: number;
+}
+
 export class UserRepositoryResult implements IUserRepositoryResult {
     id?: number;
     name?: string | undefined;
@@ -3305,6 +3648,1038 @@ export interface ICyclomaticComplexityRequest {
     pullRequestNumber?: number | undefined;
 }
 
+export class RepoIssuesResponse implements IRepoIssuesResponse {
+    issues?: Issue[] | undefined;
+
+    constructor(data?: IRepoIssuesResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["issues"])) {
+                this.issues = [] as any;
+                for (let item of _data["issues"])
+                    this.issues!.push(Issue.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): RepoIssuesResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new RepoIssuesResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.issues)) {
+            data["issues"] = [];
+            for (let item of this.issues)
+                data["issues"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface IRepoIssuesResponse {
+    issues?: Issue[] | undefined;
+}
+
+export class Issue implements IIssue {
+    id?: number;
+    nodeId?: string | undefined;
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    commentsUrl?: string | undefined;
+    eventsUrl?: string | undefined;
+    number?: number;
+    state?: StringEnumOfItemState;
+    title?: string | undefined;
+    body?: string | undefined;
+    closedBy?: User | undefined;
+    user?: User | undefined;
+    labels?: Label[] | undefined;
+    assignee?: User | undefined;
+    assignees?: User[] | undefined;
+    milestone?: Milestone | undefined;
+    comments?: number;
+    pullRequest?: PullRequest | undefined;
+    closedAt?: Date | undefined;
+    createdAt?: Date;
+    updatedAt?: Date | undefined;
+    locked?: boolean;
+    repository?: Repository | undefined;
+    reactions?: ReactionSummary | undefined;
+
+    constructor(data?: IIssue) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.nodeId = _data["nodeId"];
+            this.url = _data["url"];
+            this.htmlUrl = _data["htmlUrl"];
+            this.commentsUrl = _data["commentsUrl"];
+            this.eventsUrl = _data["eventsUrl"];
+            this.number = _data["number"];
+            this.state = _data["state"] ? StringEnumOfItemState.fromJS(_data["state"]) : <any>undefined;
+            this.title = _data["title"];
+            this.body = _data["body"];
+            this.closedBy = _data["closedBy"] ? User.fromJS(_data["closedBy"]) : <any>undefined;
+            this.user = _data["user"] ? User.fromJS(_data["user"]) : <any>undefined;
+            if (Array.isArray(_data["labels"])) {
+                this.labels = [] as any;
+                for (let item of _data["labels"])
+                    this.labels!.push(Label.fromJS(item));
+            }
+            this.assignee = _data["assignee"] ? User.fromJS(_data["assignee"]) : <any>undefined;
+            if (Array.isArray(_data["assignees"])) {
+                this.assignees = [] as any;
+                for (let item of _data["assignees"])
+                    this.assignees!.push(User.fromJS(item));
+            }
+            this.milestone = _data["milestone"] ? Milestone.fromJS(_data["milestone"]) : <any>undefined;
+            this.comments = _data["comments"];
+            this.pullRequest = _data["pullRequest"] ? PullRequest.fromJS(_data["pullRequest"]) : <any>undefined;
+            this.closedAt = _data["closedAt"] ? new Date(_data["closedAt"].toString()) : <any>undefined;
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
+            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
+            this.locked = _data["locked"];
+            this.repository = _data["repository"] ? Repository.fromJS(_data["repository"]) : <any>undefined;
+            this.reactions = _data["reactions"] ? ReactionSummary.fromJS(_data["reactions"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): Issue {
+        data = typeof data === 'object' ? data : {};
+        let result = new Issue();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["nodeId"] = this.nodeId;
+        data["url"] = this.url;
+        data["htmlUrl"] = this.htmlUrl;
+        data["commentsUrl"] = this.commentsUrl;
+        data["eventsUrl"] = this.eventsUrl;
+        data["number"] = this.number;
+        data["state"] = this.state ? this.state.toJSON() : <any>undefined;
+        data["title"] = this.title;
+        data["body"] = this.body;
+        data["closedBy"] = this.closedBy ? this.closedBy.toJSON() : <any>undefined;
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        if (Array.isArray(this.labels)) {
+            data["labels"] = [];
+            for (let item of this.labels)
+                data["labels"].push(item.toJSON());
+        }
+        data["assignee"] = this.assignee ? this.assignee.toJSON() : <any>undefined;
+        if (Array.isArray(this.assignees)) {
+            data["assignees"] = [];
+            for (let item of this.assignees)
+                data["assignees"].push(item.toJSON());
+        }
+        data["milestone"] = this.milestone ? this.milestone.toJSON() : <any>undefined;
+        data["comments"] = this.comments;
+        data["pullRequest"] = this.pullRequest ? this.pullRequest.toJSON() : <any>undefined;
+        data["closedAt"] = this.closedAt ? this.closedAt.toISOString() : <any>undefined;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
+        data["locked"] = this.locked;
+        data["repository"] = this.repository ? this.repository.toJSON() : <any>undefined;
+        data["reactions"] = this.reactions ? this.reactions.toJSON() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IIssue {
+    id?: number;
+    nodeId?: string | undefined;
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    commentsUrl?: string | undefined;
+    eventsUrl?: string | undefined;
+    number?: number;
+    state?: StringEnumOfItemState;
+    title?: string | undefined;
+    body?: string | undefined;
+    closedBy?: User | undefined;
+    user?: User | undefined;
+    labels?: Label[] | undefined;
+    assignee?: User | undefined;
+    assignees?: User[] | undefined;
+    milestone?: Milestone | undefined;
+    comments?: number;
+    pullRequest?: PullRequest | undefined;
+    closedAt?: Date | undefined;
+    createdAt?: Date;
+    updatedAt?: Date | undefined;
+    locked?: boolean;
+    repository?: Repository | undefined;
+    reactions?: ReactionSummary | undefined;
+}
+
+export class StringEnumOfItemState implements IStringEnumOfItemState {
+    stringValue?: string | undefined;
+    value?: ItemState;
+
+    constructor(data?: IStringEnumOfItemState) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.stringValue = _data["stringValue"];
+            this.value = _data["value"];
+        }
+    }
+
+    static fromJS(data: any): StringEnumOfItemState {
+        data = typeof data === 'object' ? data : {};
+        let result = new StringEnumOfItemState();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["stringValue"] = this.stringValue;
+        data["value"] = this.value;
+        return data; 
+    }
+}
+
+export interface IStringEnumOfItemState {
+    stringValue?: string | undefined;
+    value?: ItemState;
+}
+
+export enum ItemState {
+    Open = 0,
+    Closed = 1,
+}
+
+export class Label implements ILabel {
+    id?: number;
+    url?: string | undefined;
+    name?: string | undefined;
+    nodeId?: string | undefined;
+    color?: string | undefined;
+    description?: string | undefined;
+    default?: boolean;
+
+    constructor(data?: ILabel) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.url = _data["url"];
+            this.name = _data["name"];
+            this.nodeId = _data["nodeId"];
+            this.color = _data["color"];
+            this.description = _data["description"];
+            this.default = _data["default"];
+        }
+    }
+
+    static fromJS(data: any): Label {
+        data = typeof data === 'object' ? data : {};
+        let result = new Label();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["url"] = this.url;
+        data["name"] = this.name;
+        data["nodeId"] = this.nodeId;
+        data["color"] = this.color;
+        data["description"] = this.description;
+        data["default"] = this.default;
+        return data; 
+    }
+}
+
+export interface ILabel {
+    id?: number;
+    url?: string | undefined;
+    name?: string | undefined;
+    nodeId?: string | undefined;
+    color?: string | undefined;
+    description?: string | undefined;
+    default?: boolean;
+}
+
+export class Milestone implements IMilestone {
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    id?: number;
+    number?: number;
+    nodeId?: string | undefined;
+    state?: StringEnumOfItemState;
+    title?: string | undefined;
+    description?: string | undefined;
+    creator?: User | undefined;
+    openIssues?: number;
+    closedIssues?: number;
+    createdAt?: Date;
+    dueOn?: Date | undefined;
+    closedAt?: Date | undefined;
+    updatedAt?: Date | undefined;
+
+    constructor(data?: IMilestone) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.url = _data["url"];
+            this.htmlUrl = _data["htmlUrl"];
+            this.id = _data["id"];
+            this.number = _data["number"];
+            this.nodeId = _data["nodeId"];
+            this.state = _data["state"] ? StringEnumOfItemState.fromJS(_data["state"]) : <any>undefined;
+            this.title = _data["title"];
+            this.description = _data["description"];
+            this.creator = _data["creator"] ? User.fromJS(_data["creator"]) : <any>undefined;
+            this.openIssues = _data["openIssues"];
+            this.closedIssues = _data["closedIssues"];
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
+            this.dueOn = _data["dueOn"] ? new Date(_data["dueOn"].toString()) : <any>undefined;
+            this.closedAt = _data["closedAt"] ? new Date(_data["closedAt"].toString()) : <any>undefined;
+            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): Milestone {
+        data = typeof data === 'object' ? data : {};
+        let result = new Milestone();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["url"] = this.url;
+        data["htmlUrl"] = this.htmlUrl;
+        data["id"] = this.id;
+        data["number"] = this.number;
+        data["nodeId"] = this.nodeId;
+        data["state"] = this.state ? this.state.toJSON() : <any>undefined;
+        data["title"] = this.title;
+        data["description"] = this.description;
+        data["creator"] = this.creator ? this.creator.toJSON() : <any>undefined;
+        data["openIssues"] = this.openIssues;
+        data["closedIssues"] = this.closedIssues;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["dueOn"] = this.dueOn ? this.dueOn.toISOString() : <any>undefined;
+        data["closedAt"] = this.closedAt ? this.closedAt.toISOString() : <any>undefined;
+        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IMilestone {
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    id?: number;
+    number?: number;
+    nodeId?: string | undefined;
+    state?: StringEnumOfItemState;
+    title?: string | undefined;
+    description?: string | undefined;
+    creator?: User | undefined;
+    openIssues?: number;
+    closedIssues?: number;
+    createdAt?: Date;
+    dueOn?: Date | undefined;
+    closedAt?: Date | undefined;
+    updatedAt?: Date | undefined;
+}
+
+export class PullRequest implements IPullRequest {
+    id?: number;
+    nodeId?: string | undefined;
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    diffUrl?: string | undefined;
+    patchUrl?: string | undefined;
+    issueUrl?: string | undefined;
+    statusesUrl?: string | undefined;
+    number?: number;
+    state?: StringEnumOfItemState;
+    title?: string | undefined;
+    body?: string | undefined;
+    createdAt?: Date;
+    updatedAt?: Date;
+    closedAt?: Date | undefined;
+    mergedAt?: Date | undefined;
+    head?: GitReference | undefined;
+    base?: GitReference | undefined;
+    user?: User | undefined;
+    assignee?: User | undefined;
+    assignees?: User[] | undefined;
+    milestone?: Milestone | undefined;
+    draft?: boolean;
+    merged?: boolean;
+    mergeable?: boolean | undefined;
+    mergeableState?: StringEnumOfMergeableState | undefined;
+    mergedBy?: User | undefined;
+    mergeCommitSha?: string | undefined;
+    comments?: number;
+    commits?: number;
+    additions?: number;
+    deletions?: number;
+    changedFiles?: number;
+    locked?: boolean;
+    maintainerCanModify?: boolean | undefined;
+    requestedReviewers?: User[] | undefined;
+    requestedTeams?: Team[] | undefined;
+    labels?: Label[] | undefined;
+
+    constructor(data?: IPullRequest) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.nodeId = _data["nodeId"];
+            this.url = _data["url"];
+            this.htmlUrl = _data["htmlUrl"];
+            this.diffUrl = _data["diffUrl"];
+            this.patchUrl = _data["patchUrl"];
+            this.issueUrl = _data["issueUrl"];
+            this.statusesUrl = _data["statusesUrl"];
+            this.number = _data["number"];
+            this.state = _data["state"] ? StringEnumOfItemState.fromJS(_data["state"]) : <any>undefined;
+            this.title = _data["title"];
+            this.body = _data["body"];
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
+            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
+            this.closedAt = _data["closedAt"] ? new Date(_data["closedAt"].toString()) : <any>undefined;
+            this.mergedAt = _data["mergedAt"] ? new Date(_data["mergedAt"].toString()) : <any>undefined;
+            this.head = _data["head"] ? GitReference.fromJS(_data["head"]) : <any>undefined;
+            this.base = _data["base"] ? GitReference.fromJS(_data["base"]) : <any>undefined;
+            this.user = _data["user"] ? User.fromJS(_data["user"]) : <any>undefined;
+            this.assignee = _data["assignee"] ? User.fromJS(_data["assignee"]) : <any>undefined;
+            if (Array.isArray(_data["assignees"])) {
+                this.assignees = [] as any;
+                for (let item of _data["assignees"])
+                    this.assignees!.push(User.fromJS(item));
+            }
+            this.milestone = _data["milestone"] ? Milestone.fromJS(_data["milestone"]) : <any>undefined;
+            this.draft = _data["draft"];
+            this.merged = _data["merged"];
+            this.mergeable = _data["mergeable"];
+            this.mergeableState = _data["mergeableState"] ? StringEnumOfMergeableState.fromJS(_data["mergeableState"]) : <any>undefined;
+            this.mergedBy = _data["mergedBy"] ? User.fromJS(_data["mergedBy"]) : <any>undefined;
+            this.mergeCommitSha = _data["mergeCommitSha"];
+            this.comments = _data["comments"];
+            this.commits = _data["commits"];
+            this.additions = _data["additions"];
+            this.deletions = _data["deletions"];
+            this.changedFiles = _data["changedFiles"];
+            this.locked = _data["locked"];
+            this.maintainerCanModify = _data["maintainerCanModify"];
+            if (Array.isArray(_data["requestedReviewers"])) {
+                this.requestedReviewers = [] as any;
+                for (let item of _data["requestedReviewers"])
+                    this.requestedReviewers!.push(User.fromJS(item));
+            }
+            if (Array.isArray(_data["requestedTeams"])) {
+                this.requestedTeams = [] as any;
+                for (let item of _data["requestedTeams"])
+                    this.requestedTeams!.push(Team.fromJS(item));
+            }
+            if (Array.isArray(_data["labels"])) {
+                this.labels = [] as any;
+                for (let item of _data["labels"])
+                    this.labels!.push(Label.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): PullRequest {
+        data = typeof data === 'object' ? data : {};
+        let result = new PullRequest();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["nodeId"] = this.nodeId;
+        data["url"] = this.url;
+        data["htmlUrl"] = this.htmlUrl;
+        data["diffUrl"] = this.diffUrl;
+        data["patchUrl"] = this.patchUrl;
+        data["issueUrl"] = this.issueUrl;
+        data["statusesUrl"] = this.statusesUrl;
+        data["number"] = this.number;
+        data["state"] = this.state ? this.state.toJSON() : <any>undefined;
+        data["title"] = this.title;
+        data["body"] = this.body;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
+        data["closedAt"] = this.closedAt ? this.closedAt.toISOString() : <any>undefined;
+        data["mergedAt"] = this.mergedAt ? this.mergedAt.toISOString() : <any>undefined;
+        data["head"] = this.head ? this.head.toJSON() : <any>undefined;
+        data["base"] = this.base ? this.base.toJSON() : <any>undefined;
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        data["assignee"] = this.assignee ? this.assignee.toJSON() : <any>undefined;
+        if (Array.isArray(this.assignees)) {
+            data["assignees"] = [];
+            for (let item of this.assignees)
+                data["assignees"].push(item.toJSON());
+        }
+        data["milestone"] = this.milestone ? this.milestone.toJSON() : <any>undefined;
+        data["draft"] = this.draft;
+        data["merged"] = this.merged;
+        data["mergeable"] = this.mergeable;
+        data["mergeableState"] = this.mergeableState ? this.mergeableState.toJSON() : <any>undefined;
+        data["mergedBy"] = this.mergedBy ? this.mergedBy.toJSON() : <any>undefined;
+        data["mergeCommitSha"] = this.mergeCommitSha;
+        data["comments"] = this.comments;
+        data["commits"] = this.commits;
+        data["additions"] = this.additions;
+        data["deletions"] = this.deletions;
+        data["changedFiles"] = this.changedFiles;
+        data["locked"] = this.locked;
+        data["maintainerCanModify"] = this.maintainerCanModify;
+        if (Array.isArray(this.requestedReviewers)) {
+            data["requestedReviewers"] = [];
+            for (let item of this.requestedReviewers)
+                data["requestedReviewers"].push(item.toJSON());
+        }
+        if (Array.isArray(this.requestedTeams)) {
+            data["requestedTeams"] = [];
+            for (let item of this.requestedTeams)
+                data["requestedTeams"].push(item.toJSON());
+        }
+        if (Array.isArray(this.labels)) {
+            data["labels"] = [];
+            for (let item of this.labels)
+                data["labels"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface IPullRequest {
+    id?: number;
+    nodeId?: string | undefined;
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    diffUrl?: string | undefined;
+    patchUrl?: string | undefined;
+    issueUrl?: string | undefined;
+    statusesUrl?: string | undefined;
+    number?: number;
+    state?: StringEnumOfItemState;
+    title?: string | undefined;
+    body?: string | undefined;
+    createdAt?: Date;
+    updatedAt?: Date;
+    closedAt?: Date | undefined;
+    mergedAt?: Date | undefined;
+    head?: GitReference | undefined;
+    base?: GitReference | undefined;
+    user?: User | undefined;
+    assignee?: User | undefined;
+    assignees?: User[] | undefined;
+    milestone?: Milestone | undefined;
+    draft?: boolean;
+    merged?: boolean;
+    mergeable?: boolean | undefined;
+    mergeableState?: StringEnumOfMergeableState | undefined;
+    mergedBy?: User | undefined;
+    mergeCommitSha?: string | undefined;
+    comments?: number;
+    commits?: number;
+    additions?: number;
+    deletions?: number;
+    changedFiles?: number;
+    locked?: boolean;
+    maintainerCanModify?: boolean | undefined;
+    requestedReviewers?: User[] | undefined;
+    requestedTeams?: Team[] | undefined;
+    labels?: Label[] | undefined;
+}
+
+export class StringEnumOfMergeableState implements IStringEnumOfMergeableState {
+    stringValue?: string | undefined;
+    value?: MergeableState;
+
+    constructor(data?: IStringEnumOfMergeableState) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.stringValue = _data["stringValue"];
+            this.value = _data["value"];
+        }
+    }
+
+    static fromJS(data: any): StringEnumOfMergeableState {
+        data = typeof data === 'object' ? data : {};
+        let result = new StringEnumOfMergeableState();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["stringValue"] = this.stringValue;
+        data["value"] = this.value;
+        return data; 
+    }
+}
+
+export interface IStringEnumOfMergeableState {
+    stringValue?: string | undefined;
+    value?: MergeableState;
+}
+
+export enum MergeableState {
+    Dirty = 0,
+    Unknown = 1,
+    Blocked = 2,
+    Behind = 3,
+    Unstable = 4,
+    HasHooks = 5,
+    Clean = 6,
+}
+
+export class Team implements ITeam {
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    id?: number;
+    nodeId?: string | undefined;
+    slug?: string | undefined;
+    name?: string | undefined;
+    description?: string | undefined;
+    privacy?: StringEnumOfTeamPrivacy;
+    permission?: StringEnumOfPermissionLevel;
+    membersCount?: number;
+    reposCount?: number;
+    organization?: Organization | undefined;
+    parent?: Team | undefined;
+    ldapDistinguishedName?: string | undefined;
+
+    constructor(data?: ITeam) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.url = _data["url"];
+            this.htmlUrl = _data["htmlUrl"];
+            this.id = _data["id"];
+            this.nodeId = _data["nodeId"];
+            this.slug = _data["slug"];
+            this.name = _data["name"];
+            this.description = _data["description"];
+            this.privacy = _data["privacy"] ? StringEnumOfTeamPrivacy.fromJS(_data["privacy"]) : <any>undefined;
+            this.permission = _data["permission"] ? StringEnumOfPermissionLevel.fromJS(_data["permission"]) : <any>undefined;
+            this.membersCount = _data["membersCount"];
+            this.reposCount = _data["reposCount"];
+            this.organization = _data["organization"] ? Organization.fromJS(_data["organization"]) : <any>undefined;
+            this.parent = _data["parent"] ? Team.fromJS(_data["parent"]) : <any>undefined;
+            this.ldapDistinguishedName = _data["ldapDistinguishedName"];
+        }
+    }
+
+    static fromJS(data: any): Team {
+        data = typeof data === 'object' ? data : {};
+        let result = new Team();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["url"] = this.url;
+        data["htmlUrl"] = this.htmlUrl;
+        data["id"] = this.id;
+        data["nodeId"] = this.nodeId;
+        data["slug"] = this.slug;
+        data["name"] = this.name;
+        data["description"] = this.description;
+        data["privacy"] = this.privacy ? this.privacy.toJSON() : <any>undefined;
+        data["permission"] = this.permission ? this.permission.toJSON() : <any>undefined;
+        data["membersCount"] = this.membersCount;
+        data["reposCount"] = this.reposCount;
+        data["organization"] = this.organization ? this.organization.toJSON() : <any>undefined;
+        data["parent"] = this.parent ? this.parent.toJSON() : <any>undefined;
+        data["ldapDistinguishedName"] = this.ldapDistinguishedName;
+        return data; 
+    }
+}
+
+export interface ITeam {
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
+    id?: number;
+    nodeId?: string | undefined;
+    slug?: string | undefined;
+    name?: string | undefined;
+    description?: string | undefined;
+    privacy?: StringEnumOfTeamPrivacy;
+    permission?: StringEnumOfPermissionLevel;
+    membersCount?: number;
+    reposCount?: number;
+    organization?: Organization | undefined;
+    parent?: Team | undefined;
+    ldapDistinguishedName?: string | undefined;
+}
+
+export class StringEnumOfTeamPrivacy implements IStringEnumOfTeamPrivacy {
+    stringValue?: string | undefined;
+    value?: TeamPrivacy;
+
+    constructor(data?: IStringEnumOfTeamPrivacy) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.stringValue = _data["stringValue"];
+            this.value = _data["value"];
+        }
+    }
+
+    static fromJS(data: any): StringEnumOfTeamPrivacy {
+        data = typeof data === 'object' ? data : {};
+        let result = new StringEnumOfTeamPrivacy();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["stringValue"] = this.stringValue;
+        data["value"] = this.value;
+        return data; 
+    }
+}
+
+export interface IStringEnumOfTeamPrivacy {
+    stringValue?: string | undefined;
+    value?: TeamPrivacy;
+}
+
+export enum TeamPrivacy {
+    Secret = 0,
+    Closed = 1,
+}
+
+export class StringEnumOfPermissionLevel implements IStringEnumOfPermissionLevel {
+    stringValue?: string | undefined;
+    value?: PermissionLevel;
+
+    constructor(data?: IStringEnumOfPermissionLevel) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.stringValue = _data["stringValue"];
+            this.value = _data["value"];
+        }
+    }
+
+    static fromJS(data: any): StringEnumOfPermissionLevel {
+        data = typeof data === 'object' ? data : {};
+        let result = new StringEnumOfPermissionLevel();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["stringValue"] = this.stringValue;
+        data["value"] = this.value;
+        return data; 
+    }
+}
+
+export interface IStringEnumOfPermissionLevel {
+    stringValue?: string | undefined;
+    value?: PermissionLevel;
+}
+
+export enum PermissionLevel {
+    Admin = 0,
+    Write = 1,
+    Read = 2,
+    None = 3,
+}
+
+export class Organization extends Account implements IOrganization {
+    billingAddress?: string | undefined;
+    reposUrl?: string | undefined;
+    eventsUrl?: string | undefined;
+    hooksUrl?: string | undefined;
+    issuesUrl?: string | undefined;
+    membersUrl?: string | undefined;
+    publicMembersUrl?: string | undefined;
+    description?: string | undefined;
+    isVerified?: boolean;
+    hasOrganizationProjects?: boolean;
+    hasRepositoryProjects?: boolean;
+    updatedAt?: Date;
+
+    constructor(data?: IOrganization) {
+        super(data);
+    }
+
+    init(_data?: any) {
+        super.init(_data);
+        if (_data) {
+            this.billingAddress = _data["billingAddress"];
+            this.reposUrl = _data["reposUrl"];
+            this.eventsUrl = _data["eventsUrl"];
+            this.hooksUrl = _data["hooksUrl"];
+            this.issuesUrl = _data["issuesUrl"];
+            this.membersUrl = _data["membersUrl"];
+            this.publicMembersUrl = _data["publicMembersUrl"];
+            this.description = _data["description"];
+            this.isVerified = _data["isVerified"];
+            this.hasOrganizationProjects = _data["hasOrganizationProjects"];
+            this.hasRepositoryProjects = _data["hasRepositoryProjects"];
+            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): Organization {
+        data = typeof data === 'object' ? data : {};
+        let result = new Organization();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["billingAddress"] = this.billingAddress;
+        data["reposUrl"] = this.reposUrl;
+        data["eventsUrl"] = this.eventsUrl;
+        data["hooksUrl"] = this.hooksUrl;
+        data["issuesUrl"] = this.issuesUrl;
+        data["membersUrl"] = this.membersUrl;
+        data["publicMembersUrl"] = this.publicMembersUrl;
+        data["description"] = this.description;
+        data["isVerified"] = this.isVerified;
+        data["hasOrganizationProjects"] = this.hasOrganizationProjects;
+        data["hasRepositoryProjects"] = this.hasRepositoryProjects;
+        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
+        super.toJSON(data);
+        return data; 
+    }
+}
+
+export interface IOrganization extends IAccount {
+    billingAddress?: string | undefined;
+    reposUrl?: string | undefined;
+    eventsUrl?: string | undefined;
+    hooksUrl?: string | undefined;
+    issuesUrl?: string | undefined;
+    membersUrl?: string | undefined;
+    publicMembersUrl?: string | undefined;
+    description?: string | undefined;
+    isVerified?: boolean;
+    hasOrganizationProjects?: boolean;
+    hasRepositoryProjects?: boolean;
+    updatedAt?: Date;
+}
+
+export class ReactionSummary implements IReactionSummary {
+    totalCount?: number;
+    plus1?: number;
+    minus1?: number;
+    laugh?: number;
+    confused?: number;
+    heart?: number;
+    hooray?: number;
+    url?: string | undefined;
+
+    constructor(data?: IReactionSummary) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.totalCount = _data["totalCount"];
+            this.plus1 = _data["plus1"];
+            this.minus1 = _data["minus1"];
+            this.laugh = _data["laugh"];
+            this.confused = _data["confused"];
+            this.heart = _data["heart"];
+            this.hooray = _data["hooray"];
+            this.url = _data["url"];
+        }
+    }
+
+    static fromJS(data: any): ReactionSummary {
+        data = typeof data === 'object' ? data : {};
+        let result = new ReactionSummary();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["totalCount"] = this.totalCount;
+        data["plus1"] = this.plus1;
+        data["minus1"] = this.minus1;
+        data["laugh"] = this.laugh;
+        data["confused"] = this.confused;
+        data["heart"] = this.heart;
+        data["hooray"] = this.hooray;
+        data["url"] = this.url;
+        return data; 
+    }
+}
+
+export interface IReactionSummary {
+    totalCount?: number;
+    plus1?: number;
+    minus1?: number;
+    laugh?: number;
+    confused?: number;
+    heart?: number;
+    hooray?: number;
+    url?: string | undefined;
+}
+
+export class RepoContributionResponse implements IRepoContributionResponse {
+
+    constructor(data?: IRepoContributionResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+    }
+
+    static fromJS(data: any): RepoContributionResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new RepoContributionResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        return data; 
+    }
+}
+
+export interface IRepoContributionResponse {
+}
+
+export class RepoSummaryResponse implements IRepoSummaryResponse {
+
+    constructor(data?: IRepoSummaryResponse) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+    }
+
+    static fromJS(data: any): RepoSummaryResponse {
+        data = typeof data === 'object' ? data : {};
+        let result = new RepoSummaryResponse();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        return data; 
+    }
+}
+
+export interface IRepoSummaryResponse {
+}
+
 export class UserActivity implements IUserActivity {
     notifications?: Notification[] | undefined;
     events?: Activity[] | undefined;
@@ -3535,83 +4910,6 @@ export interface IActivity {
     createdAt?: Date;
     id?: string | undefined;
     payload?: ActivityPayload | undefined;
-}
-
-export class Organization extends Account implements IOrganization {
-    billingAddress?: string | undefined;
-    reposUrl?: string | undefined;
-    eventsUrl?: string | undefined;
-    hooksUrl?: string | undefined;
-    issuesUrl?: string | undefined;
-    membersUrl?: string | undefined;
-    publicMembersUrl?: string | undefined;
-    description?: string | undefined;
-    isVerified?: boolean;
-    hasOrganizationProjects?: boolean;
-    hasRepositoryProjects?: boolean;
-    updatedAt?: Date;
-
-    constructor(data?: IOrganization) {
-        super(data);
-    }
-
-    init(_data?: any) {
-        super.init(_data);
-        if (_data) {
-            this.billingAddress = _data["billingAddress"];
-            this.reposUrl = _data["reposUrl"];
-            this.eventsUrl = _data["eventsUrl"];
-            this.hooksUrl = _data["hooksUrl"];
-            this.issuesUrl = _data["issuesUrl"];
-            this.membersUrl = _data["membersUrl"];
-            this.publicMembersUrl = _data["publicMembersUrl"];
-            this.description = _data["description"];
-            this.isVerified = _data["isVerified"];
-            this.hasOrganizationProjects = _data["hasOrganizationProjects"];
-            this.hasRepositoryProjects = _data["hasRepositoryProjects"];
-            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): Organization {
-        data = typeof data === 'object' ? data : {};
-        let result = new Organization();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["billingAddress"] = this.billingAddress;
-        data["reposUrl"] = this.reposUrl;
-        data["eventsUrl"] = this.eventsUrl;
-        data["hooksUrl"] = this.hooksUrl;
-        data["issuesUrl"] = this.issuesUrl;
-        data["membersUrl"] = this.membersUrl;
-        data["publicMembersUrl"] = this.publicMembersUrl;
-        data["description"] = this.description;
-        data["isVerified"] = this.isVerified;
-        data["hasOrganizationProjects"] = this.hasOrganizationProjects;
-        data["hasRepositoryProjects"] = this.hasRepositoryProjects;
-        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
-        super.toJSON(data);
-        return data; 
-    }
-}
-
-export interface IOrganization extends IAccount {
-    billingAddress?: string | undefined;
-    reposUrl?: string | undefined;
-    eventsUrl?: string | undefined;
-    hooksUrl?: string | undefined;
-    issuesUrl?: string | undefined;
-    membersUrl?: string | undefined;
-    publicMembersUrl?: string | undefined;
-    description?: string | undefined;
-    isVerified?: boolean;
-    hasOrganizationProjects?: boolean;
-    hasRepositoryProjects?: boolean;
-    updatedAt?: Date;
 }
 
 export class ActivityPayload implements IActivityPayload {

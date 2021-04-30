@@ -209,6 +209,15 @@ namespace RepoAnalyser.Services.OctoKit
                 CacheConstants.DefaultSlidingCacheExpiry);
         }
 
+        public Task<IEnumerable<Issue>> GetIssuesForRepo(string token, long repoId)
+        {
+            _client.Connection.Credentials = GetCredentials(token);
+
+            async Task<IEnumerable<Issue>> GetIssues() => await _client.Issue.GetAllForRepository(repoId);
+
+            return _cache.GetOrAddAsync($"{token}-issues", GetIssues, CacheConstants.DefaultSlidingCacheExpiry);
+        }
+
         private async Task<IEnumerable<GitHubCommit>> GetCommitsForFile(long repoId, string filePath)
         {
             var commits = new List<Task<GitHubCommit>>();

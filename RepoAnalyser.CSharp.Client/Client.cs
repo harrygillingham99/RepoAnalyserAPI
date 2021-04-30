@@ -556,6 +556,15 @@ namespace NetCore31ApiTemplate.Client
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<DetailedPullRequest> GetDetailedPullRequestAsync(long repoId, int pullNumber, object metadata, System.Threading.CancellationToken cancellationToken);
     
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullFileInfo> GetPullFileInformationAsync(long repoId, int pullNumber, string fileName, string extension, object metadata);
+    
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<PullFileInfo> GetPullFileInformationAsync(long repoId, int pullNumber, string fileName, string extension, object metadata, System.Threading.CancellationToken cancellationToken);
+    
     }
     
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.10.9.0 (NJsonSchema v10.4.1.0 (Newtonsoft.Json v12.0.0.0))")]
@@ -837,6 +846,132 @@ namespace NetCore31ApiTemplate.Client
             }
         }
     
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        public System.Threading.Tasks.Task<PullFileInfo> GetPullFileInformationAsync(long repoId, int pullNumber, string fileName, string extension, object metadata)
+        {
+            return GetPullFileInformationAsync(repoId, pullNumber, fileName, extension, metadata, System.Threading.CancellationToken.None);
+        }
+    
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        public async System.Threading.Tasks.Task<PullFileInfo> GetPullFileInformationAsync(long repoId, int pullNumber, string fileName, string extension, object metadata, System.Threading.CancellationToken cancellationToken)
+        {
+            if (repoId == null)
+                throw new System.ArgumentNullException("repoId");
+    
+            if (pullNumber == null)
+                throw new System.ArgumentNullException("pullNumber");
+    
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/pull-requests/file-info/{repoId}/{pullNumber}/{fileName}/{extension}");
+            urlBuilder_.Replace("{repoId}", System.Uri.EscapeDataString(ConvertToString(repoId, System.Globalization.CultureInfo.InvariantCulture)));
+            urlBuilder_.Replace("{pullNumber}", System.Uri.EscapeDataString(ConvertToString(pullNumber, System.Globalization.CultureInfo.InvariantCulture)));
+            urlBuilder_.Replace("{fileName}", System.Uri.EscapeDataString(ConvertToString(fileName, System.Globalization.CultureInfo.InvariantCulture)));
+            urlBuilder_.Replace("{extension}", System.Uri.EscapeDataString(ConvertToString(extension, System.Globalization.CultureInfo.InvariantCulture)));
+    
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    if (metadata != null)
+                        request_.Headers.TryAddWithoutValidation("Metadata", ConvertToString(metadata, System.Globalization.CultureInfo.InvariantCulture));
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+    
+                    PrepareRequest(client_, request_, urlBuilder_);
+    
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+    
+                    PrepareRequest(client_, request_, url_);
+    
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+    
+                        ProcessResponse(client_, response_);
+    
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<NotFoundResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<NotFoundResponse>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<UnauthorizedResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<UnauthorizedResponse>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ValidationResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<ValidationResponse>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<ProblemDetails>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<PullFileInfo>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new SwaggerException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+    
         protected struct ObjectResponseResult<T>
         {
             public ObjectResponseResult(T responseObject, string responseText)
@@ -991,6 +1126,35 @@ namespace NetCore31ApiTemplate.Client
         /// <param name="metadata">Client Metadata JSON</param>
         /// <exception cref="SwaggerException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<System.Collections.ObjectModel.ObservableCollection<GitHubCommit>> GetFileInformationAsync(long repoId, string fileName, string extension, object metadata, System.Threading.CancellationToken cancellationToken);
+    
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<RepoIssuesResponse> GetRepoIssuesAsync(long repoId, object metadata);
+    
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<RepoIssuesResponse> GetRepoIssuesAsync(long repoId, object metadata, System.Threading.CancellationToken cancellationToken);
+    
+        /// <param name="connectionId">SignalR Client Connection ID</param>
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<RepoContributionResponse> GetRepoContributionVolumesAsync(long repoId, string connectionId, object metadata);
+    
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="connectionId">SignalR Client Connection ID</param>
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<RepoContributionResponse> GetRepoContributionVolumesAsync(long repoId, string connectionId, object metadata, System.Threading.CancellationToken cancellationToken);
+    
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<RepoSummaryResponse> GetRepoSummaryAsync(long repoId, object metadata);
+    
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<RepoSummaryResponse> GetRepoSummaryAsync(long repoId, object metadata, System.Threading.CancellationToken cancellationToken);
     
     }
     
@@ -1617,6 +1781,371 @@ namespace NetCore31ApiTemplate.Client
                         if (status_ == 200)
                         {
                             var objectResponse_ = await ReadObjectResponseAsync<System.Collections.ObjectModel.ObservableCollection<GitHubCommit>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new SwaggerException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+    
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        public System.Threading.Tasks.Task<RepoIssuesResponse> GetRepoIssuesAsync(long repoId, object metadata)
+        {
+            return GetRepoIssuesAsync(repoId, metadata, System.Threading.CancellationToken.None);
+        }
+    
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        public async System.Threading.Tasks.Task<RepoIssuesResponse> GetRepoIssuesAsync(long repoId, object metadata, System.Threading.CancellationToken cancellationToken)
+        {
+            if (repoId == null)
+                throw new System.ArgumentNullException("repoId");
+    
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/repositories/issues/{repoId}");
+            urlBuilder_.Replace("{repoId}", System.Uri.EscapeDataString(ConvertToString(repoId, System.Globalization.CultureInfo.InvariantCulture)));
+    
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    if (metadata != null)
+                        request_.Headers.TryAddWithoutValidation("Metadata", ConvertToString(metadata, System.Globalization.CultureInfo.InvariantCulture));
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+    
+                    PrepareRequest(client_, request_, urlBuilder_);
+    
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+    
+                    PrepareRequest(client_, request_, url_);
+    
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+    
+                        ProcessResponse(client_, response_);
+    
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<NotFoundResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<NotFoundResponse>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<UnauthorizedResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<UnauthorizedResponse>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ValidationResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<ValidationResponse>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<ProblemDetails>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<RepoIssuesResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new SwaggerException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+    
+        /// <param name="connectionId">SignalR Client Connection ID</param>
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        public System.Threading.Tasks.Task<RepoContributionResponse> GetRepoContributionVolumesAsync(long repoId, string connectionId, object metadata)
+        {
+            return GetRepoContributionVolumesAsync(repoId, connectionId, metadata, System.Threading.CancellationToken.None);
+        }
+    
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="connectionId">SignalR Client Connection ID</param>
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        public async System.Threading.Tasks.Task<RepoContributionResponse> GetRepoContributionVolumesAsync(long repoId, string connectionId, object metadata, System.Threading.CancellationToken cancellationToken)
+        {
+            if (repoId == null)
+                throw new System.ArgumentNullException("repoId");
+    
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/repositories/contribution-volume/{repoId}");
+            urlBuilder_.Replace("{repoId}", System.Uri.EscapeDataString(ConvertToString(repoId, System.Globalization.CultureInfo.InvariantCulture)));
+    
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    if (connectionId == null)
+                        throw new System.ArgumentNullException("connectionId");
+                    request_.Headers.TryAddWithoutValidation("ConnectionId", ConvertToString(connectionId, System.Globalization.CultureInfo.InvariantCulture));
+                    if (metadata != null)
+                        request_.Headers.TryAddWithoutValidation("Metadata", ConvertToString(metadata, System.Globalization.CultureInfo.InvariantCulture));
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+    
+                    PrepareRequest(client_, request_, urlBuilder_);
+    
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+    
+                    PrepareRequest(client_, request_, url_);
+    
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+    
+                        ProcessResponse(client_, response_);
+    
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<NotFoundResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<NotFoundResponse>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<UnauthorizedResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<UnauthorizedResponse>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ValidationResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<ValidationResponse>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<ProblemDetails>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<RepoContributionResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new SwaggerException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
+    
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        public System.Threading.Tasks.Task<RepoSummaryResponse> GetRepoSummaryAsync(long repoId, object metadata)
+        {
+            return GetRepoSummaryAsync(repoId, metadata, System.Threading.CancellationToken.None);
+        }
+    
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <param name="metadata">Client Metadata JSON</param>
+        /// <exception cref="SwaggerException">A server side error occurred.</exception>
+        public async System.Threading.Tasks.Task<RepoSummaryResponse> GetRepoSummaryAsync(long repoId, object metadata, System.Threading.CancellationToken cancellationToken)
+        {
+            if (repoId == null)
+                throw new System.ArgumentNullException("repoId");
+    
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/repositories/summary/{repoId}");
+            urlBuilder_.Replace("{repoId}", System.Uri.EscapeDataString(ConvertToString(repoId, System.Globalization.CultureInfo.InvariantCulture)));
+    
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    if (metadata != null)
+                        request_.Headers.TryAddWithoutValidation("Metadata", ConvertToString(metadata, System.Globalization.CultureInfo.InvariantCulture));
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+    
+                    PrepareRequest(client_, request_, urlBuilder_);
+    
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+    
+                    PrepareRequest(client_, request_, url_);
+    
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+    
+                        ProcessResponse(client_, response_);
+    
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 404)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<NotFoundResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<NotFoundResponse>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 401)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<UnauthorizedResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<UnauthorizedResponse>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ValidationResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<ValidationResponse>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 500)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new SwaggerException<ProblemDetails>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<RepoSummaryResponse>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new SwaggerException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -2859,6 +3388,9 @@ namespace NetCore31ApiTemplate.Client
         [Newtonsoft.Json.JsonProperty("modifiedFilePaths", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.Collections.ObjectModel.ObservableCollection<string> ModifiedFilePaths { get; set; }
     
+        [Newtonsoft.Json.JsonProperty("isDotNetProject", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool IsDotNetProject { get; set; }
+    
         public string ToJson()
         {
             return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
@@ -3413,6 +3945,30 @@ namespace NetCore31ApiTemplate.Client
     }
     
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class PullFileInfo 
+    {
+        [Newtonsoft.Json.JsonProperty("additions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Additions { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("deletions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Deletions { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("commitsThatIncludeFile", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int CommitsThatIncludeFile { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static PullFileInfo FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<PullFileInfo>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
     public partial class UserRepositoryResult 
     {
         [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -3764,6 +4320,647 @@ namespace NetCore31ApiTemplate.Client
     }
     
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class RepoIssuesResponse 
+    {
+        [Newtonsoft.Json.JsonProperty("issues", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.ObjectModel.ObservableCollection<Issue> Issues { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static RepoIssuesResponse FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<RepoIssuesResponse>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class Issue 
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Id { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("nodeId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string NodeId { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Url { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("htmlUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string HtmlUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("commentsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string CommentsUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("eventsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string EventsUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("number", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Number { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("state", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public StringEnumOfItemState State { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("title", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Title { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("body", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Body { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("closedBy", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public User ClosedBy { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("user", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public User User { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("labels", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.ObjectModel.ObservableCollection<Label> Labels { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("assignee", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public User Assignee { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("assignees", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.ObjectModel.ObservableCollection<User> Assignees { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("milestone", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public Milestone Milestone { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("comments", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Comments { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("pullRequest", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public PullRequest PullRequest { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("closedAt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime? ClosedAt { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime CreatedAt { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("updatedAt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime? UpdatedAt { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("locked", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Locked { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("repository", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public Repository Repository { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("reactions", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public ReactionSummary Reactions { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static Issue FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<Issue>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class StringEnumOfItemState 
+    {
+        [Newtonsoft.Json.JsonProperty("stringValue", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string StringValue { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("value", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public ItemState Value { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static StringEnumOfItemState FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<StringEnumOfItemState>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public enum ItemState
+    {
+        Open = 0,
+    
+        Closed = 1,
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class Label 
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public long Id { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Url { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Name { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("nodeId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string NodeId { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("color", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Color { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("description", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Description { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("default", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Default { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static Label FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<Label>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class Milestone 
+    {
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Url { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("htmlUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string HtmlUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public long Id { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("number", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Number { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("nodeId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string NodeId { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("state", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public StringEnumOfItemState State { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("title", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Title { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("description", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Description { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("creator", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public User Creator { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("openIssues", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int OpenIssues { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("closedIssues", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int ClosedIssues { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime CreatedAt { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("dueOn", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime? DueOn { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("closedAt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime? ClosedAt { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("updatedAt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime? UpdatedAt { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static Milestone FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<Milestone>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class PullRequest 
+    {
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public long Id { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("nodeId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string NodeId { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Url { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("htmlUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string HtmlUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("diffUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string DiffUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("patchUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string PatchUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("issueUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string IssueUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("statusesUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string StatusesUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("number", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Number { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("state", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public StringEnumOfItemState State { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("title", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Title { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("body", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Body { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("createdAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime CreatedAt { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("updatedAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime UpdatedAt { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("closedAt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime? ClosedAt { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("mergedAt", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime? MergedAt { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("head", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public GitReference Head { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("base", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public GitReference Base { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("user", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public User User { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("assignee", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public User Assignee { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("assignees", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.ObjectModel.ObservableCollection<User> Assignees { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("milestone", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public Milestone Milestone { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("draft", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Draft { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("merged", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Merged { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("mergeable", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool? Mergeable { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("mergeableState", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public StringEnumOfMergeableState MergeableState { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("mergedBy", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public User MergedBy { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("mergeCommitSha", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string MergeCommitSha { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("comments", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Comments { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("commits", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Commits { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("additions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Additions { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("deletions", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Deletions { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("changedFiles", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int ChangedFiles { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("locked", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool Locked { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("maintainerCanModify", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool? MaintainerCanModify { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("requestedReviewers", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.ObjectModel.ObservableCollection<User> RequestedReviewers { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("requestedTeams", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.ObjectModel.ObservableCollection<Team> RequestedTeams { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("labels", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.ObjectModel.ObservableCollection<Label> Labels { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static PullRequest FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<PullRequest>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class StringEnumOfMergeableState 
+    {
+        [Newtonsoft.Json.JsonProperty("stringValue", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string StringValue { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("value", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public MergeableState Value { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static StringEnumOfMergeableState FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<StringEnumOfMergeableState>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public enum MergeableState
+    {
+        Dirty = 0,
+    
+        Unknown = 1,
+    
+        Blocked = 2,
+    
+        Behind = 3,
+    
+        Unstable = 4,
+    
+        HasHooks = 5,
+    
+        Clean = 6,
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class Team 
+    {
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Url { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("htmlUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string HtmlUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("id", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Id { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("nodeId", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string NodeId { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("slug", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Slug { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("name", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Name { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("description", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Description { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("privacy", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public StringEnumOfTeamPrivacy Privacy { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("permission", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public StringEnumOfPermissionLevel Permission { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("membersCount", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int MembersCount { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("reposCount", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int ReposCount { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("organization", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public Organization Organization { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("parent", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public Team Parent { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("ldapDistinguishedName", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string LdapDistinguishedName { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static Team FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<Team>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class StringEnumOfTeamPrivacy 
+    {
+        [Newtonsoft.Json.JsonProperty("stringValue", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string StringValue { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("value", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public TeamPrivacy Value { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static StringEnumOfTeamPrivacy FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<StringEnumOfTeamPrivacy>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public enum TeamPrivacy
+    {
+        Secret = 0,
+    
+        Closed = 1,
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class StringEnumOfPermissionLevel 
+    {
+        [Newtonsoft.Json.JsonProperty("stringValue", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string StringValue { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("value", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public PermissionLevel Value { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static StringEnumOfPermissionLevel FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<StringEnumOfPermissionLevel>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public enum PermissionLevel
+    {
+        Admin = 0,
+    
+        Write = 1,
+    
+        Read = 2,
+    
+        None = 3,
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class Organization : Account
+    {
+        [Newtonsoft.Json.JsonProperty("billingAddress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string BillingAddress { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("reposUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string ReposUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("eventsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string EventsUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("hooksUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string HooksUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("issuesUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string IssuesUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("membersUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string MembersUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("publicMembersUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string PublicMembersUrl { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("description", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Description { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("isVerified", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool IsVerified { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("hasOrganizationProjects", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool HasOrganizationProjects { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("hasRepositoryProjects", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool HasRepositoryProjects { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("updatedAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime UpdatedAt { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static Organization FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<Organization>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class ReactionSummary 
+    {
+        [Newtonsoft.Json.JsonProperty("totalCount", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int TotalCount { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("plus1", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Plus1 { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("minus1", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Minus1 { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("laugh", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Laugh { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("confused", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Confused { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("heart", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Heart { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("hooray", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Hooray { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("url", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string Url { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static ReactionSummary FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<ReactionSummary>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class RepoContributionResponse 
+    {
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static RepoContributionResponse FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<RepoContributionResponse>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class RepoSummaryResponse 
+    {
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static RepoSummaryResponse FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<RepoSummaryResponse>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
     public partial class UserActivity 
     {
         [Newtonsoft.Json.JsonProperty("notifications", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
@@ -3885,57 +5082,6 @@ namespace NetCore31ApiTemplate.Client
         public static Activity FromJson(string data)
         {
             return Newtonsoft.Json.JsonConvert.DeserializeObject<Activity>(data, new Newtonsoft.Json.JsonSerializerSettings());
-        }
-    
-    }
-    
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
-    public partial class Organization : Account
-    {
-        [Newtonsoft.Json.JsonProperty("billingAddress", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string BillingAddress { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("reposUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string ReposUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("eventsUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string EventsUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("hooksUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string HooksUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("issuesUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string IssuesUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("membersUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string MembersUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("publicMembersUrl", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string PublicMembersUrl { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("description", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public string Description { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("isVerified", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public bool IsVerified { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("hasOrganizationProjects", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public bool HasOrganizationProjects { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("hasRepositoryProjects", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public bool HasRepositoryProjects { get; set; }
-    
-        [Newtonsoft.Json.JsonProperty("updatedAt", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
-        public System.DateTime UpdatedAt { get; set; }
-    
-        public string ToJson()
-        {
-            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
-        }
-    
-        public static Organization FromJson(string data)
-        {
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<Organization>(data, new Newtonsoft.Json.JsonSerializerSettings());
         }
     
     }

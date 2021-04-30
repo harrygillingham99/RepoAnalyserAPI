@@ -4,12 +4,20 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using RepoAnalyser.Logic.Analysis.Interfaces;
+using RepoAnalyser.Logic.ProcessUtility;
 using Serilog;
 
 namespace RepoAnalyser.Logic.Analysis
 {
     public class MsBuildRunner : IMsBuildRunner
     {
+        private readonly IWinProcessUtil _processUtil;
+
+        public MsBuildRunner(IWinProcessUtil processUtil)
+        {
+            _processUtil = processUtil;
+        }
+
         public string Build(string repoDirectory, string outputDir)
         {
             var slnFilesLastWritten = new Dictionary<string, DateTime>();
@@ -25,21 +33,16 @@ namespace RepoAnalyser.Logic.Analysis
             if (string.IsNullOrWhiteSpace(pathToProjectFile))
                 throw new Exception("No project file found. Solution cannot be built");
 
-            using var process = new Process
+            using var process = _processUtil.StartNew(new ProcessStartInfo
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "dotnet",
-                    Arguments =
-                        $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo",
-                    UseShellExecute = false,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
+                FileName = "dotnet",
+                Arguments =
+                    $"build {pathToProjectFile} --output {outputDir} --configuration Release --nologo",
+                UseShellExecute = false,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
 
-                }
-            };
-
-            process.Start();
+            });
 
             process.WaitForExit();
 

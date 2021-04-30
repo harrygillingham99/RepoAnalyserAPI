@@ -84,5 +84,40 @@ namespace RepoAnalyser.API.Controllers
                 return _repositoryFacade.GetFileInformation(repoId, token, $"{fileName}.{extension}");
             });
         }
+
+        [HttpGet("issues/{repoId}")]
+        [ProducesResponseType(typeof(RepoIssuesResponse), (int) HttpStatusCode.OK)]
+        public Task<IActionResult> GetRepoIssues([FromRoute] long repoId)
+        {
+            return ExecuteAndMapToActionResultAsync(() =>
+            {
+                var token = HttpContext.Request.GetAuthorizationToken();
+                return _repositoryFacade.GetRepoIssues(repoId, token);
+            });
+        }
+
+        [RequireConnectionId]
+        [HttpGet("contribution-volume/{repoId}")]
+        [ProducesResponseType(typeof(RepoContributionResponse), (int) HttpStatusCode.OK)]
+        public Task<IActionResult> GetRepoContributionVolumes([FromRoute] long repoId)
+        {
+            return ExecuteAndMapToActionResultAsync(() =>
+            {
+                var (token, connectionId) = (HttpContext.Request.GetAuthorizationToken(),
+                    HttpContext.Request.GetConnectionId());
+                return _repositoryFacade.GetRepoContributionVolumes(repoId, token, connectionId);
+            });
+        }
+
+        [HttpGet("summary/{repoId}")]
+        [ProducesResponseType(typeof(RepoSummaryResponse), (int)HttpStatusCode.OK)]
+        public Task<IActionResult> GetRepoSummary([FromRoute] long repoId)
+        {
+            return ExecuteAndMapToActionResultAsync(() =>
+            {
+                var token = HttpContext.Request.GetAuthorizationToken();
+                return _repositoryFacade.GetRepoSummary(repoId, token);
+            });
+        }
     }
 }

@@ -101,8 +101,6 @@ namespace RepoAnalyser.Logic
                 _hub.DirectNotify(connectionId, "Started building code-owner dictionary",
                     RepoAnalysisProgressUpdate));
 
-           
-
             var result = await _octoKitServiceAgent.GetFileCodeOwners(token, filesInRepo, repository.Id, repository.LastUpdated);
             
             _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken =>
@@ -180,6 +178,24 @@ namespace RepoAnalyser.Logic
             }, null, result));
 
             return result;
+        }
+
+        public async Task<RepoIssuesResponse> GetRepoIssues(long repoId, string token)
+        {
+            return new RepoIssuesResponse
+            {
+                Issues = await _octoKitServiceAgent.GetIssuesForRepo(token, repoId)
+            };
+        }
+
+        public Task<RepoSummaryResponse> GetRepoSummary(long repoId, string token)
+        {
+            return Task.FromResult(new RepoSummaryResponse());
+        }
+
+        public Task<RepoContributionResponse> GetRepoContributionVolumes(long repoId, string token, string connectionId)
+        {
+            return Task.FromResult(new RepoContributionResponse());
         }
     }
 }

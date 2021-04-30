@@ -21,6 +21,8 @@ namespace RepoAnalyser.Services.OctoKit.Interfaces
 
         Task<GitHubCommit> GetDetailedCommit(string token, long repoId, string sha);
 
+        Task<IEnumerable<Issue>> GetIssuesForRepo(string token, long repoId);
+
         Task<IEnumerable<GitHubCommit>> GetFileCommits(long repoId, string token, string filePath, DateTime repoLastUpdated);
     }
 }
