@@ -14,5 +14,6 @@ namespace RepoAnalyser.Objects.API.Responses
 
         public bool IsDotNetProject { get; set; }
         public IDictionary<string, int> CyclomaticComplexities { get; set; }
+        public DateTime? CyclomaticComplexitiesLastUpdated { get; set; }
     }
 }

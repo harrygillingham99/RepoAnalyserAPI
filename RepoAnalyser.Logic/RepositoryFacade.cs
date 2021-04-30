@@ -68,7 +68,8 @@ namespace RepoAnalyser.Logic
                     Token = token, 
                     Username = user.Login
                 }),
-                CyclomaticComplexities = cyclomaticComplexity
+                CyclomaticComplexities = cyclomaticComplexity,
+                CyclomaticComplexitiesLastUpdated = results?.CyclomaticComplexitiesLastUpdated
             };
         }
 
@@ -140,21 +141,10 @@ namespace RepoAnalyser.Logic
                 $"Started calculating cyclomatic complexities for methods in {repository.Name}",
                 RepoAnalysisProgressUpdate));
 
-            string pullRequestBranch = null;
-
-            if (request.PullRequestNumber.HasValue)
-            {
-                pullRequestBranch =
-                    (await _octoKitGraphQlServiceAgent.GetPullRequest(token, request.RepoId,
-                        request.PullRequestNumber.Value)).HeadBranchName;
-            }
-
             var repoDir = _gitAdapter.GetRepoDirectory(new GitActionRequest
             {
-                BranchName = pullRequestBranch,
                 Email = user.Email ?? "test@RepoAnalyser.com",
                 RepoName = repository.Name, RepoUrl = repository.PullUrl, Token = token, Username = user.Login
-
             });
 
             _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _hub.DirectNotify(connectionId,
@@ -162,7 +152,7 @@ namespace RepoAnalyser.Logic
                 RepoAnalysisProgressUpdate));
 
 
-            var result = CecilHelper.ReadAssembly(_buildRunner.Build(repoDir.Directory, repoDir.DotNetBuildDirectory), _gitAdapter.GetSlnName(repository.Name, pullRequestBranch))
+            var result = CecilHelper.ReadAssembly(_buildRunner.Build(repoDir.Directory, repoDir.DotNetBuildDirectory), _gitAdapter.GetSlnName(repository.Name))
                 .ScanForMethods(request.FilesToSearch)
                 .GetCyclomaticComplexities();
 
