@@ -204,7 +204,7 @@ namespace RepoAnalyser.Services.OctoKit
         {
             _client.Connection.Credentials = GetCredentials(token);
 
-            return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-{filePath}-commits",
+            return _cache.GetOrAddAsync($"{repoId}-{filePath}-{repoLastUpdated}-fileCommits",
                 () => GetCommitsForFile(repoId, filePath),
                 CacheConstants.DefaultSlidingCacheExpiry);
         }
