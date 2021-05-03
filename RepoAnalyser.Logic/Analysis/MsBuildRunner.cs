@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using RepoAnalyser.Logic.Analysis.Interfaces;
-using RepoAnalyser.Logic.ProcessUtility;
+using RepoAnalyser.Services.ProcessUtility;
 using Serilog;
 
 namespace RepoAnalyser.Logic.Analysis

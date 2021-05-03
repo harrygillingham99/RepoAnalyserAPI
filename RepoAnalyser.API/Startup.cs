@@ -8,7 +8,6 @@ using Microsoft.Extensions.Hosting;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using RepoAnalyser.API.NSwag;
-using RepoAnalyser.Logic.ProcessUtility;
 using RepoAnalyser.SignalR.Hubs;
 
 namespace RepoAnalyser.API

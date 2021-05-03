@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace RepoAnalyser.Logic.ProcessUtility
+namespace RepoAnalyser.Services.ProcessUtility
 {
     public interface IWinProcessUtil
     {

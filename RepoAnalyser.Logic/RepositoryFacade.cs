@@ -183,9 +183,22 @@ namespace RepoAnalyser.Logic
             return Task.FromResult(new RepoSummaryResponse());
         }
 
-        public Task<RepoContributionResponse> GetRepoContributionVolumes(long repoId, string token, string connectionId)
+        public async Task<RepoContributionResponse> GetRepoContributionVolumes(long repoId, string token, string connectionId)
         {
-            return Task.FromResult(new RepoContributionResponse());
+            var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
+            var repo = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
+            return new RepoContributionResponse
+            {
+                LocForFiles = _gitAdapter.GetFileLocMetrics(new GitActionRequest
+                {
+                    RepoUrl = repo.PullUrl,
+                    RepoName = repo.Name,
+                    Token = token,
+                    Username = user.Login,
+                    Email = user.Email ?? "test@RepoAnalyser.com",
+                })
+            };
+
         }
     }
 }

@@ -4936,6 +4936,9 @@ namespace NetCore31ApiTemplate.Client
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
     public partial class RepoContributionResponse 
     {
+        [Newtonsoft.Json.JsonProperty("locForFiles", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.Collections.Generic.Dictionary<string, AddedRemoved> LocForFiles { get; set; }
+    
         public string ToJson()
         {
             return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
@@ -4944,6 +4947,27 @@ namespace NetCore31ApiTemplate.Client
         public static RepoContributionResponse FromJson(string data)
         {
             return Newtonsoft.Json.JsonConvert.DeserializeObject<RepoContributionResponse>(data, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "10.4.1.0 (Newtonsoft.Json v12.0.0.0)")]
+    public partial class AddedRemoved 
+    {
+        [Newtonsoft.Json.JsonProperty("added", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Added { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("removed", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int Removed { get; set; }
+    
+        public string ToJson()
+        {
+            return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());
+        }
+    
+        public static AddedRemoved FromJson(string data)
+        {
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<AddedRemoved>(data, new Newtonsoft.Json.JsonSerializerSettings());
         }
     
     }

@@ -17,5 +17,6 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces
 
         string GetSlnName(string repoName, string branchName = null);
 
+        IDictionary<string, AddedRemoved> GetFileLocMetrics(GitActionRequest request);
     }
 }

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using RepoAnalyser.Objects.Attributes;
-using Log = Serilog.Log;
+using Serilog;
 
-namespace RepoAnalyser.Logic.ProcessUtility
+namespace RepoAnalyser.Services.ProcessUtility
 {
     [ScrutorIgnore]
     public class WinProcessUtil : IWinProcessUtil
@@ -24,6 +23,7 @@ namespace RepoAnalyser.Logic.ProcessUtility
             return process;
         }
 
+        //in a 'prod' environment this will be called before a graceful shutdown
         public void KillAll()
         {
             _processes.ForEach(process =>

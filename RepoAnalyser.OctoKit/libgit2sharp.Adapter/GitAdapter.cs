@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using LibGit2Sharp;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Objects;
@@ -9,19 +11,24 @@ using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Constants;
 using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
+using RepoAnalyser.Services.ProcessUtility;
+using Serilog;
+using Repository = LibGit2Sharp.Repository;
 
 namespace RepoAnalyser.Services.libgit2sharp.Adapter
 {
     /*
-     * A class to handle interfacing with libgit2sharp in order interact with native git
+     * A class to handle interfacing with libgit2sharp and native git commands via the git cli in order interact with native git
      * functions and manage repo directories
      */
     public class GitAdapter : IGitAdapter
     {
         private readonly string _workDir;
+        private readonly IWinProcessUtil _processUtil;
 
-        public GitAdapter(IOptions<AppSettings> options)
+        public GitAdapter(IOptions<AppSettings> options, IWinProcessUtil processUtil)
         {
+            _processUtil = processUtil;
             _workDir = options.Value.WorkingDirectory;
         }
 
@@ -94,6 +101,67 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
                 DotNetBuildDirectory = GetRepoBuildPath(request.RepoName, request.BranchName)
             });
 
+        }
+
+        public IDictionary<string, AddedRemoved> GetFileLocMetrics(GitActionRequest request)
+        {
+            return CloneOrPullLatestRepositoryThenInvoke(request, repoDir =>
+            {
+                using var process = _processUtil.StartNew(new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/C git --no-pager log --author={request.Username} --pretty=tformat: --numstat",
+                    WorkingDirectory = repoDir,
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true
+                });
+
+                var result = process.StandardOutput.ReadToEnd();
+
+                process.WaitForExit();
+
+                Dictionary<string, AddedRemoved> ParseGitLogResult(string logResult)
+                {
+                    var results = new Dictionary<string, AddedRemoved>();
+                    var split = Regex.Split(logResult, "\r\n|\r|\n");
+                    foreach (var line in split)
+                    {
+                        if (string.IsNullOrWhiteSpace(line)) continue;
+                        var splitLine = Regex.Split(line, "\\t");
+                        var fileName = splitLine[2];
+                        var added = int.TryParse(splitLine[0], out var linesAdded);
+                        var removed = int.TryParse(splitLine[1], out var linesRemoved);
+                        if (added && removed)
+                        {
+                            //some rows will contain diffs where file names have changed so we will take the new one and add the metrics
+                            if (fileName.Contains("=>"))
+                                fileName = fileName.Split('>').Last().Replace("}",
+                                    string.Empty).Trim();
+                            if (!results.ContainsKey(fileName))
+                            {
+                                results.Add(fileName, new AddedRemoved(linesAdded, linesRemoved));
+                            }
+                            else
+                            {
+                                var changes = results[fileName];
+                                changes.Added += linesAdded;
+                                changes.Removed += linesRemoved;
+                                results[fileName] = changes;
+                            }
+                        }
+                        else
+                        {
+                            Log.Error("Failed to parse Git Log line " + line);
+                        }
+                    }
+
+                    return results;
+                }
+
+                return ParseGitLogResult(result);
+            });
         }
 
         private T CloneOrPullLatestRepositoryThenInvoke<T>(GitActionRequest request, Func<string, T> gitActionRequest)
