@@ -215,7 +215,7 @@ namespace RepoAnalyser.Services.OctoKit
 
             async Task<IEnumerable<Issue>> GetIssues() => await _client.Issue.GetAllForRepository(repoId);
 
-            return _cache.GetOrAddAsync($"{token}-issues", GetIssues, CacheConstants.DefaultSlidingCacheExpiry);
+            return _cache.GetOrAddAsync($"{token}-{repoId}-issues", GetIssues, CacheConstants.DefaultSlidingCacheExpiry);
         }
 
         private async Task<IEnumerable<GitHubCommit>> GetCommitsForFile(long repoId, string filePath)
