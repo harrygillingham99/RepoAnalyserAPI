@@ -10,6 +10,7 @@ using RepoAnalyser.Logic.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
+using RepoAnalyser.Objects.Constants;
 using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
 using RepoAnalyser.Services.OctoKit.Interfaces;
@@ -60,7 +61,7 @@ namespace RepoAnalyser.Logic
                 RepoName = repo.Name,
                 Token = token,
                 Username = user.Login,
-                Email = user.Email ?? "test@RepoAnalyser.com"
+                Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login)
             };
             var repoRelativePaths = _gitAdapter.GetRelativeFilePathsForRepository(gitAction);
             var commits = (await _octoKitServiceAgent.GetCommitsForPullRequest(repoId, pullNumber, token,
@@ -114,7 +115,7 @@ namespace RepoAnalyser.Logic
             var repoDir = _gitAdapter.GetRepoDirectory(new GitActionRequest
             {
                 BranchName = pull.HeadBranchName,
-                Email = user.Email ?? "test@RepoAnalyser.com",
+                Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login),
                 RepoName = repository.Name,
                 RepoUrl = repository.PullUrl,
                 Token = token,

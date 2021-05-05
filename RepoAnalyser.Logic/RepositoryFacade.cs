@@ -10,6 +10,7 @@ using RepoAnalyser.Logic.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
+using RepoAnalyser.Objects.Constants;
 using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
 using RepoAnalyser.Services.OctoKit.GraphQL.Interfaces;
 using RepoAnalyser.Services.OctoKit.Interfaces;
@@ -62,7 +63,7 @@ namespace RepoAnalyser.Logic
                 CodeOwnersLastUpdated = results?.CodeOwnersLastRunDate,
                 IsDotNetProject = _gitAdapter.IsDotNetProject(new GitActionRequest
                 {
-                    Email = user.Email ?? "test@RepoAnalyser.com",
+                    Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login),
                     RepoName = repository.Name,
                     RepoUrl = repository.PullUrl, 
                     Token = token, 
@@ -91,7 +92,7 @@ namespace RepoAnalyser.Logic
             var filesInRepo = _gitAdapter.GetRelativeFilePathsForRepository(new GitActionRequest
             {
                 BranchName = null,
-                Email = user.Email ?? "unknown@RepoAnalyser.test",
+                Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login),
                 RepoName = repository.Name,
                 RepoUrl = repository.PullUrl,
                 Token = token,
@@ -127,7 +128,7 @@ namespace RepoAnalyser.Logic
                 RepoName = repository.Name,
                 Token = token,
                 Username = user.Login,
-                Email = user.Email ?? "unknown@RepoAnalyser.test"
+                Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login)
             });
 
             return await _octoKitServiceAgent.GetFileCommits(repoId, token, repoFiles.FirstOrDefault(file => file.Contains(filePath)), (repository).LastUpdated);
@@ -143,7 +144,7 @@ namespace RepoAnalyser.Logic
 
             var repoDir = _gitAdapter.GetRepoDirectory(new GitActionRequest
             {
-                Email = user.Email ?? "test@RepoAnalyser.com",
+                Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login),
                 RepoName = repository.Name, RepoUrl = repository.PullUrl, Token = token, Username = user.Login
             });
 
@@ -195,7 +196,7 @@ namespace RepoAnalyser.Logic
                     RepoName = repo.Name,
                     Token = token,
                     Username = user.Login,
-                    Email = user.Email ?? "test@RepoAnalyser.com",
+                    Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login),
                 })
             };
 

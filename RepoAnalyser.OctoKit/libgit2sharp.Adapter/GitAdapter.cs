@@ -122,7 +122,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
 
                 process.WaitForExit();
 
-                Dictionary<string, AddedRemoved> ParseGitLogResult(string logResult)
+                static Dictionary<string, AddedRemoved> ParseGitLogResult(string logResult)
                 {
                     var results = new Dictionary<string, AddedRemoved>();
                     var split = Regex.Split(logResult, "\r\n|\r|\n");
