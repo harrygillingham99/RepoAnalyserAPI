@@ -160,7 +160,14 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
                     return results;
                 }
 
-                return ParseGitLogResult(result);
+                if (process.ExitCode == 0) return ParseGitLogResult(result);
+
+                var processError = process.StandardError.ReadToEnd();
+
+                Log.Error(
+                    $"git log error: {processError}");
+                throw new Exception(
+                    $"Failed to retrieve git log information for {request.RepoName}. Received a non 0 exit code.");
             });
         }
 
