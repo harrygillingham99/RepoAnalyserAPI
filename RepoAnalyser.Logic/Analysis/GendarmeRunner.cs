@@ -28,9 +28,9 @@ namespace RepoAnalyser.Logic.Analysis
             var reportDir = $"{_workDir}/Reports/{request.RepoName}/report.html";
             using var process = _processUtil.StartNew(new ProcessStartInfo
             {
-                FileName = "gendarme",
+                FileName = "cmd.exe",
                 Arguments =
-                    $"--html {reportDir} --quiet {string.Join(' ', request.PathToAssemblies)}",
+                    $"/C gendarme --html {reportDir} --quiet {string.Join(' ', request.PathToAssemblies)}",
                 UseShellExecute = false,
                 RedirectStandardError = true,
                 CreateNoWindow = true,
@@ -52,7 +52,6 @@ namespace RepoAnalyser.Logic.Analysis
     {
         public string RepoName { get; set; }
         public IEnumerable<string> PathToAssemblies { get; set; }
-
     }
 
     public interface IGendarmeRunner

@@ -110,7 +110,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
             var slnName = GetSlnName(repoName, branchName);
             var results = Directory.EnumerateFiles(repoDir, "*.dll", SearchOption.AllDirectories);
                 
-            return results.Where(dir => Fuzz.PartialRatio(dir.ToLower(), slnName.ToLower()) > 80 || Fuzz.PartialRatio(repoName.ToLower(), dir.ToLower()) > 80); ;
+            return results.Where(dir => Fuzz.PartialRatio(dir.ToLower(), slnName.ToLower()) > 90 || Fuzz.PartialRatio(repoName.ToLower(), dir.ToLower()) > 90); ;
         }
 
         public IDictionary<string, AddedRemoved> GetFileLocMetrics(GitActionRequest request)
