@@ -119,5 +119,18 @@ namespace RepoAnalyser.API.Controllers
                 return _repositoryFacade.GetRepoSummary(repoId, token);
             });
         }
+
+        [RequireConnectionId]
+        [HttpGet("gendarme-report/{repoId}")]
+        [ProducesResponseType(typeof(string), (int) HttpStatusCode.OK)]
+        public Task<IActionResult> GetGendarmeReportHtml([FromRoute] long repoId)
+        {
+            return ExecuteAndMapToActionResultAsync(() =>
+            {
+                var (token, connectionId) = (HttpContext.Request.GetAuthorizationToken(), HttpContext
+                    .Request.GetConnectionId());
+                return _repositoryFacade.GetGendarmeReportHtml(repoId, token, connectionId);
+            });
+        } 
     }
 }

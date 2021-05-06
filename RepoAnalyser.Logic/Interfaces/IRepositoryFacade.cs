@@ -16,5 +16,6 @@ namespace RepoAnalyser.Logic.Interfaces
         Task<RepoIssuesResponse> GetRepoIssues(long repoId, string token);
         Task<RepoSummaryResponse> GetRepoSummary(long repoId, string token);
         Task<RepoContributionResponse> GetRepoContributionVolumes(long repoId, string token, string connectionId);
+        Task<string> GetGendarmeReportHtml( long repoId, string token, string connectionId);
     }
 }

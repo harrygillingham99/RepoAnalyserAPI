@@ -31,10 +31,11 @@ namespace RepoAnalyser.Logic
         private readonly IBackgroundTaskQueue _backgroundTaskQueue;
         private readonly IAnalysisRepository _analysisRepository;
         private readonly IMsBuildRunner _buildRunner;
+        private readonly IGendarmeRunner _gendarmeRunner;
 
         public RepositoryFacade(IOctoKitGraphQlServiceAgent octoKitGraphQlServiceAgent,
             IOctoKitServiceAgent octoKitServiceAgent, IGitAdapter gitAdapter, IOctoKitAuthServiceAgent octoKitAuthServiceAgent, 
-            IHubContext<AppHub, IAppHub> hub, IBackgroundTaskQueue backgroundTaskQueue, IAnalysisRepository analysisRepository, IMsBuildRunner buildRunner)
+            IHubContext<AppHub, IAppHub> hub, IBackgroundTaskQueue backgroundTaskQueue, IAnalysisRepository analysisRepository, IMsBuildRunner buildRunner, IGendarmeRunner gendarmeRunner)
         {
             _octoKitGraphQlServiceAgent = octoKitGraphQlServiceAgent;
             _octoKitServiceAgent = octoKitServiceAgent;
@@ -44,6 +45,7 @@ namespace RepoAnalyser.Logic
             _backgroundTaskQueue = backgroundTaskQueue;
             _analysisRepository = analysisRepository;
             _buildRunner = buildRunner;
+            _gendarmeRunner = gendarmeRunner;
         }
 
         public async Task<DetailedRepository> GetDetailedRepository(long repoId, string token)
@@ -200,6 +202,17 @@ namespace RepoAnalyser.Logic
                 })
             };
 
+        }
+
+        public async Task<string> GetGendarmeReportHtml(long repoId, string token, string connectionId)
+        {
+            var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
+            var assemblies = _gitAdapter.GetBuiltAssembliesForRepo(repository.Name);
+            return _gendarmeRunner.Run(new GendarmeAnalyisRequest
+            {
+                PathToAssemblies = assemblies,
+                RepoName = repository.Name
+            });
         }
     }
 }

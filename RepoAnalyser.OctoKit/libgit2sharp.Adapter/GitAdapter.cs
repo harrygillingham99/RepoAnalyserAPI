@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using FuzzySharp;
 using LibGit2Sharp;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Objects;
@@ -101,6 +102,15 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
                 DotNetBuildDirectory = GetRepoBuildPath(request.RepoName, request.BranchName)
             });
 
+        }
+
+        public IEnumerable<string> GetBuiltAssembliesForRepo(string repoName, string branchName = null)
+        {
+            var repoDir = GetRepoBuildPath(repoName, branchName);
+            var slnName = GetSlnName(repoName, branchName);
+            var results = Directory.EnumerateFiles(repoDir, "*.dll", SearchOption.AllDirectories);
+                
+            return results.Where(dir => Fuzz.PartialRatio(dir.ToLower(), slnName.ToLower()) > 80 || Fuzz.PartialRatio(repoName.ToLower(), dir.ToLower()) > 80); ;
         }
 
         public IDictionary<string, AddedRemoved> GetFileLocMetrics(GitActionRequest request)

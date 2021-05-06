@@ -44,11 +44,11 @@ namespace RepoAnalyser.Logic.Analysis
 
             });
 
+            var processError = process.StandardError.ReadToEnd();
+
             process.WaitForExit();
 
             if (process.ExitCode == 0) return outputDir;
-
-            var processError = process.StandardError.ReadToEnd();
 
             Log.Error(
                 $"dotnet build error: {processError}, build dir: {pathToProjectFile}, output dir: {outputDir}");
