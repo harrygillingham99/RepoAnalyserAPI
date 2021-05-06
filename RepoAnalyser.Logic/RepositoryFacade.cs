@@ -52,15 +52,15 @@ namespace RepoAnalyser.Logic
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
             var commits = _octoKitServiceAgent.GetCommitsForRepo(repoId,repository.LastUpdated, token);
             var repoStats = _octoKitServiceAgent.GetStatisticsForRepository(repoId,repository.LastUpdated ,token);
-            var (results, codeOwners, cyclomaticComplexity) = await _analysisRepository.GetAnalysisResult(repoId);
+            var results = await _analysisRepository.GetAnalysisResult(repoId);
 
             return new DetailedRepository
             {
                 Repository = repository,
                 Commits = await commits,
                 Statistics = await repoStats,
-                CodeOwners = codeOwners,
-                CodeOwnersLastUpdated = results?.CodeOwnersLastRunDate,
+                CodeOwners = results.CodeOwners,
+                CodeOwnersLastUpdated = results.Result?.CodeOwnersLastRunDate,
                 IsDotNetProject = _gitAdapter.IsDotNetProject(new GitActionRequest
                 {
                     Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login),
@@ -69,8 +69,8 @@ namespace RepoAnalyser.Logic
                     Token = token, 
                     Username = user.Login
                 }),
-                CyclomaticComplexities = cyclomaticComplexity,
-                CyclomaticComplexitiesLastUpdated = results?.CyclomaticComplexitiesLastUpdated
+                CyclomaticComplexities = results.Complexities,
+                CyclomaticComplexitiesLastUpdated = results.Result?.CyclomaticComplexitiesLastUpdated
             };
         }
 
@@ -108,12 +108,12 @@ namespace RepoAnalyser.Logic
             _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken =>
                 _hub.DirectNotify(connectionId,"Finished calculating code-owner dictionary", RepoAnalysisDone));
 
-            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _analysisRepository.UpsertAnalysisResults(new AnalysisResults
+            await _analysisRepository.UpsertAnalysisResults(new AnalysisResults
             {
                 CodeOwnersLastRunDate = DateTime.Now,
                 RepoId = repository.Id,
                 RepoName = repository.Name
-            }, result));
+            }, result);
 
             return result;
         }
@@ -161,12 +161,12 @@ namespace RepoAnalyser.Logic
                 $"Finished calculating cyclomatic complexities for methods in {repository.Name}",
                 RepoAnalysisDone));
 
-            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _analysisRepository.UpsertAnalysisResults(new AnalysisResults
+            await _analysisRepository.UpsertAnalysisResults(new AnalysisResults
             {
                 RepoId = repository.Id,
                 RepoName = repository.Name,
                 CyclomaticComplexitiesLastUpdated = DateTime.Now
-            }, null, result));
+            }, null, result);
 
             return result;
         }

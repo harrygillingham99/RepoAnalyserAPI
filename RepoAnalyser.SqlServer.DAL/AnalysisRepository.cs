@@ -11,6 +11,14 @@ using RepoAnalyser.SqlServer.DAL.SQL;
 
 namespace RepoAnalyser.SqlServer.DAL
 {
+    public class AnalysisResult {
+
+        public AnalysisResults Result { get; set; } 
+        public IDictionary<string, string> CodeOwners { get; set; }
+        public IDictionary<string, int> Complexities { get; set; }
+
+    }
+
     public class AnalysisRepository : Repository, IAnalysisRepository
     {
         public AnalysisRepository(IOptions<AppSettings> options) : base(options.Value.DatabaseConnectionString)
@@ -34,7 +42,7 @@ namespace RepoAnalyser.SqlServer.DAL
             });
         }
 
-        public Task<(AnalysisResults, IDictionary<string, string>, IDictionary<string, int>)> GetAnalysisResult(long repoId)
+        public Task<AnalysisResult> GetAnalysisResult(long repoId)
         {
             return InvokeMultiQuery(async (connection, multiReader) =>
             {
@@ -57,7 +65,12 @@ namespace RepoAnalyser.SqlServer.DAL
                         : new Dictionary<string, int>();
                 }
 
-                return (await analysisResults, GetCodeOwners(), GetCyclomaticComplexity());
+                return new AnalysisResult
+                {
+                    Result = await analysisResults,
+                    CodeOwners = GetCodeOwners(),
+                    Complexities = GetCyclomaticComplexity()
+                };
             }, Sql.GetRepoAnalysisRunInfo, new {repoId});
         }
     }
