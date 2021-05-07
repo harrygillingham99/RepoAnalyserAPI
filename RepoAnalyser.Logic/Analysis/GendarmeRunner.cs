@@ -43,7 +43,7 @@ namespace RepoAnalyser.Logic.Analysis
 
             if ((process.ExitCode == 0 || process.ExitCode == 1) && File.Exists(reportFileDir )) return (reportFileDir, File.ReadAllText(reportFileDir));
 
-            throw new Exception("Error running Gendarme, encountered a non 0 exit code.");
+            throw new Exception($"Error running Gendarme, encountered a non 0 exit code. {reportFileDir} {request.RepoBuildPath}");
         }
     }
 
