@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using System.Xml;
 using RepoAnalyser.Objects.Attributes;
 using Serilog;
 

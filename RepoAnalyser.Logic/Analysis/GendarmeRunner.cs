@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Gendarme.Framework.Helpers;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Services.ProcessUtility;
@@ -15,6 +14,7 @@ namespace RepoAnalyser.Logic.Analysis
     {
         private readonly IWinProcessUtil _processUtil;
         private readonly string _workDir;
+        private readonly int[] _acceptableExitCodes = {0,1 };
 
         public GendarmeRunner(IWinProcessUtil processUtil, IOptions<AppSettings> options)
         {
@@ -40,7 +40,7 @@ namespace RepoAnalyser.Logic.Analysis
                 CreateNoWindow = true
             });
 
-            if (new[] {0, 1}.Contains(exitCode) && File.Exists(reportFileDir))
+            if (_acceptableExitCodes.Contains(exitCode) && File.Exists(reportFileDir))
                 return (reportFileDir, File.ReadAllText(reportFileDir));
 
             Log.Error("Error running Gendarme: " + error);

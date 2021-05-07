@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using FuzzySharp;
 using LibGit2Sharp;
 using Microsoft.Extensions.Options;
@@ -17,7 +15,6 @@ using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
 using RepoAnalyser.Services.ProcessUtility;
 using Serilog;
 using Exception = System.Exception;
-using Process = System.Diagnostics.Process;
 using Repository = LibGit2Sharp.Repository;
 
 namespace RepoAnalyser.Services.libgit2sharp.Adapter

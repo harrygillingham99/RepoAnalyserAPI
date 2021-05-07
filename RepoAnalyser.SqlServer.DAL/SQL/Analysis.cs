@@ -1,6 +1,4 @@
-﻿using System.Net.Sockets;
-
-namespace RepoAnalyser.SqlServer.DAL.SQL
+﻿namespace RepoAnalyser.SqlServer.DAL.SQL
 {
     public static partial class Sql
     {

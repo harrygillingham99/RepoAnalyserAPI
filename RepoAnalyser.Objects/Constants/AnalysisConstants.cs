@@ -1,6 +1,4 @@
-﻿using RepoAnalyser.Objects.API.Responses;
-
-namespace RepoAnalyser.Objects.Constants
+﻿namespace RepoAnalyser.Objects.Constants
 {
     public static class AnalysisConstants
     {
