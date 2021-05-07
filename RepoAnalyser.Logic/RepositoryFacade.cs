@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Gendarme.Framework.Helpers;
+using HtmlAgilityPack;
 using Microsoft.AspNetCore.SignalR;
 using Octokit;
 using RepoAnalyser.Logic.Analysis;
@@ -67,7 +69,7 @@ namespace RepoAnalyser.Logic
 
                     var result = await File.ReadAllTextAsync(reportDir);
 
-                    return string.IsNullOrWhiteSpace(result) ? AnalysisConstants.NoReportText : result;
+                    return string.IsNullOrWhiteSpace(result) ? AnalysisConstants.NoReportText : CleanGendarmeHtml(result);
                 }
                 catch (Exception ex)
                 {
@@ -258,7 +260,61 @@ namespace RepoAnalyser.Logic
             await _analysisRepository.UpsertAnalysisResults(new AnalysisResults
                 {RepoId = repoId, RepoName = repository.Name, StaticAnalysisLastUpdated = DateTime.Now}, null, null, reportDir);
 
-            return htmlResult;
+            return CleanGendarmeHtml(htmlResult);
+        }
+
+        public static string CleanGendarmeHtml(string html)
+        {
+            var unwantedTags = new[] {"script", "a"};
+
+            if (string.IsNullOrEmpty(html))
+            {
+                return html;
+            }
+
+            var document = new HtmlDocument();
+            document.LoadHtml(html);
+
+            var tryGetNodes = document.DocumentNode.SelectNodes("./*|./text()");
+
+            if (tryGetNodes == null || !tryGetNodes.Any())
+            {
+                return html;
+            }
+
+            var nodes = new Queue<HtmlNode>(tryGetNodes);
+
+            while (nodes.Count > 0)
+            {
+                var node = nodes.Dequeue();
+                var parentNode = node.ParentNode;
+
+                var childNodes = node.SelectNodes("./*|./text()");
+
+                if (childNodes != null)
+                {
+                    foreach (var child in childNodes)
+                    {
+                        nodes.Enqueue(child);
+                    }
+                }
+
+                if (unwantedTags.Any(tag => tag == node.Name))
+                {
+                    if (childNodes != null)
+                    {
+                        foreach (var child in childNodes.Where(cNode => !cNode.InnerText.Contains("[show]") && !cNode.InnerText.Contains("[hide]")))
+                        {
+                            parentNode.InsertBefore(child, node);
+                        }
+                    }
+
+                    parentNode.RemoveChild(node);
+
+                }
+            }
+
+            return document.DocumentNode.InnerHtml.Replace("display:none", "display:block");
         }
     }
 }
