@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using FuzzySharp;
 using LibGit2Sharp;
 using Microsoft.Extensions.Options;
@@ -14,6 +16,8 @@ using RepoAnalyser.Objects.Constants;
 using RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces;
 using RepoAnalyser.Services.ProcessUtility;
 using Serilog;
+using Exception = System.Exception;
+using Process = System.Diagnostics.Process;
 using Repository = LibGit2Sharp.Repository;
 
 namespace RepoAnalyser.Services.libgit2sharp.Adapter
@@ -122,7 +126,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
         {
             return CloneOrPullLatestRepositoryThenInvoke(request, repoDir =>
             {
-                using var process = _processUtil.StartNew(new ProcessStartInfo
+                var (output, error, exitCode) = _processUtil.StartNewReadOutputAndError(new ProcessStartInfo
                 {
                     FileName = "cmd.exe",
                     Arguments = $"/C git --no-pager log --author={request.Username} --pretty=tformat: --numstat",
@@ -132,10 +136,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
                     RedirectStandardOutput = true,
                     CreateNoWindow = true
                 });
-
-                process.WaitForExit();
-
-                var result = process.StandardOutput.ReadToEnd();
+             
 
                 static Dictionary<string, AddedRemoved> ParseGitLogResult(string logResult)
                 {
@@ -175,14 +176,13 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
                     return results;
                 }
 
-                if (process.ExitCode == 0) return ParseGitLogResult(result);
-
-                var processError = process.StandardError.ReadToEnd();
+                if (exitCode == 0) return ParseGitLogResult(output.ToString());
 
                 Log.Error(
-                    $"git log error: {processError}");
+                    $"git log error: {error}");
                 throw new Exception(
                     $"Failed to retrieve git log information for {request.RepoName}. Received a non 0 exit code.");
+                ;
             });
         }
 

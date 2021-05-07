@@ -41,12 +41,11 @@ namespace RepoAnalyser.Logic.Analysis
                 UseShellExecute = false,
                 RedirectStandardError = true,
                 CreateNoWindow = true,
-
             });
 
-            var processError = process.StandardError.ReadToEnd();
-
             process.WaitForExit();
+
+            var processError = process.StandardError.ReadToEnd();
 
             if (process.ExitCode == 0) return outputDir;
 
