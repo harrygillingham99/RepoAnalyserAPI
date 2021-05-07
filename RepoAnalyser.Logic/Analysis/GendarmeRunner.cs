@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Gendarme.Framework.Helpers;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Services.ProcessUtility;
+using Log = Serilog.Log;
 
 namespace RepoAnalyser.Logic.Analysis
 {
@@ -36,13 +38,15 @@ namespace RepoAnalyser.Logic.Analysis
                 Arguments = @$"/C gendarme --html {reportFileDir} --quiet {string.Join(' ', request.PathToAssemblies)}",
                 WorkingDirectory = request.RepoBuildPath,
                 UseShellExecute = false,
+                RedirectStandardError = true,
                 CreateNoWindow = true,
             });
 
             process.WaitForExit();
 
-            if ((process.ExitCode == 0 || process.ExitCode == 1) && File.Exists(reportFileDir )) return (reportFileDir, File.ReadAllText(reportFileDir));
+            if ((process.ExitCode == 0 || process.ExitCode == 1) && File.Exists(reportFileDir)) return (reportFileDir, File.ReadAllText(reportFileDir));
 
+            Log.Error("Error running Gendarme: " + process.StandardError.ReadToEnd());
             throw new Exception($"Error running Gendarme, encountered a non 0 exit code. {reportFileDir} {request.RepoBuildPath}");
         }
     }
