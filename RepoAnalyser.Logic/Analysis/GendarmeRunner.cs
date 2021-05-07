@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Gendarme.Framework.Helpers;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Objects;
@@ -27,27 +28,23 @@ namespace RepoAnalyser.Logic.Analysis
 
             var reportFileDir = Path.Join(reportDir, "report.html");
 
-            if (!Directory.Exists(reportDir))
-            {
-                Directory.CreateDirectory(reportDir);
-            }
+            if (!Directory.Exists(reportDir)) Directory.CreateDirectory(reportDir);
 
-            using var process = _processUtil.StartNew(new ProcessStartInfo
+            var (error, exitCode) = _processUtil.StartNewReadError(new ProcessStartInfo
             {
                 FileName = "cmd.exe",
                 Arguments = @$"/C gendarme --html {reportFileDir} --quiet {string.Join(' ', request.PathToAssemblies)}",
                 WorkingDirectory = request.RepoBuildPath,
                 UseShellExecute = false,
                 RedirectStandardError = true,
-                CreateNoWindow = true,
+                CreateNoWindow = true
             });
 
-            process.WaitForExit();
+            if (new[] {0, 1}.Contains(exitCode) && File.Exists(reportFileDir))
+                return (reportFileDir, File.ReadAllText(reportFileDir));
 
-            if ((process.ExitCode == 0 || process.ExitCode == 1) && File.Exists(reportFileDir)) return (reportFileDir, File.ReadAllText(reportFileDir));
-
-            Log.Error("Error running Gendarme: " + process.StandardError.ReadToEnd());
-            throw new Exception($"Error running Gendarme, encountered a non 0 exit code. {reportFileDir} {request.RepoBuildPath}");
+            Log.Error("Error running Gendarme: " + error);
+            throw new Exception($"Error running Gendarme: {error}");
         }
     }
 

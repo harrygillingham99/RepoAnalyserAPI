@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Xml;
 using RepoAnalyser.Objects.Attributes;
 using Serilog;
 
@@ -39,15 +40,23 @@ namespace RepoAnalyser.Services.ProcessUtility
             return (output.ToString(), error.ToString(), process.ExitCode);
         }
 
-        public Process StartNew(Process process)
+        public (string error, int exitCode) StartNewReadError(Process process)
         {
+            var error = new StringBuilder();
+            process.ErrorDataReceived += (sender, args) =>
+            {
+                if (args.Data != null) error.AppendLine(args.Data);
+            };
+
             process.Start();
             _processes.Add(process);
-            return process;
+            process.BeginErrorReadLine();
+            process.WaitForExit();
+            return (error.ToString(), process.ExitCode);
 
         }
 
-        public Process StartNew(ProcessStartInfo startInfo) => StartNew(new Process()
+        public (string error, int exitCode) StartNewReadError(ProcessStartInfo startInfo) => StartNewReadError(new Process()
         {
             StartInfo = startInfo
         });

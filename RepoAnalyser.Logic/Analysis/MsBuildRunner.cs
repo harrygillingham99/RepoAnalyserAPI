@@ -33,7 +33,7 @@ namespace RepoAnalyser.Logic.Analysis
             if (string.IsNullOrWhiteSpace(pathToProjectFile))
                 throw new Exception("No project file found. Solution cannot be built");
 
-            using var process = _processUtil.StartNew(new ProcessStartInfo
+            var (error, exitCode)= _processUtil.StartNewReadError(new ProcessStartInfo
             {
                 FileName = "dotnet",
                 Arguments =
@@ -43,14 +43,11 @@ namespace RepoAnalyser.Logic.Analysis
                 CreateNoWindow = true,
             });
 
-            process.WaitForExit();
 
-            var processError = process.StandardError.ReadToEnd();
-
-            if (process.ExitCode == 0) return outputDir;
+            if (exitCode == 0) return outputDir;
 
             Log.Error(
-                $"dotnet build error: {processError}, build dir: {pathToProjectFile}, output dir: {outputDir}");
+                $"dotnet build error: {error}, build dir: {pathToProjectFile}, output dir: {outputDir}");
             throw new Exception(
                 $"Build Failed attempting to compile {pathToProjectFile.Split('\\').Last()}. Received a non 0 exit code.");
 
