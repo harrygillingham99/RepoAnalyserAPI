@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
@@ -72,7 +73,9 @@ namespace RepoAnalyser.Logic
                     Username = user.Login
                 }),
                 CyclomaticComplexities = results.Complexities,
-                CyclomaticComplexitiesLastUpdated = results.Result?.CyclomaticComplexitiesLastUpdated
+                CyclomaticComplexitiesLastUpdated = results.Result?.CyclomaticComplexitiesLastUpdated,
+                StaticAnalysisLastUpdated = results.Result?.StaticAnalysisLastUpdated,
+                StaticAnalysisHtml = results.GendarmeReportDirectory != "No Report" ? await File.ReadAllTextAsync(results.GendarmeReportDirectory) : results.GendarmeReportDirectory
             };
         }
 
@@ -207,12 +210,36 @@ namespace RepoAnalyser.Logic
         public async Task<string> GetGendarmeReportHtml(long repoId, string token, string connectionId)
         {
             var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
-            var assemblies = _gitAdapter.GetBuiltAssembliesForRepo(repository.Name);
-            return _gendarmeRunner.Run(new GendarmeAnalyisRequest
+
+            var (buildPath, assemblies) = _gitAdapter.GetBuiltAssembliesForRepo(repository.Name);
+
+            if (!Directory.Exists(buildPath.DotNetBuildDirectory))
+            {
+                _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _hub.DirectNotify(connectionId,
+                    $"{repository.Name} has not yet been built, compiling now.",
+                    RepoAnalysisProgressUpdate));
+                _buildRunner.Build(buildPath.Directory, buildPath.DotNetBuildDirectory);
+            }
+
+            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _hub.DirectNotify(connectionId,
+                "Invoking Gendarme report generation.",
+                RepoAnalysisProgressUpdate));
+
+            var (reportDir, htmlResult) = _gendarmeRunner.Run(new GendarmeAnalyisRequest
             {
                 PathToAssemblies = assemblies,
-                RepoName = repository.Name
+                RepoName = repository.Name,
+                RepoBuildPath = buildPath.DotNetBuildDirectory
             });
+
+            _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _hub.DirectNotify(connectionId,
+                "Success! Saving analysis result.",
+                RepoAnalysisDone));
+
+            await _analysisRepository.UpsertAnalysisResults(new AnalysisResults
+                {RepoId = repoId, RepoName = repository.Name, StaticAnalysisLastUpdated = DateTime.Now}, null, null, reportDir);
+
+            return htmlResult;
         }
     }
 }

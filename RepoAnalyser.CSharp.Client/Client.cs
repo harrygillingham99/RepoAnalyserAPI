@@ -4205,6 +4205,12 @@ namespace NetCore31ApiTemplate.Client
         [Newtonsoft.Json.JsonProperty("cyclomaticComplexitiesLastUpdated", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.DateTime? CyclomaticComplexitiesLastUpdated { get; set; }
     
+        [Newtonsoft.Json.JsonProperty("staticAnalysisLastUpdated", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public System.DateTime? StaticAnalysisLastUpdated { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("staticAnalysisHtml", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string StaticAnalysisHtml { get; set; }
+    
         public string ToJson()
         {
             return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());

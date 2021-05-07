@@ -2,13 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using Gendarme.Framework.Helpers;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Services.ProcessUtility;
-using Log = Serilog.Log;
 
 namespace RepoAnalyser.Logic.Analysis
 {
@@ -23,27 +19,30 @@ namespace RepoAnalyser.Logic.Analysis
             _workDir = options.Value.WorkingDirectory;
         }
 
-        public string Run(GendarmeAnalyisRequest request)
+        public (string reportFileDir, string htmlResult) Run(GendarmeAnalyisRequest request)
         {
-            var reportDir = $"{_workDir}/Reports/{request.RepoName}/report.html";
+            var reportDir = $"{_workDir}\\Reports\\{request.RepoName}";
+
+            var reportFileDir = Path.Join(reportDir, "report.html");
+
+            if (!Directory.Exists(reportDir))
+            {
+                Directory.CreateDirectory(reportDir);
+            }
+
             using var process = _processUtil.StartNew(new ProcessStartInfo
             {
                 FileName = "cmd.exe",
-                Arguments =
-                    $"/C gendarme --html {reportDir} --quiet {string.Join(' ', request.PathToAssemblies)}",
+                Arguments = @$"/C gendarme --html {reportFileDir} --quiet {string.Join(' ', request.PathToAssemblies)}",
+                WorkingDirectory = request.RepoBuildPath,
                 UseShellExecute = false,
-                RedirectStandardError = true,
                 CreateNoWindow = true,
-
             });
-
-            var processError = process.StandardError.ReadToEnd();
 
             process.WaitForExit();
 
-            if (process.ExitCode == 0) return File.ReadAllText(reportDir);
+            if ((process.ExitCode == 0 || process.ExitCode == 1) && File.Exists(reportFileDir )) return (reportFileDir, File.ReadAllText(reportFileDir));
 
-            Log.Error($"Gendarme error: {processError}");
             throw new Exception("Error running Gendarme, encountered a non 0 exit code.");
         }
     }
@@ -52,10 +51,11 @@ namespace RepoAnalyser.Logic.Analysis
     {
         public string RepoName { get; set; }
         public IEnumerable<string> PathToAssemblies { get; set; }
+        public string RepoBuildPath { get; set; }
     }
 
     public interface IGendarmeRunner
     {
-        string Run(GendarmeAnalyisRequest request);
+        (string reportFileDir, string htmlResult) Run(GendarmeAnalyisRequest request);
     }
 }

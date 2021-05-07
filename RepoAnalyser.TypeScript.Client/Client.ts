@@ -3156,6 +3156,8 @@ export class DetailedRepository implements IDetailedRepository {
     isDotNetProject?: boolean;
     cyclomaticComplexities?: { [key: string]: number; } | undefined;
     cyclomaticComplexitiesLastUpdated?: Date | undefined;
+    staticAnalysisLastUpdated?: Date | undefined;
+    staticAnalysisHtml?: string | undefined;
 
     constructor(data?: IDetailedRepository) {
         if (data) {
@@ -3192,6 +3194,8 @@ export class DetailedRepository implements IDetailedRepository {
                 }
             }
             this.cyclomaticComplexitiesLastUpdated = _data["cyclomaticComplexitiesLastUpdated"] ? new Date(_data["cyclomaticComplexitiesLastUpdated"].toString()) : <any>undefined;
+            this.staticAnalysisLastUpdated = _data["staticAnalysisLastUpdated"] ? new Date(_data["staticAnalysisLastUpdated"].toString()) : <any>undefined;
+            this.staticAnalysisHtml = _data["staticAnalysisHtml"];
         }
     }
 
@@ -3228,6 +3232,8 @@ export class DetailedRepository implements IDetailedRepository {
             }
         }
         data["cyclomaticComplexitiesLastUpdated"] = this.cyclomaticComplexitiesLastUpdated ? this.cyclomaticComplexitiesLastUpdated.toISOString() : <any>undefined;
+        data["staticAnalysisLastUpdated"] = this.staticAnalysisLastUpdated ? this.staticAnalysisLastUpdated.toISOString() : <any>undefined;
+        data["staticAnalysisHtml"] = this.staticAnalysisHtml;
         return data; 
     }
 }
@@ -3241,6 +3247,8 @@ export interface IDetailedRepository {
     isDotNetProject?: boolean;
     cyclomaticComplexities?: { [key: string]: number; } | undefined;
     cyclomaticComplexitiesLastUpdated?: Date | undefined;
+    staticAnalysisLastUpdated?: Date | undefined;
+    staticAnalysisHtml?: string | undefined;
 }
 
 export class RepoStatistics implements IRepoStatistics {

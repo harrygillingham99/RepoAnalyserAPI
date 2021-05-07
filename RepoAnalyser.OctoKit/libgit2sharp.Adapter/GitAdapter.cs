@@ -104,13 +104,18 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
 
         }
 
-        public IEnumerable<string> GetBuiltAssembliesForRepo(string repoName, string branchName = null)
+        public (RepoDirectoryResult.RepoDirectory repoDirectory, IEnumerable<string> assemblyNames) GetBuiltAssembliesForRepo(string repoName,
+            string branchName = null)
         {
             var repoDir = GetRepoBuildPath(repoName, branchName);
             var slnName = GetSlnName(repoName, branchName);
-            var results = Directory.EnumerateFiles(repoDir, "*.dll", SearchOption.AllDirectories);
-                
-            return results.Where(dir => Fuzz.PartialRatio(dir.ToLower(), slnName.ToLower()) > 90 || Fuzz.PartialRatio(repoName.ToLower(), dir.ToLower()) > 90); ;
+            var results = Directory.EnumerateFiles(repoDir, "*.dll", SearchOption.AllDirectories).Select(dir => dir.Replace(repoDir, string.Empty).Replace("\\", string.Empty));
+
+            return (new RepoDirectoryResult.RepoDirectory{Directory = GetRepoBranchDirectory(repoName, branchName), DotNetBuildDirectory = repoDir}, 
+                results.Where(dir =>
+                    Fuzz.PartialRatio(dir.Replace(".dll",string.Empty).ToLower(), slnName.ToLower()) > 85 ||
+                    Fuzz.PartialRatio(repoName.ToLower(), dir.Replace(".dll", string.Empty).ToLower()) > 85));
+
         }
 
         public IDictionary<string, AddedRemoved> GetFileLocMetrics(GitActionRequest request)
@@ -128,9 +133,9 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
                     CreateNoWindow = true
                 });
 
-                var result = process.StandardOutput.ReadToEnd();
-
                 process.WaitForExit();
+
+                var result = process.StandardOutput.ReadToEnd();
 
                 static Dictionary<string, AddedRemoved> ParseGitLogResult(string logResult)
                 {

@@ -14,6 +14,7 @@ namespace RepoAnalyser.SqlServer.DAL
     public class AnalysisResult {
 
         public AnalysisResults Result { get; set; } 
+        public string GendarmeReportDirectory { get; set; }
         public IDictionary<string, string> CodeOwners { get; set; }
         public IDictionary<string, int> Complexities { get; set; }
 
@@ -25,7 +26,7 @@ namespace RepoAnalyser.SqlServer.DAL
         {
         }
 
-        public Task UpsertAnalysisResults(AnalysisResults results, IDictionary<string, string> codeOwners = null, IDictionary<string, int> cyclomaticComplexities = null)
+        public Task UpsertAnalysisResults(AnalysisResults results, IDictionary<string, string> codeOwners = null, IDictionary<string, int> cyclomaticComplexities = null, string staticAnalysisReportDir = null)
         {
             return Invoke(connection =>
             {
@@ -36,6 +37,14 @@ namespace RepoAnalyser.SqlServer.DAL
                 if (cyclomaticComplexities != null)
                     connection.ExecuteAsync(Sql.UpsertCyclomaticComplexityAnalysis,
                         new {results.RepoId, Result = JsonConvert.SerializeObject(cyclomaticComplexities), LastUpdated = results.CyclomaticComplexitiesLastUpdated });
+
+                if (staticAnalysisReportDir != null)
+                    connection.ExecuteAsync(Sql.UpsertStaticAnalysis,
+                        new
+                        {
+                            results.RepoId, Result = staticAnalysisReportDir,
+                            LastUpdated = results.StaticAnalysisLastUpdated
+                        });
 
                 return connection.ExecuteAsync(Sql.UpsertAnalysisResultsInfo,
                     new {results.RepoId, results.RepoName});
@@ -49,6 +58,7 @@ namespace RepoAnalyser.SqlServer.DAL
                 var analysisResults = multiReader.ReadSingleOrDefaultAsync<AnalysisResults>();
                 var codeOwnersJson = await multiReader.ReadSingleOrDefaultAsync<string>();
                 var cyclomaticComplexitiesJson = await multiReader.ReadSingleOrDefaultAsync<string>();
+                var staticAnalysisReportDir = await multiReader.ReadSingleOrDefaultAsync<string>();
 
                 IDictionary<string, string> GetCodeOwners()
                 {
@@ -65,11 +75,17 @@ namespace RepoAnalyser.SqlServer.DAL
                         : new Dictionary<string, int>();
                 }
 
+                string GetReportDir()
+                {
+                    return  staticAnalysisReportDir ?? "No Report";
+                }
+
                 return new AnalysisResult
                 {
                     Result = await analysisResults,
                     CodeOwners = GetCodeOwners(),
-                    Complexities = GetCyclomaticComplexity()
+                    Complexities = GetCyclomaticComplexity(),
+                    GendarmeReportDirectory = GetReportDir()
                 };
             }, Sql.GetRepoAnalysisRunInfo, new {repoId});
         }

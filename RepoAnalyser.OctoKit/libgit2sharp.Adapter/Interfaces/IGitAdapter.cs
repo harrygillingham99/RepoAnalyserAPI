@@ -18,6 +18,6 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter.Interfaces
         string GetSlnName(string repoName, string branchName = null);
 
         IDictionary<string, AddedRemoved> GetFileLocMetrics(GitActionRequest request);
-        IEnumerable<string> GetBuiltAssembliesForRepo(string repoName, string branchName = null);
+        (RepoDirectoryResult.RepoDirectory repoDirectory, IEnumerable<string> assemblyNames) GetBuiltAssembliesForRepo(string repoName, string branchName = null);
     }
 }
