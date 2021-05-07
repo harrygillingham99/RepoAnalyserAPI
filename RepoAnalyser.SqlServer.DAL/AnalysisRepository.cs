@@ -77,7 +77,7 @@ namespace RepoAnalyser.SqlServer.DAL
 
                 string GetReportDir()
                 {
-                    return  staticAnalysisReportDir ?? "No Report";
+                    return staticAnalysisReportDir;
                 }
 
                 return new AnalysisResult

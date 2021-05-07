@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Gendarme.Framework.Helpers;
 using Microsoft.AspNetCore.SignalR;
 using Octokit;
 using RepoAnalyser.Logic.Analysis;
@@ -19,6 +20,7 @@ using RepoAnalyser.SignalR.Helpers;
 using RepoAnalyser.SignalR.Hubs;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 using static RepoAnalyser.SignalR.Objects.SignalRNotificationType;
+using Log = Serilog.Log;
 
 namespace RepoAnalyser.Logic
 {
@@ -57,6 +59,23 @@ namespace RepoAnalyser.Logic
             var repoStats = _octoKitServiceAgent.GetStatisticsForRepository(repoId,repository.LastUpdated ,token);
             var results = await _analysisRepository.GetAnalysisResult(repoId);
 
+            async Task<string> TryGetReportHtml(string reportDir)
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(reportDir) || !File.Exists(reportDir)) return AnalysisConstants.NoReportText;
+
+                    var result = await File.ReadAllTextAsync(reportDir);
+
+                    return string.IsNullOrWhiteSpace(result) ? AnalysisConstants.NoReportText : result;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Error getting report HTML");
+                    return AnalysisConstants.NoReportText;
+                }
+            }
+
             return new DetailedRepository
             {
                 Repository = repository,
@@ -75,7 +94,7 @@ namespace RepoAnalyser.Logic
                 CyclomaticComplexities = results.Complexities,
                 CyclomaticComplexitiesLastUpdated = results.Result?.CyclomaticComplexitiesLastUpdated,
                 StaticAnalysisLastUpdated = results.Result?.StaticAnalysisLastUpdated,
-                StaticAnalysisHtml = results.GendarmeReportDirectory != "No Report" ? await File.ReadAllTextAsync(results.GendarmeReportDirectory) : results.GendarmeReportDirectory
+                StaticAnalysisHtml = await TryGetReportHtml(results.GendarmeReportDirectory)
             };
         }
 
@@ -213,7 +232,7 @@ namespace RepoAnalyser.Logic
 
             var (buildPath, assemblies) = _gitAdapter.GetBuiltAssembliesForRepo(repository.Name);
 
-            if (!Directory.Exists(buildPath.DotNetBuildDirectory))
+            if (!Directory.Exists(buildPath.DotNetBuildDirectory) || !Directory.EnumerateFiles(buildPath.DotNetBuildDirectory).Any())
             {
                 _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _hub.DirectNotify(connectionId,
                     $"{repository.Name} has not yet been built, compiling now.",

@@ -8,7 +8,9 @@ namespace RepoAnalyser.Objects.Constants
 
         public static string FallbackEmail(string user = null) => $"{user ?? "unknown"}@RepoAnalyser.com";
 
+        public static string NoReportText = "No Report";
 
-    
+
+
     }
 }
