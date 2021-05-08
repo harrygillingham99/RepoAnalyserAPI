@@ -59,6 +59,8 @@ namespace RepoAnalyser.Objects.Helpers
 
             document.DocumentNode.SelectSingleNode("//div[@id='Rules_block']").Remove();
 
+            document.DocumentNode.SelectSingleNode("//div[@class='toc']").Remove();
+
             document.DocumentNode.SelectSingleNode("//*[normalize-space(text()) = 'List of rules used']").Remove();
 
             return document.DocumentNode.InnerHtml.Replace("display:none", "display:block");
