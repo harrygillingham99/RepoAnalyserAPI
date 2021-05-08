@@ -57,7 +57,9 @@ namespace RepoAnalyser.Objects.Helpers
                 }
             }
 
-            return document.DocumentNode.InnerHtml.Replace("display:none", "display:block");
+            document.DocumentNode.SelectSingleNode("//div[@id='Rules_block']").Remove();
+
+            return document.DocumentNode.InnerHtml.Replace("display:none", "display:block").Replace("<h2>List of rules used </h2>", string.Empty);
         }
     }
 }
