@@ -3,7 +3,7 @@
 namespace RepoAnalyser.Objects.Attributes
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public class RequireConnectionIdAttribute : Attribute
+    public sealed class RequireConnectionIdAttribute : Attribute
     {
     }
 }

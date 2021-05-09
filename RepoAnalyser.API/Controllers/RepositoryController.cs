@@ -20,6 +20,7 @@ namespace RepoAnalyser.API.Controllers
     public class RepositoryController : BaseController
     {
         private readonly IRepositoryFacade _repositoryFacade;
+
         public RepositoryController(IRepoAnalyserAuditRepository auditRepository,
             IBackgroundTaskQueue backgroundTaskQueue, IOptions<AppSettings> options,
             IRepositoryFacade repositoryFacade) : base(auditRepository, backgroundTaskQueue, options)
@@ -28,7 +29,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("{filterOption}")]
-        [ProducesResponseType(typeof(IEnumerable<UserRepositoryResult>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<UserRepositoryResult>), (int) HttpStatusCode.OK)]
         public Task<IActionResult> Repositories([FromRoute] RepoFilterOptions filterOption = RepoFilterOptions.All)
         {
             return ExecuteAndMapToActionResultAsync(() =>
@@ -39,7 +40,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("detailed/{repoId}")]
-        [ProducesResponseType(typeof(DetailedRepository), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(DetailedRepository), (int) HttpStatusCode.OK)]
         public Task<IActionResult> GetDetailedRepository([FromRoute] long repoId)
         {
             return ExecuteAndMapToActionResultAsync(() =>
@@ -64,19 +65,21 @@ namespace RepoAnalyser.API.Controllers
 
         [RequireConnectionId]
         [HttpGet("code-owners/{repoId}")]
-        [ProducesResponseType(typeof(IDictionary<string,string>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IDictionary<string, string>), (int) HttpStatusCode.OK)]
         public Task<IActionResult> GetCodeOwnersForRepo([FromRoute] long repoId)
         {
             return ExecuteAndMapToActionResultAsync(() =>
             {
-                var (connectionId, token) = (HttpContext.Request.GetConnectionId(), HttpContext.Request.GetAuthorizationToken());
+                var (connectionId, token) = (HttpContext.Request.GetConnectionId(),
+                    HttpContext.Request.GetAuthorizationToken());
                 return _repositoryFacade.GetRepositoryCodeOwners(repoId, connectionId, token);
             });
         }
 
         [HttpGet("file-info/{repoId}/{fileName}/{extension}")]
         [ProducesResponseType(typeof(IEnumerable<GitHubCommit>), (int) HttpStatusCode.OK)]
-        public Task<IActionResult> GetFileInformation([FromRoute] long repoId, [FromRoute] string fileName, [FromRoute] string extension)
+        public Task<IActionResult> GetFileInformation([FromRoute] long repoId, [FromRoute] string fileName,
+            [FromRoute] string extension)
         {
             return ExecuteAndMapToActionResultAsync(() =>
             {
@@ -110,7 +113,7 @@ namespace RepoAnalyser.API.Controllers
         }
 
         [HttpGet("summary/{repoId}")]
-        [ProducesResponseType(typeof(RepoSummaryResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(RepoSummaryResponse), (int) HttpStatusCode.OK)]
         public Task<IActionResult> GetRepoSummary([FromRoute] long repoId)
         {
             return ExecuteAndMapToActionResultAsync(() =>
@@ -131,6 +134,6 @@ namespace RepoAnalyser.API.Controllers
                     .Request.GetConnectionId());
                 return _repositoryFacade.GetGendarmeReportHtml(repoId, token, connectionId);
             });
-        } 
+        }
     }
 }

@@ -9,13 +9,13 @@ namespace RepoAnalyser.Objects.Helpers
         public static string CleanGendarmeHtml(string html)
         {
             var unwantedTags = new[] { "script", "a" };
+            var document = new HtmlDocument();
 
             if (string.IsNullOrEmpty(html))
             {
                 return html;
             }
 
-            var document = new HtmlDocument();
             document.LoadHtml(html);
 
             var tryGetNodes = document.DocumentNode.SelectNodes("./*|./text()");

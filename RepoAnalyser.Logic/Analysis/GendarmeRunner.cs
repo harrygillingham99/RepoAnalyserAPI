@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Options;
+using RepoAnalyser.Logic.Analysis.Interfaces;
 using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Services.ProcessUtility;
 using Log = Serilog.Log;
 
@@ -46,17 +47,5 @@ namespace RepoAnalyser.Logic.Analysis
             Log.Error("Error running Gendarme: " + error);
             throw new Exception($"Error running Gendarme: {error}");
         }
-    }
-
-    public class GendarmeAnalyisRequest
-    {
-        public string RepoName { get; set; }
-        public IEnumerable<string> PathToAssemblies { get; set; }
-        public string RepoBuildPath { get; set; }
-    }
-
-    public interface IGendarmeRunner
-    {
-        (string reportFileDir, string htmlResult) Run(GendarmeAnalyisRequest request);
     }
 }
