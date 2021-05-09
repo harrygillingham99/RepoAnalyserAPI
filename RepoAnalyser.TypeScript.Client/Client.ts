@@ -498,6 +498,80 @@ export class Client extends AuthorizedApiBase {
     /**
      * @param metadata (optional) Client Metadata JSON
      */
+    pullRequest_GetPullIssuesAndDiscussion(repoId: number, pullNumber: number, metadata: any | undefined): Promise<PullDiscussionResult> {
+        let url_ = this.baseUrl + "/pull-requests/discussion-issues/{repoId}/{pullNumber}";
+        if (repoId === undefined || repoId === null)
+            throw new Error("The parameter 'repoId' must be defined.");
+        url_ = url_.replace("{repoId}", encodeURIComponent("" + repoId));
+        if (pullNumber === undefined || pullNumber === null)
+            throw new Error("The parameter 'pullNumber' must be defined.");
+        url_ = url_.replace("{pullNumber}", encodeURIComponent("" + pullNumber));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            headers: {
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.processPullRequest_GetPullIssuesAndDiscussion(_response);
+        });
+    }
+
+    protected processPullRequest_GetPullIssuesAndDiscussion(response: Response): Promise<PullDiscussionResult> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = NotFoundResponse.fromJS(resultData404);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result404);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = UnauthorizedResponse.fromJS(resultData401);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result401);
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationResponse.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result500);
+            });
+        } else if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PullDiscussionResult.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<PullDiscussionResult>(<any>null);
+    }
+
+    /**
+     * @param metadata (optional) Client Metadata JSON
+     */
     repository_Repositories(filterOption: RepoFilterOptions, metadata: any | undefined): Promise<UserRepositoryResult[]> {
         let url_ = this.baseUrl + "/repositories/{filterOption}";
         if (filterOption === undefined || filterOption === null)
@@ -1026,9 +1100,10 @@ export class Client extends AuthorizedApiBase {
     }
 
     /**
+     * @param connectionId SignalR Client Connection ID
      * @param metadata (optional) Client Metadata JSON
      */
-    repository_GetRepoSummary(repoId: number, metadata: any | undefined): Promise<RepoSummaryResponse> {
+    repository_GetRepoSummary(repoId: number, connectionId: string, metadata: any | undefined): Promise<RepoSummaryResponse> {
         let url_ = this.baseUrl + "/repositories/summary/{repoId}";
         if (repoId === undefined || repoId === null)
             throw new Error("The parameter 'repoId' must be defined.");
@@ -1038,6 +1113,7 @@ export class Client extends AuthorizedApiBase {
         let options_ = <RequestInit>{
             method: "GET",
             headers: {
+                "ConnectionId": connectionId !== undefined && connectionId !== null ? "" + connectionId : "",
                 "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
                 "Accept": "application/json"
             }
@@ -3025,6 +3101,272 @@ export interface IPullFileInfo {
     commitsThatIncludeFile?: number;
 }
 
+export class PullDiscussionResult implements IPullDiscussionResult {
+    discussion?: PullRequestReviewComment[] | undefined;
+
+    constructor(data?: IPullDiscussionResult) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            if (Array.isArray(_data["discussion"])) {
+                this.discussion = [] as any;
+                for (let item of _data["discussion"])
+                    this.discussion!.push(PullRequestReviewComment.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): PullDiscussionResult {
+        data = typeof data === 'object' ? data : {};
+        let result = new PullDiscussionResult();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (Array.isArray(this.discussion)) {
+            data["discussion"] = [];
+            for (let item of this.discussion)
+                data["discussion"].push(item.toJSON());
+        }
+        return data; 
+    }
+}
+
+export interface IPullDiscussionResult {
+    discussion?: PullRequestReviewComment[] | undefined;
+}
+
+export class PullRequestReviewComment implements IPullRequestReviewComment {
+    url?: string | undefined;
+    id?: number;
+    nodeId?: string | undefined;
+    diffHunk?: string | undefined;
+    path?: string | undefined;
+    position?: number | undefined;
+    originalPosition?: number | undefined;
+    commitId?: string | undefined;
+    originalCommitId?: string | undefined;
+    user?: User | undefined;
+    body?: string | undefined;
+    createdAt?: Date;
+    updatedAt?: Date;
+    htmlUrl?: string | undefined;
+    pullRequestUrl?: string | undefined;
+    reactions?: ReactionSummary | undefined;
+    inReplyToId?: number | undefined;
+    pullRequestReviewId?: number | undefined;
+    authorAssociation?: StringEnumOfAuthorAssociation;
+
+    constructor(data?: IPullRequestReviewComment) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.url = _data["url"];
+            this.id = _data["id"];
+            this.nodeId = _data["nodeId"];
+            this.diffHunk = _data["diffHunk"];
+            this.path = _data["path"];
+            this.position = _data["position"];
+            this.originalPosition = _data["originalPosition"];
+            this.commitId = _data["commitId"];
+            this.originalCommitId = _data["originalCommitId"];
+            this.user = _data["user"] ? User.fromJS(_data["user"]) : <any>undefined;
+            this.body = _data["body"];
+            this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
+            this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
+            this.htmlUrl = _data["htmlUrl"];
+            this.pullRequestUrl = _data["pullRequestUrl"];
+            this.reactions = _data["reactions"] ? ReactionSummary.fromJS(_data["reactions"]) : <any>undefined;
+            this.inReplyToId = _data["inReplyToId"];
+            this.pullRequestReviewId = _data["pullRequestReviewId"];
+            this.authorAssociation = _data["authorAssociation"] ? StringEnumOfAuthorAssociation.fromJS(_data["authorAssociation"]) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): PullRequestReviewComment {
+        data = typeof data === 'object' ? data : {};
+        let result = new PullRequestReviewComment();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["url"] = this.url;
+        data["id"] = this.id;
+        data["nodeId"] = this.nodeId;
+        data["diffHunk"] = this.diffHunk;
+        data["path"] = this.path;
+        data["position"] = this.position;
+        data["originalPosition"] = this.originalPosition;
+        data["commitId"] = this.commitId;
+        data["originalCommitId"] = this.originalCommitId;
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        data["body"] = this.body;
+        data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
+        data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
+        data["htmlUrl"] = this.htmlUrl;
+        data["pullRequestUrl"] = this.pullRequestUrl;
+        data["reactions"] = this.reactions ? this.reactions.toJSON() : <any>undefined;
+        data["inReplyToId"] = this.inReplyToId;
+        data["pullRequestReviewId"] = this.pullRequestReviewId;
+        data["authorAssociation"] = this.authorAssociation ? this.authorAssociation.toJSON() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IPullRequestReviewComment {
+    url?: string | undefined;
+    id?: number;
+    nodeId?: string | undefined;
+    diffHunk?: string | undefined;
+    path?: string | undefined;
+    position?: number | undefined;
+    originalPosition?: number | undefined;
+    commitId?: string | undefined;
+    originalCommitId?: string | undefined;
+    user?: User | undefined;
+    body?: string | undefined;
+    createdAt?: Date;
+    updatedAt?: Date;
+    htmlUrl?: string | undefined;
+    pullRequestUrl?: string | undefined;
+    reactions?: ReactionSummary | undefined;
+    inReplyToId?: number | undefined;
+    pullRequestReviewId?: number | undefined;
+    authorAssociation?: StringEnumOfAuthorAssociation;
+}
+
+export class ReactionSummary implements IReactionSummary {
+    totalCount?: number;
+    plus1?: number;
+    minus1?: number;
+    laugh?: number;
+    confused?: number;
+    heart?: number;
+    hooray?: number;
+    url?: string | undefined;
+
+    constructor(data?: IReactionSummary) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.totalCount = _data["totalCount"];
+            this.plus1 = _data["plus1"];
+            this.minus1 = _data["minus1"];
+            this.laugh = _data["laugh"];
+            this.confused = _data["confused"];
+            this.heart = _data["heart"];
+            this.hooray = _data["hooray"];
+            this.url = _data["url"];
+        }
+    }
+
+    static fromJS(data: any): ReactionSummary {
+        data = typeof data === 'object' ? data : {};
+        let result = new ReactionSummary();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["totalCount"] = this.totalCount;
+        data["plus1"] = this.plus1;
+        data["minus1"] = this.minus1;
+        data["laugh"] = this.laugh;
+        data["confused"] = this.confused;
+        data["heart"] = this.heart;
+        data["hooray"] = this.hooray;
+        data["url"] = this.url;
+        return data; 
+    }
+}
+
+export interface IReactionSummary {
+    totalCount?: number;
+    plus1?: number;
+    minus1?: number;
+    laugh?: number;
+    confused?: number;
+    heart?: number;
+    hooray?: number;
+    url?: string | undefined;
+}
+
+export class StringEnumOfAuthorAssociation implements IStringEnumOfAuthorAssociation {
+    stringValue?: string | undefined;
+    value?: AuthorAssociation;
+
+    constructor(data?: IStringEnumOfAuthorAssociation) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.stringValue = _data["stringValue"];
+            this.value = _data["value"];
+        }
+    }
+
+    static fromJS(data: any): StringEnumOfAuthorAssociation {
+        data = typeof data === 'object' ? data : {};
+        let result = new StringEnumOfAuthorAssociation();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["stringValue"] = this.stringValue;
+        data["value"] = this.value;
+        return data; 
+    }
+}
+
+export interface IStringEnumOfAuthorAssociation {
+    stringValue?: string | undefined;
+    value?: AuthorAssociation;
+}
+
+export enum AuthorAssociation {
+    Collaborator = 0,
+    Contributor = 1,
+    FirstTimer = 2,
+    FirstTimeContributor = 3,
+    Member = 4,
+    Owner = 5,
+    None = 6,
+}
+
 export class UserRepositoryResult implements IUserRepositoryResult {
     id?: number;
     name?: string | undefined;
@@ -4641,70 +4983,6 @@ export interface IOrganization extends IAccount {
     updatedAt?: Date;
 }
 
-export class ReactionSummary implements IReactionSummary {
-    totalCount?: number;
-    plus1?: number;
-    minus1?: number;
-    laugh?: number;
-    confused?: number;
-    heart?: number;
-    hooray?: number;
-    url?: string | undefined;
-
-    constructor(data?: IReactionSummary) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(_data?: any) {
-        if (_data) {
-            this.totalCount = _data["totalCount"];
-            this.plus1 = _data["plus1"];
-            this.minus1 = _data["minus1"];
-            this.laugh = _data["laugh"];
-            this.confused = _data["confused"];
-            this.heart = _data["heart"];
-            this.hooray = _data["hooray"];
-            this.url = _data["url"];
-        }
-    }
-
-    static fromJS(data: any): ReactionSummary {
-        data = typeof data === 'object' ? data : {};
-        let result = new ReactionSummary();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["totalCount"] = this.totalCount;
-        data["plus1"] = this.plus1;
-        data["minus1"] = this.minus1;
-        data["laugh"] = this.laugh;
-        data["confused"] = this.confused;
-        data["heart"] = this.heart;
-        data["hooray"] = this.hooray;
-        data["url"] = this.url;
-        return data; 
-    }
-}
-
-export interface IReactionSummary {
-    totalCount?: number;
-    plus1?: number;
-    minus1?: number;
-    laugh?: number;
-    confused?: number;
-    heart?: number;
-    hooray?: number;
-    url?: string | undefined;
-}
-
 export class RepoContributionResponse implements IRepoContributionResponse {
     locForFiles?: { [key: string]: AddedRemoved; } | undefined;
 
@@ -4794,6 +5072,14 @@ export interface IAddedRemoved {
 }
 
 export class RepoSummaryResponse implements IRepoSummaryResponse {
+    ownershipPercentage?: number;
+    locContributed?: number;
+    locRemoved?: number;
+    averageCyclomaticComplexity?: number;
+    totalIssues?: number;
+    issuesRaised?: number;
+    issuesSolved?: number;
+    analysisIssues?: number;
 
     constructor(data?: IRepoSummaryResponse) {
         if (data) {
@@ -4805,6 +5091,16 @@ export class RepoSummaryResponse implements IRepoSummaryResponse {
     }
 
     init(_data?: any) {
+        if (_data) {
+            this.ownershipPercentage = _data["ownershipPercentage"];
+            this.locContributed = _data["locContributed"];
+            this.locRemoved = _data["locRemoved"];
+            this.averageCyclomaticComplexity = _data["averageCyclomaticComplexity"];
+            this.totalIssues = _data["totalIssues"];
+            this.issuesRaised = _data["issuesRaised"];
+            this.issuesSolved = _data["issuesSolved"];
+            this.analysisIssues = _data["analysisIssues"];
+        }
     }
 
     static fromJS(data: any): RepoSummaryResponse {
@@ -4816,11 +5112,27 @@ export class RepoSummaryResponse implements IRepoSummaryResponse {
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
+        data["ownershipPercentage"] = this.ownershipPercentage;
+        data["locContributed"] = this.locContributed;
+        data["locRemoved"] = this.locRemoved;
+        data["averageCyclomaticComplexity"] = this.averageCyclomaticComplexity;
+        data["totalIssues"] = this.totalIssues;
+        data["issuesRaised"] = this.issuesRaised;
+        data["issuesSolved"] = this.issuesSolved;
+        data["analysisIssues"] = this.analysisIssues;
         return data; 
     }
 }
 
 export interface IRepoSummaryResponse {
+    ownershipPercentage?: number;
+    locContributed?: number;
+    locRemoved?: number;
+    averageCyclomaticComplexity?: number;
+    totalIssues?: number;
+    issuesRaised?: number;
+    issuesSolved?: number;
+    analysisIssues?: number;
 }
 
 export class UserActivity implements IUserActivity {

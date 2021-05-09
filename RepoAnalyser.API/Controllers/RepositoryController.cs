@@ -112,14 +112,15 @@ namespace RepoAnalyser.API.Controllers
             });
         }
 
+        [RequireConnectionId]
         [HttpGet("summary/{repoId}")]
         [ProducesResponseType(typeof(RepoSummaryResponse), (int) HttpStatusCode.OK)]
         public Task<IActionResult> GetRepoSummary([FromRoute] long repoId)
         {
             return ExecuteAndMapToActionResultAsync(() =>
             {
-                var token = HttpContext.Request.GetAuthorizationToken();
-                return _repositoryFacade.GetRepoSummary(repoId, token);
+                var (token, connectionId) = (HttpContext.Request.GetAuthorizationToken(), HttpContext.Request.GetConnectionId());
+                return _repositoryFacade.GetRepoSummary(repoId, token, connectionId);
             });
         }
 

@@ -57,5 +57,16 @@ namespace RepoAnalyser.API.Controllers
                 return _pullRequestFacade.GetPullFileInformation(repoId, pullNumber, $"{fileName}.{extension}", token);
             });
         }
+
+        [HttpGet("discussion-issues/{repoId}/{pullNumber}")]
+        [ProducesResponseType(typeof(PullDiscussionResult), (int) HttpStatusCode.OK)]
+        public Task<IActionResult> GetPullIssuesAndDiscussion([FromRoute] long repoId, [FromRoute] int pullNumber)
+        {
+            return ExecuteAndMapToActionResultAsync(() =>
+            {
+                var token = HttpContext.Request.GetAuthorizationToken();
+                return _pullRequestFacade.GetPullIssuesAndDiscussion(repoId, pullNumber, token);
+            });
+        }
     }
 }

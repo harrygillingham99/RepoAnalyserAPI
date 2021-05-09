@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Octokit;
+using Octokit.GraphQL.Model;
 using RepoAnalyser.Logic.Analysis;
 using RepoAnalyser.Logic.Analysis.Interfaces;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
@@ -58,23 +59,6 @@ namespace RepoAnalyser.Logic
             var commits = _octoKitServiceAgent.GetCommitsForRepo(repoId,repository.LastUpdated, token);
             var repoStats = _octoKitServiceAgent.GetStatisticsForRepository(repoId,repository.LastUpdated ,token);
             var results = await _analysisRepository.GetAnalysisResult(repoId);
-
-            async Task<string> TryGetReportHtml(string reportDir)
-            {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(reportDir) || !File.Exists(reportDir)) return AnalysisConstants.NoReportText;
-
-                    var result = await File.ReadAllTextAsync(reportDir);
-
-                    return string.IsNullOrWhiteSpace(result) ? AnalysisConstants.NoReportText : CleanGendarmeHtml(result);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "Error getting report HTML");
-                    return AnalysisConstants.NoReportText;
-                }
-            }
 
             return new DetailedRepository
             {
@@ -203,9 +187,31 @@ namespace RepoAnalyser.Logic
             };
         }
 
-        public Task<RepoSummaryResponse> GetRepoSummary(long repoId, string token)
+        public async Task<RepoSummaryResponse> GetRepoSummary(long repoId, string token, string connectionId)
         {
-            return Task.FromResult(new RepoSummaryResponse());
+            var detailedRepo = await GetDetailedRepository(repoId, token);
+            var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
+            var issues = (await _octoKitServiceAgent.GetIssuesForRepo(token, repoId)).ToList();
+            var loc = _gitAdapter.GetFileLocMetrics(new GitActionRequest
+            {
+                Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login),
+                RepoName = detailedRepo.Repository.Name,
+                RepoUrl = detailedRepo.Repository.PullUrl,
+                Token = token,
+                Username = user.Login
+            });
+
+            return new RepoSummaryResponse
+            {
+                OwnershipPercentage = detailedRepo.CodeOwners == null ? -1 : ((double)detailedRepo.CodeOwners.Count(kv => kv.Value != null && kv.Value == user.Login) / detailedRepo.CodeOwners.Count(kv => kv.Value!= null)) * 100,
+                LocContributed = loc.Sum(kv => kv.Value.Added),
+                LocRemoved = loc.Sum(kv => kv.Value.Removed),
+                AverageCyclomaticComplexity = detailedRepo.CyclomaticComplexities?.Average(x => x.Value) ?? -1,
+                TotalIssues = issues.Count,
+                IssuesRaised = issues.Count(x => (x.User?.Login ?? string.Empty) == user.Login),
+                IssuesSolved = issues.Count(x => (x.ClosedBy?.Login ?? string.Empty)== user.Login),
+                AnalysisIssues = detailedRepo.StaticAnalysisHtml != AnalysisConstants.NoReportText ?  0 :  -1 
+            };
         }
 
         public async Task<RepoContributionResponse> GetRepoContributionVolumes(long repoId, string token, string connectionId)
@@ -259,6 +265,22 @@ namespace RepoAnalyser.Logic
                 {RepoId = repoId, RepoName = repository.Name, StaticAnalysisLastUpdated = DateTime.Now}, null, null, reportDir);
 
             return CleanGendarmeHtml(htmlResult);
+        }
+        private async Task<string> TryGetReportHtml(string reportDir)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(reportDir) || !File.Exists(reportDir)) return AnalysisConstants.NoReportText;
+
+                var result = await File.ReadAllTextAsync(reportDir);
+
+                return string.IsNullOrWhiteSpace(result) ? AnalysisConstants.NoReportText : CleanGendarmeHtml(result);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error getting report HTML");
+                return AnalysisConstants.NoReportText;
+            }
         }
     }
 }

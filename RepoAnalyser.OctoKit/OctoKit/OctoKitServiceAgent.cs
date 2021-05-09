@@ -8,8 +8,8 @@ using Octokit;
 using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
-using RepoAnalyser.Objects.Constants;
 using RepoAnalyser.Services.OctoKit.Interfaces;
+using static RepoAnalyser.Objects.Constants.CacheConstants;
 using static RepoAnalyser.Objects.Helpers.OctoKitHelper;
 
 namespace RepoAnalyser.Services.OctoKit
@@ -41,7 +41,7 @@ namespace RepoAnalyser.Services.OctoKit
             }
 
             return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-commits", GetCommits,
-                CacheConstants.DefaultSlidingCacheExpiry);
+                DefaultSlidingCacheExpiry);
         }
 
         public Task<UserLandingPageStatistics> GetLandingPageStatistics(string token)
@@ -100,19 +100,20 @@ namespace RepoAnalyser.Services.OctoKit
                 };
             }
 
-            return _cache.GetOrAddAsync($"{token}-landingStats", GetStats, CacheConstants.DefaultSlidingCacheExpiry);
+            return _cache.GetOrAddAsync($"{token}-landingStats", GetStats, DefaultSlidingCacheExpiry);
         }
 
         public Task<GitHubCommit> GetDetailedCommit(string token, long repoId, string sha)
         {
             _client.Connection.Credentials = GetCredentials(token);
 
-            Task<GitHubCommit> DetailedCommit() =>
-                _client.Repository.Commit.Get(repoId, sha);
+            Task<GitHubCommit> DetailedCommit()
+            {
+                return _client.Repository.Commit.Get(repoId, sha);
+            }
 
             return _cache.GetOrAddAsync($"commit-{sha}-{repoId}", DetailedCommit,
-                CacheConstants.DefaultSlidingCacheExpiry);
-
+                DefaultSlidingCacheExpiry);
         }
 
         public Task<IEnumerable<PullRequestCommit>> GetCommitsForPullRequest(long repoId, int pullNumber, string token,
@@ -126,7 +127,7 @@ namespace RepoAnalyser.Services.OctoKit
             }
 
             return _cache.GetOrAddAsync($"{repoId}-{pullNumber}-{pullLastUpdated}-pullCommits", GetCommits,
-                CacheConstants.DefaultSlidingCacheExpiry);
+                DefaultSlidingCacheExpiry);
         }
 
         public Task<RepoStatistics> GetStatisticsForRepository(long repoId, DateTime repoLastUpdated, string token)
@@ -148,12 +149,13 @@ namespace RepoAnalyser.Services.OctoKit
             }
 
             return _cache.GetOrAddAsync($"{repoLastUpdated}-{repoId}-stats", GetStatistics,
-                CacheConstants.DefaultSlidingCacheExpiry);
+                DefaultSlidingCacheExpiry);
         }
 
         public Task<UserActivity> GetDetailedUserActivity(string token, PaginationOptions pageOptions)
         {
             _client.Connection.Credentials = GetCredentials(token);
+
             async Task<UserActivity> GetUserStats()
             {
                 var userAccount = await _client.User.Current();
@@ -169,7 +171,7 @@ namespace RepoAnalyser.Services.OctoKit
             }
 
             return _cache.GetOrAddAsync($"{token}-{pageOptions.Page}-{pageOptions.PageSize}-stats", GetUserStats,
-                CacheConstants.DefaultSlidingCacheExpiry);
+                DefaultSlidingCacheExpiry);
         }
 
         public Task<IDictionary<string, string>> GetFileCodeOwners(string token, IEnumerable<string> filePaths,
@@ -186,7 +188,7 @@ namespace RepoAnalyser.Services.OctoKit
                 foreach (var path in filePathsList)
                     commitsForFiles.Add(path,
                         (await _cache.GetOrAddAsync($"{repoId}-{path}-{repoLastUpdated}-fileCommits",
-                            () => GetCommitsForFile(repoId, path), CacheConstants.DefaultSlidingCacheExpiry)).ToList());
+                            () => GetCommitsForFile(repoId, path), DefaultSlidingCacheExpiry)).ToList());
 
                 return commitsForFiles.ToDictionary(key => key.Key,
                     value => value.Value.GroupBy(x => x?.Author?.Login ?? "Unknown")
@@ -206,16 +208,38 @@ namespace RepoAnalyser.Services.OctoKit
 
             return _cache.GetOrAddAsync($"{repoId}-{filePath}-{repoLastUpdated}-fileCommits",
                 () => GetCommitsForFile(repoId, filePath),
-                CacheConstants.DefaultSlidingCacheExpiry);
+                DefaultSlidingCacheExpiry);
+        }
+
+        public Task<PullDiscussionResult> GetPullReviewInformation(string token, long repoId, int pullNumber,
+            DateTime updatedAtDateTime)
+        {
+            _client.Connection.Credentials = GetCredentials(token);
+
+            async Task<PullDiscussionResult> GetPullReviewInfo()
+            {
+                var reviewComments = _client.PullRequest.ReviewComment.GetAll(repoId, pullNumber);
+                return new PullDiscussionResult
+                {
+                    Discussion = await reviewComments
+                };
+            }
+
+            return _cache.GetOrAddAsync($"{token}-{repoId}-{pullNumber}-{updatedAtDateTime}-pullDiscussion",
+                GetPullReviewInfo, DefaultSlidingCacheExpiry);
         }
 
         public Task<IEnumerable<Issue>> GetIssuesForRepo(string token, long repoId)
         {
             _client.Connection.Credentials = GetCredentials(token);
 
-            async Task<IEnumerable<Issue>> GetIssues() => await _client.Issue.GetAllForRepository(repoId);
+            async Task<IEnumerable<Issue>> GetIssues()
+            {
+                return await _client.Issue.GetAllForRepository(repoId);
+            }
 
-            return _cache.GetOrAddAsync($"{token}-{repoId}-issues", GetIssues, CacheConstants.DefaultSlidingCacheExpiry);
+            return _cache.GetOrAddAsync($"{token}-{repoId}-issues", GetIssues,
+                DefaultSlidingCacheExpiry);
         }
 
         private async Task<IEnumerable<GitHubCommit>> GetCommitsForFile(long repoId, string filePath)
