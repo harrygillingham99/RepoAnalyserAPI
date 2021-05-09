@@ -123,6 +123,7 @@ namespace RepoAnalyser.Services.libgit2sharp.Adapter
         {
             return CloneOrPullLatestRepositoryThenInvoke(request, repoDir =>
             {
+                //This is by far the fastest way to get these metrics for a repository
                 var (output, error, exitCode) = _processUtil.StartNewReadOutputAndError(new ProcessStartInfo
                 {
                     FileName = "cmd.exe",

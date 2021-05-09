@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace RepoAnalyser.Objects.Constants
 {
@@ -7,6 +8,6 @@ namespace RepoAnalyser.Objects.Constants
         public static DateTimeOffset DefaultCacheExpiry = DateTimeOffset.Now.AddHours(1);
 
         //set it low for testing
-        public static TimeSpan DefaultSlidingCacheExpiry = new TimeSpan(0, 1, 0);
+        public static TimeSpan DefaultSlidingCacheExpiry = Debugger.IsAttached ? new TimeSpan(0, 0, 30) : new TimeSpan(0, 5, 0);
     }
 }
