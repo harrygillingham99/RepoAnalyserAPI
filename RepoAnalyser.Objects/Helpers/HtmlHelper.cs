@@ -63,7 +63,9 @@ namespace RepoAnalyser.Objects.Helpers
 
             document.DocumentNode.SelectSingleNode("//*[normalize-space(text()) = 'List of rules used']").Remove();
 
-            return document.DocumentNode.InnerHtml.Replace("display:none", "display:block");
+            document.DocumentNode.SelectSingleNode("//style[@type='text/css']").Remove();
+
+            return document.DocumentNode.InnerHtml.Replace("display:none", "display:block").Replace("h1", "h2");
         }
     }
 }
