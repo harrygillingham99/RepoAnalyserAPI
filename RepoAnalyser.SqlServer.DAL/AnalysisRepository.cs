@@ -11,15 +11,6 @@ using RepoAnalyser.SqlServer.DAL.SQL;
 
 namespace RepoAnalyser.SqlServer.DAL
 {
-    public class AnalysisResult {
-
-        public AnalysisResults Result { get; set; } 
-        public string GendarmeReportDirectory { get; set; }
-        public IDictionary<string, string> CodeOwners { get; set; }
-        public IDictionary<string, int> Complexities { get; set; }
-
-    }
-
     public class AnalysisRepository : Repository, IAnalysisRepository
     {
         public AnalysisRepository(IOptions<AppSettings> options) : base(options.Value.DatabaseConnectionString)

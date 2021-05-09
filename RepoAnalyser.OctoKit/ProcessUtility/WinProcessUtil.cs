@@ -19,24 +19,7 @@ namespace RepoAnalyser.Services.ProcessUtility
 
         public (string output, string error, int exitCode) StartNewReadOutputAndError(ProcessStartInfo startInfo)
         {
-            var output = new StringBuilder();
-            var error = new StringBuilder();
-            using var process = new Process {StartInfo = startInfo};
-            process.ErrorDataReceived += (sender, e) =>
-            {
-                if (e.Data != null) error.AppendLine(e.Data);
-            };
-            process.OutputDataReceived += (sender, e) =>
-            {
-                if (e.Data != null) output.AppendLine(e.Data);
-            };
-            process.Start();
-            _processes.Add(process);
-            process.BeginErrorReadLine();
-            process.BeginOutputReadLine();
-            process.WaitForExit();
-
-            return (output.ToString(), error.ToString(), process.ExitCode);
+            return StartNewReadOutputAndError(new Process {StartInfo = startInfo});
         }
 
         public (string error, int exitCode) StartNewReadError(Process process)
@@ -51,14 +34,17 @@ namespace RepoAnalyser.Services.ProcessUtility
             _processes.Add(process);
             process.BeginErrorReadLine();
             process.WaitForExit();
-            return (error.ToString(), process.ExitCode);
 
+            return (error.ToString(), process.ExitCode);
         }
 
-        public (string error, int exitCode) StartNewReadError(ProcessStartInfo startInfo) => StartNewReadError(new Process()
+        public (string error, int exitCode) StartNewReadError(ProcessStartInfo startInfo)
         {
-            StartInfo = startInfo
-        });
+            return StartNewReadError(new Process
+            {
+                StartInfo = startInfo
+            });
+        }
 
         //in a 'prod' environment this will be called before a graceful shutdown
         public void KillAll()
@@ -77,6 +63,27 @@ namespace RepoAnalyser.Services.ProcessUtility
                     Log.Error(ex, "Process encountered an error");
                 }
             });
+        }
+
+        public (string output, string error, int exitCode) StartNewReadOutputAndError(Process process)
+        {
+            var output = new StringBuilder();
+            var error = new StringBuilder();
+            process.ErrorDataReceived += (sender, e) =>
+            {
+                if (e.Data != null) error.AppendLine(e.Data);
+            };
+            process.OutputDataReceived += (sender, e) =>
+            {
+                if (e.Data != null) output.AppendLine(e.Data);
+            };
+            process.Start();
+            _processes.Add(process);
+            process.BeginErrorReadLine();
+            process.BeginOutputReadLine();
+            process.WaitForExit();
+
+            return (output.ToString(), error.ToString(), process.ExitCode);
         }
     }
 }
