@@ -195,32 +195,41 @@ namespace RepoAnalyser.Logic
 
         public async Task<RepoSummaryResponse> GetRepoSummary(long repoId, string token, string connectionId)
         {
-            var detailedRepo = await GetDetailedRepository(repoId, token);
-            var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
-            var issues = (await _octoKitServiceAgent.GetIssuesForRepo(token, repoId)).ToList();
-            var loc = _gitAdapter.GetFileLocMetrics(new GitActionRequest
+            try
             {
-                Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login),
-                RepoName = detailedRepo.Repository.Name,
-                RepoUrl = detailedRepo.Repository.PullUrl,
-                Token = token,
-                Username = user.Login
-            });
+                var detailedRepo = await GetDetailedRepository(repoId, token);
+                var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
+                var issues = (await _octoKitServiceAgent.GetIssuesForRepo(token, repoId)).ToList();
+                var loc = _gitAdapter.GetFileLocMetrics(new GitActionRequest
+                {
+                    Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login),
+                    RepoName = detailedRepo.Repository.Name,
+                    RepoUrl = detailedRepo.Repository.PullUrl,
+                    Token = token,
+                    Username = user.Login
+                });
 
-            return new RepoSummaryResponse
+                return new RepoSummaryResponse
+                {
+                    OwnershipPercentage = detailedRepo.CodeOwners == null
+                        ? -1
+                        : (double)detailedRepo.CodeOwners.Count(kv => kv.Value != null && kv.Value == user.Login) /
+                        detailedRepo.CodeOwners.Count(kv => kv.Value != null) * 100,
+                    LocContributed = loc.Count > 0 ? loc.Sum(kv => kv.Value.Added) : 0,
+                    LocRemoved = loc.Count > 0 ? loc.Sum(kv => kv.Value.Removed) : 0,
+                    AverageCyclomaticComplexity = detailedRepo.CyclomaticComplexities != null && detailedRepo.CyclomaticComplexities?.Count > 0 ? ((double) detailedRepo.CyclomaticComplexities?.Average(x => x.Value)) : -1,
+                    TotalIssues = issues.Count,
+                    IssuesRaised = issues.Count > 0 ? issues.Count(x => (x.User?.Login ?? string.Empty) == user.Login) : 0,
+                    IssuesSolved = issues.Count > 0 ? issues.Count(x => (x.ClosedBy?.Login ?? string.Empty) == user.Login) : 0,
+                    AnalysisIssues = detailedRepo.StaticAnalysisHtml != AnalysisConstants.NoReportText ? 0 : -1
+                };
+            }
+            catch (Exception e)
             {
-                OwnershipPercentage = detailedRepo.CodeOwners == null
-                    ? -1
-                    : (double) detailedRepo.CodeOwners.Count(kv => kv.Value != null && kv.Value == user.Login) /
-                    detailedRepo.CodeOwners.Count(kv => kv.Value != null) * 100,
-                LocContributed = loc.Sum(kv => kv.Value.Added),
-                LocRemoved = loc.Sum(kv => kv.Value.Removed),
-                AverageCyclomaticComplexity = detailedRepo.CyclomaticComplexities?.Average(x => x.Value) ?? -1,
-                TotalIssues = issues.Count,
-                IssuesRaised = issues.Count(x => (x.User?.Login ?? string.Empty) == user.Login),
-                IssuesSolved = issues.Count(x => (x.ClosedBy?.Login ?? string.Empty) == user.Login),
-                AnalysisIssues = detailedRepo.StaticAnalysisHtml != AnalysisConstants.NoReportText ? 0 : -1
-            };
+                Console.WriteLine(e);
+                throw;
+            }
+           
         }
 
         public async Task<RepoContributionResponse> GetRepoContributionVolumes(long repoId, string token,

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Octokit;
 using RepoAnalyser.Logic.Analysis;
@@ -147,14 +148,24 @@ namespace RepoAnalyser.Logic
 
         public async Task<PullSummaryResponse> GetPullRequestSummary(long repoId, int pullNumber, string token)
         {
-            var pull = _octoKitGraphQlServiceAgent.GetPullRequest(token, repoId, pullNumber);
+            var pull = await _octoKitGraphQlServiceAgent.GetPullRequest(token, repoId, pullNumber);
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
             var reviewInfo = await _octoKitServiceAgent.GetPullReviewInformation(token, repoId, pullNumber,
-                (await pull).UpdatedAt?.DateTime ?? DateTime.Now);
+                (pull).UpdatedAt?.DateTime ?? DateTime.Now);
+            var userCommitIds = (await _octoKitServiceAgent.GetCommitsForPullRequest(repoId, pullNumber, token,
+                (pull).UpdatedAt?.DateTime ?? DateTime.Now)).Where(commit => commit.Author.Login == user.Login).Select(commit => commit.Sha);
+            List<GitHubCommit> detailedCommits = new List<GitHubCommit>();
+            foreach (var sha in userCommitIds)
+            {
+                detailedCommits.Add(await _octoKitServiceAgent.GetDetailedCommit(token, repoId, sha));
+            }
+
 
             return new PullSummaryResponse
             {
                 IsReviewer = reviewInfo.AssignedReviewers.Any(users => users.Login == user.Login),
+                LocAdded = detailedCommits.Sum(commit => commit.Stats.Additions),
+                LocRemoved = detailedCommits.Sum(commit => commit.Stats.Deletions),
 
             };
         }

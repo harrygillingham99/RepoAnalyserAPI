@@ -4645,6 +4645,12 @@ namespace RepoAnalyser.CSharp.Client
         [Newtonsoft.Json.JsonProperty("isReviewer", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public bool IsReviewer { get; set; }
     
+        [Newtonsoft.Json.JsonProperty("locAdded", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int LocAdded { get; set; }
+    
+        [Newtonsoft.Json.JsonProperty("locRemoved", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public int LocRemoved { get; set; }
+    
         public string ToJson()
         {
             return Newtonsoft.Json.JsonConvert.SerializeObject(this, new Newtonsoft.Json.JsonSerializerSettings());

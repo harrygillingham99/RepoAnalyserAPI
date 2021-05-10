@@ -3664,6 +3664,8 @@ export interface IReactionSummary {
 
 export class PullSummaryResponse implements IPullSummaryResponse {
     isReviewer?: boolean;
+    locAdded?: number;
+    locRemoved?: number;
 
     constructor(data?: IPullSummaryResponse) {
         if (data) {
@@ -3677,6 +3679,8 @@ export class PullSummaryResponse implements IPullSummaryResponse {
     init(_data?: any) {
         if (_data) {
             this.isReviewer = _data["isReviewer"];
+            this.locAdded = _data["locAdded"];
+            this.locRemoved = _data["locRemoved"];
         }
     }
 
@@ -3690,12 +3694,16 @@ export class PullSummaryResponse implements IPullSummaryResponse {
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
         data["isReviewer"] = this.isReviewer;
+        data["locAdded"] = this.locAdded;
+        data["locRemoved"] = this.locRemoved;
         return data; 
     }
 }
 
 export interface IPullSummaryResponse {
     isReviewer?: boolean;
+    locAdded?: number;
+    locRemoved?: number;
 }
 
 export class UserRepositoryResult implements IUserRepositoryResult {
