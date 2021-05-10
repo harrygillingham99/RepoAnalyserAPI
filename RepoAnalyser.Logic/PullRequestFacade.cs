@@ -141,9 +141,8 @@ namespace RepoAnalyser.Logic
 
         public async Task<PullDiscussionResult> GetPullIssuesAndDiscussion(long repoId, int pullNumber, string token)
         {
-            var pull = await _octoKitGraphQlServiceAgent.GetPullRequest(token, repoId, pullNumber);
-            return await _octoKitServiceAgent.GetPullReviewInformation(token, repoId, pullNumber, pull.UpdatedAt?.DateTime ?? DateTime.Now);
-            
+            var pull =  _octoKitGraphQlServiceAgent.GetPullRequest(token, repoId, pullNumber);
+            return await _octoKitServiceAgent.GetPullReviewInformation(token, repoId, pullNumber, (await pull).UpdatedAt?.DateTime ?? DateTime.Now);
         }
 
         public Task<PullSummaryResponse> GetPullRequestSummary(long repoId, int pullNumber, string token)
