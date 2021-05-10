@@ -99,7 +99,7 @@
       "wrapResponseMethods": [],
       "generateResponseClasses": true,
       "responseClass": "ExampleResponse",
-      "namespace": "NetCore31ApiTemplate.Client",
+      "namespace": "RepoAnalyser.CSharp.Client",
       "requiredPropertiesMustBeDefined": true,
       "dateType": "System.DateTime",
       "jsonConverters": null,

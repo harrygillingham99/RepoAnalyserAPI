@@ -1,7 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.Options;
-using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.Config;
+using RepoAnalyser.Objects.Misc;
 using RepoAnalyser.SqlServer.DAL.BaseRepository;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 using RepoAnalyser.SqlServer.DAL.SQL;

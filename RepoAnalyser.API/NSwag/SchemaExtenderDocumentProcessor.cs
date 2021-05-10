@@ -3,8 +3,8 @@ using System.Linq;
 using System.Reflection;
 using NSwag.Generation.Processors;
 using NSwag.Generation.Processors.Contexts;
-using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.Attributes;
+using RepoAnalyser.Objects.Config;
 using RepoAnalyser.SignalR.Hubs;
 
 namespace RepoAnalyser.API.NSwag

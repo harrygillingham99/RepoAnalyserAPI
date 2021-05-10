@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
-using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.Config;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 
 namespace RepoAnalyser.API.Controllers

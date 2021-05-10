@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.Misc;
 
 namespace RepoAnalyser.SqlServer.DAL.Interfaces
 {

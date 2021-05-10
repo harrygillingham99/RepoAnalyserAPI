@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using FuzzySharp;
 using Mono.Cecil;
-using RepoAnalyser.Objects;
+using RepoAnalyser.Objects.Misc;
 
 namespace RepoAnalyser.Logic.Analysis
 {

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Octokit;
-using Octokit.GraphQL.Model;
 using RepoAnalyser.Logic.Analysis;
 using RepoAnalyser.Logic.Analysis.Interfaces;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
@@ -19,27 +18,29 @@ using RepoAnalyser.Services.OctoKit.Interfaces;
 using RepoAnalyser.SignalR.Helpers;
 using RepoAnalyser.SignalR.Hubs;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
+using Serilog;
 using static RepoAnalyser.SignalR.Objects.SignalRNotificationType;
 using static RepoAnalyser.Objects.Helpers.HtmlHelper;
-using Log = Serilog.Log;
 
 namespace RepoAnalyser.Logic
 {
     public class RepositoryFacade : IRepositoryFacade
     {
-        private readonly IOctoKitGraphQlServiceAgent _octoKitGraphQlServiceAgent;
-        private readonly IOctoKitServiceAgent _octoKitServiceAgent;
-        private readonly IOctoKitAuthServiceAgent _octoKitAuthServiceAgent;
-        private readonly IGitAdapter _gitAdapter;
-        private readonly IHubContext<AppHub, IAppHub> _hub;
-        private readonly IBackgroundTaskQueue _backgroundTaskQueue;
         private readonly IAnalysisRepository _analysisRepository;
+        private readonly IBackgroundTaskQueue _backgroundTaskQueue;
         private readonly IMsBuildRunner _buildRunner;
         private readonly IGendarmeRunner _gendarmeRunner;
+        private readonly IGitAdapter _gitAdapter;
+        private readonly IHubContext<AppHub, IAppHub> _hub;
+        private readonly IOctoKitAuthServiceAgent _octoKitAuthServiceAgent;
+        private readonly IOctoKitGraphQlServiceAgent _octoKitGraphQlServiceAgent;
+        private readonly IOctoKitServiceAgent _octoKitServiceAgent;
 
         public RepositoryFacade(IOctoKitGraphQlServiceAgent octoKitGraphQlServiceAgent,
-            IOctoKitServiceAgent octoKitServiceAgent, IGitAdapter gitAdapter, IOctoKitAuthServiceAgent octoKitAuthServiceAgent, 
-            IHubContext<AppHub, IAppHub> hub, IBackgroundTaskQueue backgroundTaskQueue, IAnalysisRepository analysisRepository, IMsBuildRunner buildRunner, IGendarmeRunner gendarmeRunner)
+            IOctoKitServiceAgent octoKitServiceAgent, IGitAdapter gitAdapter,
+            IOctoKitAuthServiceAgent octoKitAuthServiceAgent,
+            IHubContext<AppHub, IAppHub> hub, IBackgroundTaskQueue backgroundTaskQueue,
+            IAnalysisRepository analysisRepository, IMsBuildRunner buildRunner, IGendarmeRunner gendarmeRunner)
         {
             _octoKitGraphQlServiceAgent = octoKitGraphQlServiceAgent;
             _octoKitServiceAgent = octoKitServiceAgent;
@@ -56,8 +57,8 @@ namespace RepoAnalyser.Logic
         {
             var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
-            var commits = _octoKitServiceAgent.GetCommitsForRepo(repoId,repository.LastUpdated, token);
-            var repoStats = _octoKitServiceAgent.GetStatisticsForRepository(repoId,repository.LastUpdated ,token);
+            var commits = _octoKitServiceAgent.GetCommitsForRepo(repoId, repository.LastUpdated, token);
+            var repoStats = _octoKitServiceAgent.GetStatisticsForRepository(repoId, repository.LastUpdated, token);
             var results = await _analysisRepository.GetAnalysisResult(repoId);
 
             return new DetailedRepository
@@ -71,8 +72,8 @@ namespace RepoAnalyser.Logic
                 {
                     Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login),
                     RepoName = repository.Name,
-                    RepoUrl = repository.PullUrl, 
-                    Token = token, 
+                    RepoUrl = repository.PullUrl,
+                    Token = token,
                     Username = user.Login
                 }),
                 CyclomaticComplexities = results.Complexities,
@@ -87,7 +88,8 @@ namespace RepoAnalyser.Logic
             return _octoKitGraphQlServiceAgent.GetRepositories(token, filterOption);
         }
 
-        public async Task<IDictionary<string, string>> GetRepositoryCodeOwners(long repoId, string connectionId, string token)
+        public async Task<IDictionary<string, string>> GetRepositoryCodeOwners(long repoId, string connectionId,
+            string token)
         {
             var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
 
@@ -111,10 +113,11 @@ namespace RepoAnalyser.Logic
                 _hub.DirectNotify(connectionId, "Started building code-owner dictionary",
                     RepoAnalysisProgressUpdate));
 
-            var result = await _octoKitServiceAgent.GetFileCodeOwners(token, filesInRepo, repository.Id, repository.LastUpdated);
-            
+            var result =
+                await _octoKitServiceAgent.GetFileCodeOwners(token, filesInRepo, repository.Id, repository.LastUpdated);
+
             _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken =>
-                _hub.DirectNotify(connectionId,"Finished calculating code-owner dictionary", RepoAnalysisDone));
+                _hub.DirectNotify(connectionId, "Finished calculating code-owner dictionary", RepoAnalysisDone));
 
             await _analysisRepository.UpsertAnalysisResults(new AnalysisResults
             {
@@ -128,7 +131,7 @@ namespace RepoAnalyser.Logic
 
         public async Task<IEnumerable<GitHubCommit>> GetFileInformation(long repoId, string token, string filePath)
         {
-            var repository = await  _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
+            var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
             var repoFiles = _gitAdapter.GetRelativeFilePathsForRepository(new GitActionRequest
             {
@@ -139,10 +142,12 @@ namespace RepoAnalyser.Logic
                 Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login)
             });
 
-            return await _octoKitServiceAgent.GetFileCommits(repoId, token, repoFiles.FirstOrDefault(file => file.Contains(filePath)), (repository).LastUpdated);
+            return await _octoKitServiceAgent.GetFileCommits(repoId, token,
+                repoFiles.FirstOrDefault(file => file.Contains(filePath)), repository.LastUpdated);
         }
 
-        public async Task<IDictionary<string, int>> GetCyclomaticComplexities(string connectionId, string token, CyclomaticComplexityRequest request)
+        public async Task<IDictionary<string, int>> GetCyclomaticComplexities(string connectionId, string token,
+            CyclomaticComplexityRequest request)
         {
             var repository = await _octoKitGraphQlServiceAgent.GetRepository(token, request.RepoId);
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
@@ -161,7 +166,8 @@ namespace RepoAnalyser.Logic
                 RepoAnalysisProgressUpdate));
 
 
-            var result = CecilHelper.ReadAssembly(_buildRunner.Build(repoDir.Directory, repoDir.DotNetBuildDirectory), _gitAdapter.GetSlnName(repository.Name))
+            var result = CecilHelper.ReadAssembly(_buildRunner.Build(repoDir.Directory, repoDir.DotNetBuildDirectory),
+                    _gitAdapter.GetSlnName(repository.Name))
                 .ScanForMethods(request.FilesToSearch)
                 .GetCyclomaticComplexities();
 
@@ -203,18 +209,22 @@ namespace RepoAnalyser.Logic
 
             return new RepoSummaryResponse
             {
-                OwnershipPercentage = detailedRepo.CodeOwners == null ? -1 : ((double)detailedRepo.CodeOwners.Count(kv => kv.Value != null && kv.Value == user.Login) / detailedRepo.CodeOwners.Count(kv => kv.Value!= null)) * 100,
+                OwnershipPercentage = detailedRepo.CodeOwners == null
+                    ? -1
+                    : (double) detailedRepo.CodeOwners.Count(kv => kv.Value != null && kv.Value == user.Login) /
+                    detailedRepo.CodeOwners.Count(kv => kv.Value != null) * 100,
                 LocContributed = loc.Sum(kv => kv.Value.Added),
                 LocRemoved = loc.Sum(kv => kv.Value.Removed),
                 AverageCyclomaticComplexity = detailedRepo.CyclomaticComplexities?.Average(x => x.Value) ?? -1,
                 TotalIssues = issues.Count,
                 IssuesRaised = issues.Count(x => (x.User?.Login ?? string.Empty) == user.Login),
-                IssuesSolved = issues.Count(x => (x.ClosedBy?.Login ?? string.Empty)== user.Login),
-                AnalysisIssues = detailedRepo.StaticAnalysisHtml != AnalysisConstants.NoReportText ?  0 :  -1 
+                IssuesSolved = issues.Count(x => (x.ClosedBy?.Login ?? string.Empty) == user.Login),
+                AnalysisIssues = detailedRepo.StaticAnalysisHtml != AnalysisConstants.NoReportText ? 0 : -1
             };
         }
 
-        public async Task<RepoContributionResponse> GetRepoContributionVolumes(long repoId, string token, string connectionId)
+        public async Task<RepoContributionResponse> GetRepoContributionVolumes(long repoId, string token,
+            string connectionId)
         {
             var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
             var repo = await _octoKitGraphQlServiceAgent.GetRepository(token, repoId);
@@ -226,10 +236,9 @@ namespace RepoAnalyser.Logic
                     RepoName = repo.Name,
                     Token = token,
                     Username = user.Login,
-                    Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login),
+                    Email = user.Email ?? AnalysisConstants.FallbackEmail(user.Login)
                 })
             };
-
         }
 
         public async Task<string> GetGendarmeReportHtml(long repoId, string token, string connectionId)
@@ -238,7 +247,8 @@ namespace RepoAnalyser.Logic
 
             var (buildPath, assemblies) = _gitAdapter.GetBuiltAssembliesForRepo(repository.Name);
 
-            if (!Directory.Exists(buildPath.DotNetBuildDirectory) || !Directory.EnumerateFiles(buildPath.DotNetBuildDirectory).Any())
+            if (!Directory.Exists(buildPath.DotNetBuildDirectory) ||
+                !Directory.EnumerateFiles(buildPath.DotNetBuildDirectory).Any())
             {
                 _backgroundTaskQueue.QueueBackgroundWorkItem(cancellationToken => _hub.DirectNotify(connectionId,
                     $"{repository.Name} has not yet been built, compiling now.",
@@ -262,15 +272,18 @@ namespace RepoAnalyser.Logic
                 RepoAnalysisDone));
 
             await _analysisRepository.UpsertAnalysisResults(new AnalysisResults
-                {RepoId = repoId, RepoName = repository.Name, StaticAnalysisLastUpdated = DateTime.Now}, null, null, reportDir);
+                    {RepoId = repoId, RepoName = repository.Name, StaticAnalysisLastUpdated = DateTime.Now}, null, null,
+                reportDir);
 
             return CleanGendarmeHtml(htmlResult);
         }
+
         private async Task<string> TryGetReportHtml(string reportDir)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(reportDir) || !File.Exists(reportDir)) return AnalysisConstants.NoReportText;
+                if (string.IsNullOrWhiteSpace(reportDir) || !File.Exists(reportDir))
+                    return AnalysisConstants.NoReportText;
 
                 var result = await File.ReadAllTextAsync(reportDir);
 

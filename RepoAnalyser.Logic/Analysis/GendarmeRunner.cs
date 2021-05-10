@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.Logic.Analysis.Interfaces;
-using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
+using RepoAnalyser.Objects.Config;
 using RepoAnalyser.Services.ProcessUtility;
 using Log = Serilog.Log;
 

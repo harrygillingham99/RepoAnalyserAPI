@@ -7,9 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
-using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Responses;
+using RepoAnalyser.Objects.Config;
 using RepoAnalyser.Objects.Exceptions;
+using RepoAnalyser.Objects.Misc;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 using Serilog;
 

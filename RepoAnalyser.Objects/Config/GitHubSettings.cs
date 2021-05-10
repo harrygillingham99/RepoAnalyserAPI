@@ -1,4 +1,4 @@
-﻿namespace RepoAnalyser.Objects
+﻿namespace RepoAnalyser.Objects.Config
 {
     public class GitHubSettings
     {

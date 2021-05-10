@@ -6,9 +6,9 @@ using Microsoft.Extensions.Options;
 using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
-using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
+using RepoAnalyser.Objects.Config;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 
 namespace RepoAnalyser.API.Controllers
@@ -66,6 +66,17 @@ namespace RepoAnalyser.API.Controllers
             {
                 var token = HttpContext.Request.GetAuthorizationToken();
                 return _pullRequestFacade.GetPullIssuesAndDiscussion(repoId, pullNumber, token);
+            });
+        }
+
+        [HttpGet("summary/{repoId}/{pullNumber}")]
+        [ProducesResponseType(typeof(PullSummaryResponse), (int) HttpStatusCode.OK)]
+        public Task<IActionResult> GetPullRequestSummary([FromRoute] long repoId, [FromRoute] int pullNumber)
+        {
+            return ExecuteAndMapToActionResultAsync(() =>
+            {
+                var token = HttpContext.Request.GetAuthorizationToken();
+                return _pullRequestFacade.GetPullRequestSummary(repoId, pullNumber, token);
             });
         }
     }

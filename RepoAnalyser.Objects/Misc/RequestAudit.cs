@@ -1,6 +1,6 @@
 ﻿using RepoAnalyser.Objects.API.Requests;
 
-namespace RepoAnalyser.Objects
+namespace RepoAnalyser.Objects.Misc
 {
     #nullable enable
     public class RequestAudit

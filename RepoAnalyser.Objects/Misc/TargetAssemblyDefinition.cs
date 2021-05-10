@@ -1,6 +1,6 @@
 ﻿using Mono.Cecil;
 
-namespace RepoAnalyser.Objects
+namespace RepoAnalyser.Objects.Misc
 {
     public class TargetAssemblyDefinition
     {

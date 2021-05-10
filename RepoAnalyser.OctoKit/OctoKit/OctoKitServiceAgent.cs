@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using LazyCache;
 using Microsoft.Extensions.Options;
 using Octokit;
-using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
+using RepoAnalyser.Objects.Config;
 using RepoAnalyser.Services.OctoKit.Interfaces;
 using static RepoAnalyser.Objects.Constants.CacheConstants;
 using static RepoAnalyser.Objects.Helpers.OctoKitHelper;
@@ -31,11 +31,9 @@ namespace RepoAnalyser.Services.OctoKit
 
             async Task<IEnumerable<GitHubCommit>> GetCommits()
             {
-                var commits = new List<Task<GitHubCommit>>();
-
                 var result = _client.Repository.Commit.GetAll(repoId);
 
-                foreach (var commit in await result) commits.Add(_client.Repository.Commit.Get(repoId, commit.Sha));
+                var commits = (await result).Select(commit => _client.Repository.Commit.Get(repoId, commit.Sha));
 
                 return await Task.WhenAll(commits);
             }
@@ -218,10 +216,12 @@ namespace RepoAnalyser.Services.OctoKit
 
             async Task<PullDiscussionResult> GetPullReviewInfo()
             {
-                var reviewComments = _client.PullRequest.ReviewComment.GetAll(repoId, pullNumber);
+                var reviewComments = await _client.Issue.Comment.GetAllForIssue(repoId, pullNumber);
+                var reviewers = await _client.PullRequest.ReviewRequest.Get(repoId, pullNumber);
                 return new PullDiscussionResult
                 {
-                    Discussion = await reviewComments
+                    Discussion = reviewComments,
+                    AssignedReviewers = reviewers.Users.ToList()
                 };
             }
 

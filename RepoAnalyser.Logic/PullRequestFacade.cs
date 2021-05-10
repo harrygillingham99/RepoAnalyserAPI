@@ -145,5 +145,10 @@ namespace RepoAnalyser.Logic
             return await _octoKitServiceAgent.GetPullReviewInformation(token, repoId, pullNumber, pull.UpdatedAt?.DateTime ?? DateTime.Now);
             
         }
+
+        public Task<PullSummaryResponse> GetPullRequestSummary(long repoId, int pullNumber, string token)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

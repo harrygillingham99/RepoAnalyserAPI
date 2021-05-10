@@ -7,10 +7,10 @@ using Octokit;
 using RepoAnalyser.API.Helpers;
 using RepoAnalyser.Logic.BackgroundTaskQueue;
 using RepoAnalyser.Logic.Interfaces;
-using RepoAnalyser.Objects;
 using RepoAnalyser.Objects.API.Requests;
 using RepoAnalyser.Objects.API.Responses;
 using RepoAnalyser.Objects.Attributes;
+using RepoAnalyser.Objects.Config;
 using RepoAnalyser.SqlServer.DAL.Interfaces;
 
 namespace RepoAnalyser.API.Controllers

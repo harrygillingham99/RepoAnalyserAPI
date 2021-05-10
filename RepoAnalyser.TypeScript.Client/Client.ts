@@ -572,6 +572,80 @@ export class Client extends AuthorizedApiBase {
     /**
      * @param metadata (optional) Client Metadata JSON
      */
+    pullRequest_GetPullRequestSummary(repoId: number, pullNumber: number, metadata: any | undefined): Promise<PullSummaryResponse> {
+        let url_ = this.baseUrl + "/pull-requests/summary/{repoId}/{pullNumber}";
+        if (repoId === undefined || repoId === null)
+            throw new Error("The parameter 'repoId' must be defined.");
+        url_ = url_.replace("{repoId}", encodeURIComponent("" + repoId));
+        if (pullNumber === undefined || pullNumber === null)
+            throw new Error("The parameter 'pullNumber' must be defined.");
+        url_ = url_.replace("{pullNumber}", encodeURIComponent("" + pullNumber));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ = <RequestInit>{
+            method: "GET",
+            headers: {
+                "Metadata": metadata !== undefined && metadata !== null ? "" + metadata : "",
+                "Accept": "application/json"
+            }
+        };
+
+        return this.transformOptions(options_).then(transformedOptions_ => {
+            return this.http.fetch(url_, transformedOptions_);
+        }).then((_response: Response) => {
+            return this.processPullRequest_GetPullRequestSummary(_response);
+        });
+    }
+
+    protected processPullRequest_GetPullRequestSummary(response: Response): Promise<PullSummaryResponse> {
+        const status = response.status;
+        let _headers: any = {}; if (response.headers && response.headers.forEach) { response.headers.forEach((v: any, k: any) => _headers[k] = v); };
+        if (status === 404) {
+            return response.text().then((_responseText) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = NotFoundResponse.fromJS(resultData404);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result404);
+            });
+        } else if (status === 401) {
+            return response.text().then((_responseText) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = UnauthorizedResponse.fromJS(resultData401);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result401);
+            });
+        } else if (status === 400) {
+            return response.text().then((_responseText) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = ValidationResponse.fromJS(resultData400);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+            });
+        } else if (status === 500) {
+            return response.text().then((_responseText) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = ProblemDetails.fromJS(resultData500);
+            return throwException("A server side error occurred.", status, _responseText, _headers, result500);
+            });
+        } else if (status === 200) {
+            return response.text().then((_responseText) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PullSummaryResponse.fromJS(resultData200);
+            return result200;
+            });
+        } else if (status !== 200 && status !== 204) {
+            return response.text().then((_responseText) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            });
+        }
+        return Promise.resolve<PullSummaryResponse>(<any>null);
+    }
+
+    /**
+     * @param metadata (optional) Client Metadata JSON
+     */
     repository_Repositories(filterOption: RepoFilterOptions, metadata: any | undefined): Promise<UserRepositoryResult[]> {
         let url_ = this.baseUrl + "/repositories/{filterOption}";
         if (filterOption === undefined || filterOption === null)
@@ -3102,7 +3176,8 @@ export interface IPullFileInfo {
 }
 
 export class PullDiscussionResult implements IPullDiscussionResult {
-    discussion?: PullRequestReviewComment[] | undefined;
+    discussion?: IssueComment[] | undefined;
+    assignedReviewers?: User[] | undefined;
 
     constructor(data?: IPullDiscussionResult) {
         if (data) {
@@ -3118,7 +3193,12 @@ export class PullDiscussionResult implements IPullDiscussionResult {
             if (Array.isArray(_data["discussion"])) {
                 this.discussion = [] as any;
                 for (let item of _data["discussion"])
-                    this.discussion!.push(PullRequestReviewComment.fromJS(item));
+                    this.discussion!.push(IssueComment.fromJS(item));
+            }
+            if (Array.isArray(_data["assignedReviewers"])) {
+                this.assignedReviewers = [] as any;
+                for (let item of _data["assignedReviewers"])
+                    this.assignedReviewers!.push(User.fromJS(item));
             }
         }
     }
@@ -3137,36 +3217,33 @@ export class PullDiscussionResult implements IPullDiscussionResult {
             for (let item of this.discussion)
                 data["discussion"].push(item.toJSON());
         }
+        if (Array.isArray(this.assignedReviewers)) {
+            data["assignedReviewers"] = [];
+            for (let item of this.assignedReviewers)
+                data["assignedReviewers"].push(item.toJSON());
+        }
         return data; 
     }
 }
 
 export interface IPullDiscussionResult {
-    discussion?: PullRequestReviewComment[] | undefined;
+    discussion?: IssueComment[] | undefined;
+    assignedReviewers?: User[] | undefined;
 }
 
-export class PullRequestReviewComment implements IPullRequestReviewComment {
-    url?: string | undefined;
+export class IssueComment implements IIssueComment {
     id?: number;
     nodeId?: string | undefined;
-    diffHunk?: string | undefined;
-    path?: string | undefined;
-    position?: number | undefined;
-    originalPosition?: number | undefined;
-    commitId?: string | undefined;
-    originalCommitId?: string | undefined;
-    user?: User | undefined;
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
     body?: string | undefined;
     createdAt?: Date;
-    updatedAt?: Date;
-    htmlUrl?: string | undefined;
-    pullRequestUrl?: string | undefined;
-    reactions?: ReactionSummary | undefined;
-    inReplyToId?: number | undefined;
-    pullRequestReviewId?: number | undefined;
+    updatedAt?: Date | undefined;
+    user?: User | undefined;
     authorAssociation?: StringEnumOfAuthorAssociation;
+    reactions?: ReactionSummary | undefined;
 
-    constructor(data?: IPullRequestReviewComment) {
+    constructor(data?: IIssueComment) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -3177,80 +3254,103 @@ export class PullRequestReviewComment implements IPullRequestReviewComment {
 
     init(_data?: any) {
         if (_data) {
-            this.url = _data["url"];
             this.id = _data["id"];
             this.nodeId = _data["nodeId"];
-            this.diffHunk = _data["diffHunk"];
-            this.path = _data["path"];
-            this.position = _data["position"];
-            this.originalPosition = _data["originalPosition"];
-            this.commitId = _data["commitId"];
-            this.originalCommitId = _data["originalCommitId"];
-            this.user = _data["user"] ? User.fromJS(_data["user"]) : <any>undefined;
+            this.url = _data["url"];
+            this.htmlUrl = _data["htmlUrl"];
             this.body = _data["body"];
             this.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>undefined;
             this.updatedAt = _data["updatedAt"] ? new Date(_data["updatedAt"].toString()) : <any>undefined;
-            this.htmlUrl = _data["htmlUrl"];
-            this.pullRequestUrl = _data["pullRequestUrl"];
-            this.reactions = _data["reactions"] ? ReactionSummary.fromJS(_data["reactions"]) : <any>undefined;
-            this.inReplyToId = _data["inReplyToId"];
-            this.pullRequestReviewId = _data["pullRequestReviewId"];
+            this.user = _data["user"] ? User.fromJS(_data["user"]) : <any>undefined;
             this.authorAssociation = _data["authorAssociation"] ? StringEnumOfAuthorAssociation.fromJS(_data["authorAssociation"]) : <any>undefined;
+            this.reactions = _data["reactions"] ? ReactionSummary.fromJS(_data["reactions"]) : <any>undefined;
         }
     }
 
-    static fromJS(data: any): PullRequestReviewComment {
+    static fromJS(data: any): IssueComment {
         data = typeof data === 'object' ? data : {};
-        let result = new PullRequestReviewComment();
+        let result = new IssueComment();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["url"] = this.url;
         data["id"] = this.id;
         data["nodeId"] = this.nodeId;
-        data["diffHunk"] = this.diffHunk;
-        data["path"] = this.path;
-        data["position"] = this.position;
-        data["originalPosition"] = this.originalPosition;
-        data["commitId"] = this.commitId;
-        data["originalCommitId"] = this.originalCommitId;
-        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
+        data["url"] = this.url;
+        data["htmlUrl"] = this.htmlUrl;
         data["body"] = this.body;
         data["createdAt"] = this.createdAt ? this.createdAt.toISOString() : <any>undefined;
         data["updatedAt"] = this.updatedAt ? this.updatedAt.toISOString() : <any>undefined;
-        data["htmlUrl"] = this.htmlUrl;
-        data["pullRequestUrl"] = this.pullRequestUrl;
-        data["reactions"] = this.reactions ? this.reactions.toJSON() : <any>undefined;
-        data["inReplyToId"] = this.inReplyToId;
-        data["pullRequestReviewId"] = this.pullRequestReviewId;
+        data["user"] = this.user ? this.user.toJSON() : <any>undefined;
         data["authorAssociation"] = this.authorAssociation ? this.authorAssociation.toJSON() : <any>undefined;
+        data["reactions"] = this.reactions ? this.reactions.toJSON() : <any>undefined;
         return data; 
     }
 }
 
-export interface IPullRequestReviewComment {
-    url?: string | undefined;
+export interface IIssueComment {
     id?: number;
     nodeId?: string | undefined;
-    diffHunk?: string | undefined;
-    path?: string | undefined;
-    position?: number | undefined;
-    originalPosition?: number | undefined;
-    commitId?: string | undefined;
-    originalCommitId?: string | undefined;
-    user?: User | undefined;
+    url?: string | undefined;
+    htmlUrl?: string | undefined;
     body?: string | undefined;
     createdAt?: Date;
-    updatedAt?: Date;
-    htmlUrl?: string | undefined;
-    pullRequestUrl?: string | undefined;
-    reactions?: ReactionSummary | undefined;
-    inReplyToId?: number | undefined;
-    pullRequestReviewId?: number | undefined;
+    updatedAt?: Date | undefined;
+    user?: User | undefined;
     authorAssociation?: StringEnumOfAuthorAssociation;
+    reactions?: ReactionSummary | undefined;
+}
+
+export class StringEnumOfAuthorAssociation implements IStringEnumOfAuthorAssociation {
+    stringValue?: string | undefined;
+    value?: AuthorAssociation;
+
+    constructor(data?: IStringEnumOfAuthorAssociation) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.stringValue = _data["stringValue"];
+            this.value = _data["value"];
+        }
+    }
+
+    static fromJS(data: any): StringEnumOfAuthorAssociation {
+        data = typeof data === 'object' ? data : {};
+        let result = new StringEnumOfAuthorAssociation();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["stringValue"] = this.stringValue;
+        data["value"] = this.value;
+        return data; 
+    }
+}
+
+export interface IStringEnumOfAuthorAssociation {
+    stringValue?: string | undefined;
+    value?: AuthorAssociation;
+}
+
+export enum AuthorAssociation {
+    Collaborator = 0,
+    Contributor = 1,
+    FirstTimer = 2,
+    FirstTimeContributor = 3,
+    Member = 4,
+    Owner = 5,
+    None = 6,
 }
 
 export class ReactionSummary implements IReactionSummary {
@@ -3317,11 +3417,9 @@ export interface IReactionSummary {
     url?: string | undefined;
 }
 
-export class StringEnumOfAuthorAssociation implements IStringEnumOfAuthorAssociation {
-    stringValue?: string | undefined;
-    value?: AuthorAssociation;
+export class PullSummaryResponse implements IPullSummaryResponse {
 
-    constructor(data?: IStringEnumOfAuthorAssociation) {
+    constructor(data?: IPullSummaryResponse) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -3331,40 +3429,22 @@ export class StringEnumOfAuthorAssociation implements IStringEnumOfAuthorAssocia
     }
 
     init(_data?: any) {
-        if (_data) {
-            this.stringValue = _data["stringValue"];
-            this.value = _data["value"];
-        }
     }
 
-    static fromJS(data: any): StringEnumOfAuthorAssociation {
+    static fromJS(data: any): PullSummaryResponse {
         data = typeof data === 'object' ? data : {};
-        let result = new StringEnumOfAuthorAssociation();
+        let result = new PullSummaryResponse();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["stringValue"] = this.stringValue;
-        data["value"] = this.value;
         return data; 
     }
 }
 
-export interface IStringEnumOfAuthorAssociation {
-    stringValue?: string | undefined;
-    value?: AuthorAssociation;
-}
-
-export enum AuthorAssociation {
-    Collaborator = 0,
-    Contributor = 1,
-    FirstTimer = 2,
-    FirstTimeContributor = 3,
-    Member = 4,
-    Owner = 5,
-    None = 6,
+export interface IPullSummaryResponse {
 }
 
 export class UserRepositoryResult implements IUserRepositoryResult {

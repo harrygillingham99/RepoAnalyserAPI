@@ -12,5 +12,6 @@ namespace RepoAnalyser.Logic.Interfaces
         Task<PullFileInfo> GetPullFileInformation (long repoId, int pullNumber, string fileName, string token);
         Task<IDictionary<string, int>> GetPullCyclomaticComplexity (long repoId, int pullNumber, string token, string connectionId);
         Task<PullDiscussionResult> GetPullIssuesAndDiscussion(long repoId, int pullNumber, string token);
+        Task<PullSummaryResponse> GetPullRequestSummary(long repoId, int pullNumber, string token);
     }
 }
