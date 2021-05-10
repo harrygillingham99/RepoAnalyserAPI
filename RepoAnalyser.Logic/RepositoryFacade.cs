@@ -213,14 +213,21 @@ namespace RepoAnalyser.Logic
                 {
                     OwnershipPercentage = detailedRepo.CodeOwners == null
                         ? -1
-                        : (double)detailedRepo.CodeOwners.Count(kv => kv.Value != null && kv.Value == user.Login) /
+                        : (double) detailedRepo.CodeOwners.Count(kv => kv.Value != null && kv.Value == user.Login) /
                         detailedRepo.CodeOwners.Count(kv => kv.Value != null) * 100,
                     LocContributed = loc.Count > 0 ? loc.Sum(kv => kv.Value.Added) : 0,
                     LocRemoved = loc.Count > 0 ? loc.Sum(kv => kv.Value.Removed) : 0,
-                    AverageCyclomaticComplexity = detailedRepo.CyclomaticComplexities != null && detailedRepo.CyclomaticComplexities?.Count > 0 ? ((double) detailedRepo.CyclomaticComplexities?.Average(x => x.Value)) : -1,
+                    AverageCyclomaticComplexity =
+                        detailedRepo.CyclomaticComplexities != null && detailedRepo.CyclomaticComplexities?.Count > 0
+                            ? (double) detailedRepo.CyclomaticComplexities?.Average(x => x.Value)
+                            : -1,
                     TotalIssues = issues.Count,
-                    IssuesRaised = issues.Count > 0 ? issues.Count(x => (x.User?.Login ?? string.Empty) == user.Login) : 0,
-                    IssuesSolved = issues.Count > 0 ? issues.Count(x => (x.ClosedBy?.Login ?? string.Empty) == user.Login) : 0,
+                    IssuesRaised = issues.Count > 0
+                        ? issues.Count(x => (x.User?.Login ?? string.Empty) == user.Login)
+                        : 0,
+                    IssuesSolved = issues.Count > 0
+                        ? issues.Count(x => (x.ClosedBy?.Login ?? string.Empty) == user.Login)
+                        : 0,
                     AnalysisIssues = detailedRepo.StaticAnalysisHtml != AnalysisConstants.NoReportText ? 0 : -1
                 };
             }
@@ -229,7 +236,6 @@ namespace RepoAnalyser.Logic
                 Console.WriteLine(e);
                 throw;
             }
-           
         }
 
         public async Task<RepoContributionResponse> GetRepoContributionVolumes(long repoId, string token,
