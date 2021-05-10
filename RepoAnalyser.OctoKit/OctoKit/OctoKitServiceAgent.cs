@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Threading.Tasks;
 using LazyCache;
@@ -233,13 +234,13 @@ namespace RepoAnalyser.Services.OctoKit
         {
             _client.Connection.Credentials = GetCredentials(token);
 
-            async Task<IEnumerable<Issue>> GetIssues()
-            {
-                return await _client.Issue.GetAllForRepository(repoId);
-            }
-
-            return _cache.GetOrAddAsync($"{token}-{repoId}-issues", GetIssues,
+            return _cache.GetOrAddAsync($"{token}-{repoId}-issues", async () => (await GetIssues(token)).Where(issue => issue.Repository.Id == repoId),
                 DefaultSlidingCacheExpiry);
+        }
+
+        private Task<IReadOnlyList<Issue>> GetIssues(string token)
+        {
+            return  _cache.GetOrAddAsync($"{token}-issues",() => _client.Issue.GetAllForOwnedAndMemberRepositories(), DefaultSlidingCacheExpiry);
         }
 
         private async Task<IEnumerable<GitHubCommit>> GetCommitsForFile(long repoId, string filePath)

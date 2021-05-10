@@ -2,6 +2,6 @@
 {
     public class PullSummaryResponse
     {
-
+        public bool IsReviewer { get; set; }
     }
 }

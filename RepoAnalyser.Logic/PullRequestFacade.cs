@@ -145,9 +145,18 @@ namespace RepoAnalyser.Logic
             return await _octoKitServiceAgent.GetPullReviewInformation(token, repoId, pullNumber, (await pull).UpdatedAt?.DateTime ?? DateTime.Now);
         }
 
-        public Task<PullSummaryResponse> GetPullRequestSummary(long repoId, int pullNumber, string token)
+        public async Task<PullSummaryResponse> GetPullRequestSummary(long repoId, int pullNumber, string token)
         {
-            throw new NotImplementedException();
+            var pull = _octoKitGraphQlServiceAgent.GetPullRequest(token, repoId, pullNumber);
+            var user = await _octoKitAuthServiceAgent.GetUserInformation(token);
+            var reviewInfo = await _octoKitServiceAgent.GetPullReviewInformation(token, repoId, pullNumber,
+                (await pull).UpdatedAt?.DateTime ?? DateTime.Now);
+
+            return new PullSummaryResponse
+            {
+                IsReviewer = reviewInfo.AssignedReviewers.Any(users => users.Login == user.Login),
+
+            };
         }
     }
 }
