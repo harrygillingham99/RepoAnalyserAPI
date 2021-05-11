@@ -206,18 +206,17 @@ namespace RepoAnalyser.Logic
                 Token = token,
                 Username = user.Login
             });
-
-            return new RepoSummaryResponse
+            var res = new RepoSummaryResponse
             {
-                OwnershipPercentage = detailedRepo.CodeOwners == null
+                OwnershipPercentage = detailedRepo.CodeOwners == null || detailedRepo.CodeOwners.Count == 0 
                     ? -1
-                    : (double) detailedRepo.CodeOwners.Count(kv => kv.Value != null && kv.Value == user.Login) /
+                    : (double)detailedRepo.CodeOwners.Count(kv => kv.Value != null && kv.Value == user.Login) /
                     detailedRepo.CodeOwners.Count(kv => kv.Value != null) * 100,
                 LocContributed = loc.Count > 0 ? loc.Sum(kv => kv.Value.Added) : 0,
                 LocRemoved = loc.Count > 0 ? loc.Sum(kv => kv.Value.Removed) : 0,
                 AverageCyclomaticComplexity =
                     detailedRepo.CyclomaticComplexities != null && detailedRepo.CyclomaticComplexities?.Count > 0
-                        ? (double) detailedRepo.CyclomaticComplexities?.Average(x => x.Value)
+                        ? (double)detailedRepo.CyclomaticComplexities?.Average(x => x.Value)
                         : -1,
                 TotalIssues = issues.Count,
                 IssuesRaised = issues.Count > 0
@@ -228,6 +227,8 @@ namespace RepoAnalyser.Logic
                     : 0,
                 AnalysisIssues = detailedRepo.StaticAnalysisHtml != AnalysisConstants.NoReportText ? 0 : -1
             };
+
+            return res;
         }
 
         public async Task<RepoContributionResponse> GetRepoContributionVolumes(long repoId, string token,
