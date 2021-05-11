@@ -206,9 +206,10 @@ namespace RepoAnalyser.Logic
                 Token = token,
                 Username = user.Login
             });
-            var res = new RepoSummaryResponse
+            
+            return new RepoSummaryResponse
             {
-                OwnershipPercentage = detailedRepo.CodeOwners == null || detailedRepo.CodeOwners.Count == 0 
+                OwnershipPercentage = detailedRepo.CodeOwners == null || detailedRepo.CodeOwners.Count == 0
                     ? -1
                     : (double)detailedRepo.CodeOwners.Count(kv => kv.Value != null && kv.Value == user.Login) /
                     detailedRepo.CodeOwners.Count(kv => kv.Value != null) * 100,
@@ -228,7 +229,6 @@ namespace RepoAnalyser.Logic
                 AnalysisIssues = detailedRepo.StaticAnalysisHtml != AnalysisConstants.NoReportText ? 0 : -1
             };
 
-            return res;
         }
 
         public async Task<RepoContributionResponse> GetRepoContributionVolumes(long repoId, string token,
